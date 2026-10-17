@@ -58,6 +58,18 @@ Evde sadece oturma odası ve yatak odası var. İkisi de giriş koridoruna açı
 - Boşlukları olan duvarlar CSG değil, parçalara bölünmüş kutulardır. Kapı/pencere yerini değiştirirken ilgili duvar parçalarını yeniden böl.
 - Edit modunda fizik sorgusu (OverlapCapsule vb.) yapmadan önce `Physics.SyncTransforms()` çağır. Yoksa yeni oluşturulan veya dönen collider'lar görünmez ve sonuç yanlış "boş" çıkar.
 
+## StreetScene blokajı (İstiklal Caddesi referanslı)
+`StreetBlockout` objesi, dünya koordinatları. Cadde +z yönünde 72 m: z=0'da oyuncunun evi, z=72'de mağaza. Cepheler arası 12 m (x -6..6), ortası taş yol (zemin üstü y=0), iki yanda 1.5 m kaldırım (+0.12).
+- `Zemin`: 3x3 m modüler `Tas_Zemin_*` parçaları, 1.5x3 m `Kaldirim_*` parçaları, ortada tramvay rayı (collider yok), altında `Zemin_Taban`.
+- `Binalar`: 4 tip bina (A, B, C, D, iş planındaki "4 sokak binası"), iki yanda 6'şar tane. Zemin kat 4.5 m dükkân katı (vitrin, kapı, tabela), üst katlar 3.2 m. B ve D tiplerinde cumba var. Sol z[22,26] ve sağ z[34,38]'de çıkmaz ara sokak (ağızlarında dubalar). İki binada cephe reklam panosu (6x4 m).
+- `Oyuncu_Evi_Binasi` (z=0): zemin katta oyuncunun kapısı, veranda + basamak, `Eski_Esya_Alani`. `Gecis_Ev` trigger'ı kapının önünde.
+- `Magaza_Binasi` (z=72): iki vitrin (mankenler ve afişler), cam giriş kapısı, tabela. `Gecis_Magaza` trigger'ı kapının önünde.
+- `Kafe`: sol D binasının zemin katı, tente + 3 masa, 6 sandalye.
+- `Sokak_Mobilyasi`: 6 sokak lambası (12 m arayla, sırayla iki yanda), 5 park bankı, 7 çöp kutusu, 4 ayaklı reklam panosu (iki yüzlü), 12 sınır dubası.
+- Gecis_* trigger'ları sadece kutu. Sahne geçiş scripti henüz YOK (SceneLoader.Load ile bağlanacak).
+- Oyuncu `Assets/Prefabs/Player.prefab` örneği, evin önünde (0, 3) doğar, mağazaya (+z) bakar. HouseScene'deki Player da aynı prefab'a bağlı: Player'ı değiştirirken prefab'ı değiştir.
+- Ölçüler İstiklal'den yaklaşık (hafızadan, ölçülmüş değil).
+
 ## Notlar
 - UI'da yazılar legacy `UnityEngine.UI.Text` ile (TMP kurulu değil). Kod içinde `Image` adı bir namespace ile çakışırsa `UnityEngine.UI.Image` olarak tam yaz.
 - Unity MCP kullanılırken script değişikliğinden sonra domain reload sırasında bağlantı kısa süre kopar ("Unity not detected"). Derleme bitince tekrar dene.
