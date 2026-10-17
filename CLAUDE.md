@@ -37,22 +37,24 @@ Player          (FirstPersonController + CharacterController)
 - Capsule mesh'i Player'ın köküne KOYMA. Primitif capsule'ün pivotu ortasındadır, CC Center 0.9 yukarıda olduğu için mesh zeminin içinde kalır. Mesh `Body` alt objesinde: localPos (0, 0.9, 0), localScale (0.6, 0.9, 0.6).
 - Yeni sahneye Player eklerken aynı yapıyı kullan.
 
-## HouseScene blokajı (1+1 ev)
-`HouseBlockout` objesi (pos y = dış zemin üstü ≈ 1.21). Altında `Yapi` (Zemin, Duvarlar, Kapilar, Pencereler, Tavan) ve oda grupları: `Salon`, `Mutfak`, `Yatak_Odasi`, `Hol`, `Banyo`, `Kapali_Oda`, `Dis_Mekan`. Birim metre, dış ölçü 16x12 (x -8..8, z -6..6), duvar 0.2 kalın. Yerel koordinatlar `HouseBlockout`'a göredir.
+## HouseScene blokajı
+Evde sadece oturma odası ve yatak odası var. İkisi de giriş koridoruna açılır. Mutfak ve banyo YOK (kullanıcı kararı, tekrar ekleme).
+
+`HouseBlockout` objesi (pos y = dış zemin üstü ≈ 1.21). Altında `Yapi` (Zemin, Duvarlar, Kapilar, Pencereler, Tavan) ve gruplar: `Oturma_Odasi`, `Yatak_Odasi`, `Koridor`, `Dis_Mekan`. Birim metre, dış ölçü 13x8 (x -7..6, z -4..4), duvar 0.2 kalın. Yerel koordinatlar `HouseBlockout`'a göredir.
 - Ev zemini dış zeminden 0.15 yüksek (`Zemin` kutusu). Girişte veranda + bir basamak var. Tüm iç yükseklikler bu 0.15'in üstünden ölçülür.
 - Ölçüler karakterden türetilir (CC boy 1.8, yarıçap 0.3, göz 1.6): kapı 1.2x2.3 (boy + 0.5 baş boşluğu, genişlik = 4 x yarıçap), duvar yüksekliği 3.0, pencere 1.6 geniş / denizlik 0.9 / üstü 2.3. Karakter ölçüsü değişirse ev de bu oranlarla yeniden üretilmeli.
-- Salon + amerikan mutfak x[-8,2] z[-1,6]: TV ünitesi + TV (kuzey duvar), kanepe (TV'ye bakar, üstünde `Kumanda`), sehpa, halı, abajur, yan sehpa, kitaplık ve boy aynası (x=2 duvarı). Mutfak batıda: L tezgâh, evye, ocak, üst dolap, aspiratör, buzdolabı, 4 sandalyeli yemek masası.
-- Yatak odası x[2,8] z[-1,6]: yatak (başucu doğu duvarda), 2 komodin, dolap (güney duvar, GDD'deki etkileşimli dolap), çalışma masası + sandalye, kişisel eşya rafı, halı. Salondan kapısı x=2 duvarında z=0.5.
-- Hol x[-3,2] z[-6,-1]: ana kapı güney duvarda x=-0.5, ayakkabılık, anahtarlık, portmanto, 2 tablo, paspas. Salona z=-1 duvarında 3 m kemer.
-- Banyo x[-8,-3] z[-6,-1]: küvet, klozet, lavabo + ayna, havluluk, yüksek pencere. Holden kapısı x=-3 duvarında z=-3.5.
-- Kapalı oda x[2,8] z[-6,-1]: kapısı (x=2, z=-3.5) KAPALI, içinde birkaç kutu.
+- Koridor x[-7,6] z[-4,-1.8], iç genişlik 2.0 (açık giriş kapısının yanından geçilebilsin diye). Ana kapı güney duvarda x=-0.5. Ayakkabılık, anahtarlık, portmanto, 2 tablo, paspas, 2 tavan lambası.
+- Oturma odası x[-7,0] z[-1.8,4]: koridordan kapısı z=-1.8 duvarında x=-2.5. TV ünitesi + TV (kuzey duvar), kanepe (TV'ye bakar, üstünde `Kumanda`), sehpa, halı, abajur, yan sehpa, berjer, kitaplık ve boy aynası (x=0 duvarı).
+- Yatak odası x[0,6] z[-1.8,4]: koridordan kapısı z=-1.8 duvarında x=2.5. Yatak (başucu doğu duvarda), 2 komodin, dolap (koridor duvarına dayalı, GDD'deki etkileşimli dolap), çalışma masası + sandalye, kişisel eşya rafı, halı.
+- Kapalı oda (GDD): koridorun doğu ucunda duvara yapışık, açılmayan sahte kapı (`Kapi_Kapali_Oda`). Arkasında oda yok.
 - Dış mekan: veranda + basamak, `Eski_Esya_Alani` boş objesi (GDD'de kapı önünde biriken eski eşyaların konumu).
-- Kapılar: `Kapi_*/Kanat_Pivot` menteşe noktasıdır, açma/kapama scripti bu pivotu Y ekseninde döndürmeli. Giriş, yatak odası ve banyo kapıları açık, kapalı oda kapısı kapalı.
-- Pencereler: kasa, cam (`Blockout_Cam`, şeffaf), iç denizlik, perde.
+- Kapılar: `Kapi_*/Kanat_Pivot` menteşe noktasıdır, açma/kapama scripti bu pivotu Y ekseninde döndürmeli. Giriş ve oda kapıları açık (içeri doğru 90°).
+- Pencereler: kasa, cam (`Blockout_Cam`, şeffaf), iç denizlik, perde. Oturma odasında 3, yatak odasında 2.
 - Tavanın gölge atması kapalı (ışıklandırma yapılana kadar iç mekan karanlık kalmasın). Avizeler sadece şekil, ışık yok.
-- Malzemeler `Assets/Materials/Blockout_*.mat`: Gri (duvar), Zemin, Fayans, Mobilya, Kumas, Beyaz, Koyu, Kapi, Ayna, Vurgu, Cam.
+- Malzemeler `Assets/Materials/Blockout_*.mat`: Gri (duvar), Zemin, Mobilya, Kumas, Beyaz, Koyu, Kapi, Ayna, Vurgu, Cam. (`Blockout_Fayans` artık kullanılmıyor.)
 - Küçük süs objelerinin (kitap, yastık, perde, halı vb.) collider'ı yok. Büyük mobilyaların ve kapı kanatlarının var.
-- Player salonda (0.8, 3.2) doğar, batıya (kanepe/TV tarafına) bakar.
+- Player oturma odasında (-1.6, 1.6) doğar, batıya (kanepe/TV tarafına) bakar.
+- Tasarımcılar için obje listesi ve ölçüler: Claude Docs "Same – Ev Obje Listesi (Meshy.ai)" (https://claude.ai/code/artifact/49c405e7-c794-4a20-8d1e-05d04de5028c). Blokajda ölçü değişirse orayı da güncelle.
 - Boşlukları olan duvarlar CSG değil, parçalara bölünmüş kutulardır. Kapı/pencere yerini değiştirirken ilgili duvar parçalarını yeniden böl.
 - Edit modunda fizik sorgusu (OverlapCapsule vb.) yapmadan önce `Physics.SyncTransforms()` çağır. Yoksa yeni oluşturulan veya dönen collider'lar görünmez ve sonuç yanlış "boş" çıkar.
 
