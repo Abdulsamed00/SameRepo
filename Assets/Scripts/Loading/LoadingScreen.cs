@@ -10,7 +10,7 @@ public class LoadingScreen : MonoBehaviour
     [SerializeField] private Text statusText;
 
     [Header("Ayarlar")]
-    [SerializeField] private string fallbackScene = "GameScene";
+    [SerializeField] private string fallbackScene = "HouseScene";
     [SerializeField] private float minimumDuration = 1.5f;
     [SerializeField] private float fillSmoothing = 6f;
 

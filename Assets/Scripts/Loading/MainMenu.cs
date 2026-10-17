@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class MainMenu : MonoBehaviour
 {
-    [SerializeField] private string gameScene = "GameScene";
+    [SerializeField] private string gameScene = "HouseScene";
 
     private void Start()
     {
