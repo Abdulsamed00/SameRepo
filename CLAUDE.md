@@ -74,17 +74,11 @@ Evde sadece oturma odası ve yatak odası var. İkisi de giriş koridoruna açı
 - Oyuncu `Assets/Prefabs/Player.prefab` örneği, evin önünde (0, 3.2) doğar, mağazaya (+z) bakar. Ev, sokak ve mağaza aynı prefab'ı kullanır: Player'ı değiştirirken prefab'ı değiştir.
 - Ölçüler İstiklal'den yaklaşık (hafızadan, ölçülmüş değil).
 
-## ShopScene blokajı (Boyner tarzı mağaza içi)
-`ShopBlockout`, 30x24 m (x -15..15, z 0..24), tavan 4.5 m. Giriş güney duvarında ortada (x[-1.8,1.8]), iki yanında vitrin camları ve vitrin platformlarında 6 manken. 5 m genişliğinde ana koridor (x[-2.5,2.5]) girişten arka duvara kadar boş.
-- GDD'deki 5 ürünün reyonları: `Reyon_Dis_Giyim_Palto` (sol ön: duvar askılığı, 3 düz + 2 yuvarlak askılık, boy aynası), `Reyon_Pantolon` (sağ ön: 3 teşhir masası, duvar rafı), `Reyon_Ayakkabi` (sol arka: duvar rafları, deneme pufları, zemin aynaları, podyumlar), `Reyon_Canta` (sağ arka: podyumlar, duvar rafı), `Reyon_Gozluk` (sağ arka: cam vitrin dolapları, döner standlar).
-- `Kasa` (GDD: ödeme burada): sağda girişin yanında, `Kasiyer_Noktasi` ve `Musteri_Noktasi` boş objeleri.
-- `Deneme_Kabinleri`: arka sağda 5 kabin (perde, ayna, oturak).
-- Tavandan asılı reyon tabelaları, duvar reklam afişleri, giriş totemleri.
-- `NPC_Alani/Ilgi_Noktalari`: her reyonun, kasanın ve girişin önünde NPC hedef noktası. 10 müşteri yer tutucusu (collider yok).
-- NavMesh: `Assets/Scenes/ShopScene/NavMesh-ShopBlockout.asset`. `Gecis_Sokak` trigger'ı girişte. Oyuncu (0, 3)'te doğar.
-- Komutlarda `AssetDatabase.DeleteAsset` kullanma: Unity MCP onay istiyor ve komut hiç çalışmıyor. Var olan asset'i güncellemek için `EditorUtility.CopySerialized` kullan.
+## ShopScene
+Şimdilik boş (kamera + ışık). Kullanıcı istemeden mağaza içi kurulmayacak; mağaza şimdilik sadece sokaktaki cephe (`Buyuk_Magaza_Binasi`).
 
 ## Notlar
+- Unity MCP komutlarında `AssetDatabase.DeleteAsset` kullanma: onay istiyor ve komut hiç çalışmıyor. Var olan asset'i güncellemek için `EditorUtility.CopySerialized` kullan.
 - UI'da yazılar legacy `UnityEngine.UI.Text` ile (TMP kurulu değil). Kod içinde `Image` adı bir namespace ile çakışırsa `UnityEngine.UI.Image` olarak tam yaz.
 - Unity MCP kullanılırken script değişikliğinden sonra domain reload sırasında bağlantı kısa süre kopar ("Unity not detected"). Derleme bitince tekrar dene.
 - `gh` PATH'te değil. Tam yol: `C:\Program Files\GitHub CLI\gh.exe`.
