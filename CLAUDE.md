@@ -37,6 +37,16 @@ Player          (FirstPersonController + CharacterController)
 - Capsule mesh'i Player'ın köküne KOYMA. Primitif capsule'ün pivotu ortasındadır, CC Center 0.9 yukarıda olduğu için mesh zeminin içinde kalır. Mesh `Body` alt objesinde: localPos (0, 0.9, 0), localScale (0.6, 0.9, 0.6).
 - Yeni sahneye Player eklerken aynı yapıyı kullan.
 
+## HouseScene blokajı (1+1 ev)
+`HouseBlockout` objesi (pos y = zemin üstü ≈ 1.21) altında `Duvarlar`, `Tavan`, `Mobilya`. Birim metre, dış ölçü 10x8 (x -5..5, z -4..4), duvar 0.2 kalın / 2.8 yüksek, kapılar 1.0x2.1.
+- Salon x[-5,1] z[0,4]: TV ünitesi, kanepe, boy aynası (kuzey duvar), mutfak tezgâhı kutusu.
+- Yatak odası x[1,5] z[0,4]: yatak, dolap. Salon ile kapısı x=1 duvarında z≈2.
+- Giriş holü x[-5,1] z[-4,0]: ana kapı güney duvarda x≈-2. Salona z=0 duvarında 2 m açıklık.
+- Banyo x[1,5] z[-4,0]: holden kapısı x=1 duvarında z≈-2.
+- Zemin, sahnedeki büyük `Cube` slab. Tavanın gölge atması kapalı (ışıklandırma yapılana kadar iç mekan karanlık kalmasın).
+- Malzemeler: `Assets/Materials/Blockout_Gri.mat`, `Blockout_Mobilya.mat`. Player salonda (-2.5, 2) doğar.
+- Boşlukları olan duvarlar CSG değil, parçalara bölünmüş kutulardır. Kapı/pencere yerini değiştirirken ilgili duvar parçalarını yeniden böl.
+
 ## Notlar
 - UI'da yazılar legacy `UnityEngine.UI.Text` ile (TMP kurulu değil). Kod içinde `Image` adı bir namespace ile çakışırsa `UnityEngine.UI.Image` olarak tam yaz.
 - Unity MCP kullanılırken script değişikliğinden sonra domain reload sırasında bağlantı kısa süre kopar ("Unity not detected"). Derleme bitince tekrar dene.
