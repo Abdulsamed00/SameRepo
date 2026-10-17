@@ -59,16 +59,30 @@ Evde sadece oturma odası ve yatak odası var. İkisi de giriş koridoruna açı
 - Edit modunda fizik sorgusu (OverlapCapsule vb.) yapmadan önce `Physics.SyncTransforms()` çağır. Yoksa yeni oluşturulan veya dönen collider'lar görünmez ve sonuç yanlış "boş" çıkar.
 
 ## StreetScene blokajı (İstiklal Caddesi referanslı)
-`StreetBlockout` objesi, dünya koordinatları. Cadde +z yönünde 72 m: z=0'da oyuncunun evi, z=72'de mağaza. Cepheler arası 12 m (x -6..6), ortası taş yol (zemin üstü y=0), iki yanda 1.5 m kaldırım (+0.12).
-- `Zemin`: 3x3 m modüler `Tas_Zemin_*` parçaları, 1.5x3 m `Kaldirim_*` parçaları, ortada tramvay rayı (collider yok), altında `Zemin_Taban`.
-- `Binalar`: 4 tip bina (A, B, C, D, iş planındaki "4 sokak binası"), iki yanda 6'şar tane. Zemin kat 4.5 m dükkân katı (vitrin, kapı, tabela), üst katlar 3.2 m. B ve D tiplerinde cumba var. Sol z[22,26] ve sağ z[34,38]'de çıkmaz ara sokak (ağızlarında dubalar). İki binada cephe reklam panosu (6x4 m).
-- `Oyuncu_Evi_Binasi` (z=0): zemin katta oyuncunun kapısı, veranda + basamak, `Eski_Esya_Alani`. `Gecis_Ev` trigger'ı kapının önünde.
-- `Magaza_Binasi` (z=72): iki vitrin (mankenler ve afişler), cam giriş kapısı, tabela. `Gecis_Magaza` trigger'ı kapının önünde.
-- `Kafe`: sol D binasının zemin katı, tente + 3 masa, 6 sandalye.
-- `Sokak_Mobilyasi`: 6 sokak lambası (12 m arayla, sırayla iki yanda), 5 park bankı, 7 çöp kutusu, 4 ayaklı reklam panosu (iki yüzlü), 12 sınır dubası.
+`StreetBlockout` objesi, dünya koordinatları. Cadde +z yönünde 120 m: z=0'da oyuncunun evi, z=120'de büyük mağaza. Cepheler arası 18 m (x -9..9): ortada 12 m taş yol (y=0), iki yanda 3 m kaldırım (+0.12).
+- Şeritler: x[-4.5,4.5] NPC akışı için BOŞ tutulur. Sokak mobilyası (lamba, bank, çöp, pano, saksı, simit arabası) x=±5.0..5.6 şeridinde. Kafe oturma alanları kaldırımda (x=±7.6). Yeni obje eklerken bu şeritleri koru.
+- `Zemin`: 3x3 m modüler `Tas_Zemin_*` ve `Kaldirim_*` parçaları, tramvay rayı (collider yok), `Zemin_Taban`.
+- `Binalar`: 4 tip bina (A-D, iş planındaki "4 sokak binası"), her yanda 10'ar. B/D'de cumba, dükkânlarda çıkma tabela. Çıkmaz ara sokaklar: sol z[42,46], sağ z[70,74]. 3 binada cephe reklam panosu (7x4.5 m).
+- `Kahve_Dukkani_*` (3 adet, Starbucks tarzı, marka logosu yok): sol z[24,36], sağ z[46,58], sol z[86,98]. Cam cephe, yeşil tente, logo diski. Oturma alanları `Kahve_Dukkani_Oturma` altında.
+- `Oyuncu_Evi_Binasi` (z=0, 18 m geniş): kapı, veranda + basamak, `Eski_Esya_Alani`, `Gecis_Ev` trigger'ı.
+- `Buyuk_Magaza_Binasi` (z=120, Boyner tarzı, 24 m geniş, 5 kat): 2 m derin vitrinler (8 manken, afişler), ortada girinti içinde otomatik kapılar, saçak, büyük tabela, cam bantlı üst katlar, dikey cephe afişleri, `Gecis_Magaza` trigger'ı girintide.
+- `Sokak_Mobilyasi`: 8 lamba, 8 bank, 10 çöp kutusu, 6 ayaklı reklam panosu, 6 çiçek saksısı, 2 simit arabası, 1 büfe, 14 sınır dubası. `Bayrak_Dizileri`: caddenin üstünde 4 dizi (collider yok).
+- Ara sokak dubaları 1.6 m aralıklı: NavMesh ajanı (yarıçap 0.5) 1 m'den dar aralıktan geçemez. Duba/engel eklerken bunu koru.
+- `NPC_Alani`: `Rota_Kuzey` (x=-2.5), `Rota_Guney` (x=2.5), `Rota_Kaldirim_Sol/Sag` (x=±7, kafe önleri atlanır) her 10 m'de nokta. `Dogma_Noktalari` (cadde uçları, ara sokaklar, mağaza girişi). `NPC_Yer_Tutuculari`: collider'sız kapsüller, sadece yoğunluğu göstermek için (NPC sistemi gelince silinecek).
+- NavMesh: `StreetBlockout` üzerinde `NavMeshSurface` (PhysicsColliders), veri `Assets/Scenes/StreetScene/NavMesh-StreetBlockout.asset`. Sahne değişince yeniden pişir.
 - Gecis_* trigger'ları sadece kutu. Sahne geçiş scripti henüz YOK (SceneLoader.Load ile bağlanacak).
-- Oyuncu `Assets/Prefabs/Player.prefab` örneği, evin önünde (0, 3) doğar, mağazaya (+z) bakar. HouseScene'deki Player da aynı prefab'a bağlı: Player'ı değiştirirken prefab'ı değiştir.
+- Oyuncu `Assets/Prefabs/Player.prefab` örneği, evin önünde (0, 3.2) doğar, mağazaya (+z) bakar. Ev, sokak ve mağaza aynı prefab'ı kullanır: Player'ı değiştirirken prefab'ı değiştir.
 - Ölçüler İstiklal'den yaklaşık (hafızadan, ölçülmüş değil).
+
+## ShopScene blokajı (Boyner tarzı mağaza içi)
+`ShopBlockout`, 30x24 m (x -15..15, z 0..24), tavan 4.5 m. Giriş güney duvarında ortada (x[-1.8,1.8]), iki yanında vitrin camları ve vitrin platformlarında 6 manken. 5 m genişliğinde ana koridor (x[-2.5,2.5]) girişten arka duvara kadar boş.
+- GDD'deki 5 ürünün reyonları: `Reyon_Dis_Giyim_Palto` (sol ön: duvar askılığı, 3 düz + 2 yuvarlak askılık, boy aynası), `Reyon_Pantolon` (sağ ön: 3 teşhir masası, duvar rafı), `Reyon_Ayakkabi` (sol arka: duvar rafları, deneme pufları, zemin aynaları, podyumlar), `Reyon_Canta` (sağ arka: podyumlar, duvar rafı), `Reyon_Gozluk` (sağ arka: cam vitrin dolapları, döner standlar).
+- `Kasa` (GDD: ödeme burada): sağda girişin yanında, `Kasiyer_Noktasi` ve `Musteri_Noktasi` boş objeleri.
+- `Deneme_Kabinleri`: arka sağda 5 kabin (perde, ayna, oturak).
+- Tavandan asılı reyon tabelaları, duvar reklam afişleri, giriş totemleri.
+- `NPC_Alani/Ilgi_Noktalari`: her reyonun, kasanın ve girişin önünde NPC hedef noktası. 10 müşteri yer tutucusu (collider yok).
+- NavMesh: `Assets/Scenes/ShopScene/NavMesh-ShopBlockout.asset`. `Gecis_Sokak` trigger'ı girişte. Oyuncu (0, 3)'te doğar.
+- Komutlarda `AssetDatabase.DeleteAsset` kullanma: Unity MCP onay istiyor ve komut hiç çalışmıyor. Var olan asset'i güncellemek için `EditorUtility.CopySerialized` kullan.
 
 ## Notlar
 - UI'da yazılar legacy `UnityEngine.UI.Text` ile (TMP kurulu değil). Kod içinde `Image` adı bir namespace ile çakışırsa `UnityEngine.UI.Image` olarak tam yaz.
