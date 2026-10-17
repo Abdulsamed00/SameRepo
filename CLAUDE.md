@@ -38,13 +38,14 @@ Player          (FirstPersonController + CharacterController)
 - Yeni sahneye Player eklerken aynı yapıyı kullan.
 
 ## HouseScene blokajı (1+1 ev)
-`HouseBlockout` objesi (pos y = zemin üstü ≈ 1.21) altında `Duvarlar`, `Tavan`, `Mobilya`. Birim metre, dış ölçü 10x8 (x -5..5, z -4..4), duvar 0.2 kalın / 2.8 yüksek, kapılar 1.0x2.1.
-- Salon x[-5,1] z[0,4]: TV ünitesi, kanepe, boy aynası (kuzey duvar), mutfak tezgâhı kutusu.
-- Yatak odası x[1,5] z[0,4]: yatak, dolap. Salon ile kapısı x=1 duvarında z≈2.
-- Giriş holü x[-5,1] z[-4,0]: ana kapı güney duvarda x≈-2. Salona z=0 duvarında 2 m açıklık.
-- Banyo x[1,5] z[-4,0]: holden kapısı x=1 duvarında z≈-2.
+`HouseBlockout` objesi (pos y = zemin üstü ≈ 1.21) altında `Duvarlar`, `Tavan`, `Mobilya`. Birim metre, dış ölçü 13x10 (x -6.5..6.5, z -5..5), duvar 0.2 kalın.
+- Ölçüler karakterden türetilir (CC boy 1.8, yarıçap 0.3, göz 1.6): kapı 1.2x2.3 (boy + 0.5 baş boşluğu, genişlik = 4 x yarıçap), duvar yüksekliği 3.0, pencere 1.6 geniş / denizlik 0.9 / üstü 2.3. Karakter ölçüsü değişirse ev de bu oranlarla yeniden üretilmeli.
+- Salon x[-6.5,1.5] z[-1,5] (8x6): TV ünitesi + TV (batı duvar), kanepe, boy aynası (kuzey duvar), mutfak tezgâhı kutusu.
+- Yatak odası x[1.5,6.5] z[-1,5] (5x6): yatak, dolap. Salon ile kapısı x=1.5 duvarında z=2.
+- Giriş holü x[-6.5,1.5] z[-5,-1]: ana kapı güney duvarda x=-2.5. Salona z=-1 duvarında 2.8 m açıklık.
+- Banyo x[1.5,6.5] z[-5,-1]: holden kapısı x=1.5 duvarında z=-3.
 - Zemin, sahnedeki büyük `Cube` slab. Tavanın gölge atması kapalı (ışıklandırma yapılana kadar iç mekan karanlık kalmasın).
-- Malzemeler: `Assets/Materials/Blockout_Gri.mat`, `Blockout_Mobilya.mat`. Player salonda (-2.5, 2) doğar.
+- Malzemeler: `Assets/Materials/Blockout_Gri.mat`, `Blockout_Mobilya.mat`. Player salonda (-4.6, 1) doğar, TV'ye (batıya) bakar.
 - Boşlukları olan duvarlar CSG değil, parçalara bölünmüş kutulardır. Kapı/pencere yerini değiştirirken ilgili duvar parçalarını yeniden böl.
 
 ## Notlar
