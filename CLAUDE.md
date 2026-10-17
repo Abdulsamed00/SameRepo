@@ -59,15 +59,15 @@ Evde sadece oturma odası ve yatak odası var. İkisi de giriş koridoruna açı
 - Edit modunda fizik sorgusu (OverlapCapsule vb.) yapmadan önce `Physics.SyncTransforms()` çağır. Yoksa yeni oluşturulan veya dönen collider'lar görünmez ve sonuç yanlış "boş" çıkar.
 
 ## StreetScene blokajı (İstiklal Caddesi referanslı)
-`StreetBlockout` objesi, dünya koordinatları. Cadde +z yönünde 120 m: z=0'da sıradan bir kapanış binası (`Bina_B_Guney_Kapanis`), z=120'de büyük mağaza.
+`StreetBlockout` objesi, dünya koordinatları. Cadde +z yönünde 240 m: z=0'da sıradan bir kapanış binası (`Bina_B_Guney_Kapanis`), z=240'ta büyük mağaza. (İlk 120 m kullanıcı onaylı ilk bölüm; 120-240 aynı kurallarla eklenen uzatma.)
 - Oyuncunun evi sokakta YOK (kullanıcı kararı): evden çıkınca yükleme ekranı gelir, oyuncu sokağa yürüyüp gelmiş gibi doğar. Arkasında ev olmamalı.
 - `Eve_Giden_Sokak`: sağda z[12,17] ara sokak, x=9'dan 25'e 16 m içeri gider, sonunda güneye döner (x[20,25] z[6,12]). Oyuncu `Oyuncu_Dogma_Noktasi`'nda (17, 14.5) yüzü caddeye (-x) dönük doğar. `Gecis_Ev` trigger'ı dönemecin arkasında (22.5, 7.2), spawn'dan görünmez: oyuncu eve geldiği yoldan döner. Cepheler arası 18 m (x -9..9): ortada 12 m taş yol (y=0), iki yanda 3 m kaldırım (+0.12).
 - Şeritler: x[-4.5,4.5] NPC akışı için BOŞ tutulur. Sokak mobilyası (lamba, bank, çöp, pano, saksı, simit arabası) x=±5.0..5.6 şeridinde. Kafe oturma alanları kaldırımda (x=±7.6). Yeni obje eklerken bu şeritleri koru.
 - `Zemin`: 3x3 m modüler `Tas_Zemin_*` ve `Kaldirim_*` parçaları, tramvay rayı (collider yok), `Zemin_Taban`.
-- `Binalar`: 4 tip bina (A-D, iş planındaki "4 sokak binası"), her yanda 10'ar. B/D'de cumba, dükkânlarda çıkma tabela. Çıkmaz ara sokaklar: sol z[42,46], sağ z[70,74]. 3 binada cephe reklam panosu (7x4.5 m).
-- `Kahve_Dukkani_*` (3 adet, Starbucks tarzı, marka logosu yok): sol z[24,36], sağ z[46,58], sol z[86,98]. Cam cephe, yeşil tente, logo diski. Oturma alanları `Kahve_Dukkani_Oturma` altında.
-- `Buyuk_Magaza_Binasi` (z=120, Boyner tarzı, 24 m geniş, 5 kat): 2 m derin vitrinler (8 manken, afişler), ortada girinti içinde otomatik kapılar, saçak, büyük tabela, cam bantlı üst katlar, dikey cephe afişleri, `Gecis_Magaza` trigger'ı girintide.
-- `Sokak_Mobilyasi`: 8 lamba, 8 bank, 10 çöp kutusu, 6 ayaklı reklam panosu, 6 çiçek saksısı, 2 simit arabası, 1 büfe, 14 sınır dubası. `Bayrak_Dizileri`: caddenin üstünde 4 dizi (collider yok).
+- `Binalar`: 4 tip bina (A-D, iş planındaki "4 sokak binası"), her yanda 20'şer. B/D'de cumba, dükkânlarda çıkma tabela. Çıkmaz ara sokaklar: sol z[42,46] ve z[170,174], sağ z[70,74] ve z[214,218]. 5 binada cephe reklam panosu (7x4.5 m).
+- `Kahve_Dukkani_*` (5 adet, Starbucks tarzı, marka logosu yok): sol z[24,36], sağ z[46,58], sol z[86,98], sol z[150,162], sağ z[186,198]. Cam cephe, yeşil tente, logo diski. Oturma alanları `Kahve_Dukkani_Oturma` altında.
+- `Buyuk_Magaza_Binasi` (z=240, Boyner tarzı, 24 m geniş, 5 kat): 2 m derin vitrinler (8 manken, afişler), ortada girinti içinde otomatik kapılar, saçak, büyük tabela, cam bantlı üst katlar, dikey cephe afişleri, `Gecis_Magaza` trigger'ı girintide.
+- `Sokak_Mobilyasi`: 16 lamba, 16 bank, 18 çöp kutusu, 12 ayaklı reklam panosu, 12 çiçek saksısı, 4 simit arabası, 2 büfe, 20 sınır dubası. `Bayrak_Dizileri`: caddenin üstünde 8 dizi (collider yok).
 - Ara sokak dubaları 1.6 m aralıklı: NavMesh ajanı (yarıçap 0.5) 1 m'den dar aralıktan geçemez. Duba/engel eklerken bunu koru.
 - `NPC_Alani`: `Rota_Kuzey` (x=-2.5), `Rota_Guney` (x=2.5), `Rota_Kaldirim_Sol/Sag` (x=±7, kafe önleri atlanır) her 10 m'de nokta. `Dogma_Noktalari` (cadde uçları, ara sokaklar, mağaza girişi). `NPC_Yer_Tutuculari`: collider'sız kapsüller, sadece yoğunluğu göstermek için (NPC sistemi gelince silinecek).
 - NavMesh: `StreetBlockout` üzerinde `NavMeshSurface` (PhysicsColliders), veri `Assets/Scenes/StreetScene/NavMesh-StreetBlockout.asset`. Sahne değişince yeniden pişir.
