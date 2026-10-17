@@ -38,15 +38,23 @@ Player          (FirstPersonController + CharacterController)
 - Yeni sahneye Player eklerken aynı yapıyı kullan.
 
 ## HouseScene blokajı (1+1 ev)
-`HouseBlockout` objesi (pos y = zemin üstü ≈ 1.21) altında `Duvarlar`, `Tavan`, `Mobilya`. Birim metre, dış ölçü 13x10 (x -6.5..6.5, z -5..5), duvar 0.2 kalın.
+`HouseBlockout` objesi (pos y = dış zemin üstü ≈ 1.21). Altında `Yapi` (Zemin, Duvarlar, Kapilar, Pencereler, Tavan) ve oda grupları: `Salon`, `Mutfak`, `Yatak_Odasi`, `Hol`, `Banyo`, `Kapali_Oda`, `Dis_Mekan`. Birim metre, dış ölçü 16x12 (x -8..8, z -6..6), duvar 0.2 kalın. Yerel koordinatlar `HouseBlockout`'a göredir.
+- Ev zemini dış zeminden 0.15 yüksek (`Zemin` kutusu). Girişte veranda + bir basamak var. Tüm iç yükseklikler bu 0.15'in üstünden ölçülür.
 - Ölçüler karakterden türetilir (CC boy 1.8, yarıçap 0.3, göz 1.6): kapı 1.2x2.3 (boy + 0.5 baş boşluğu, genişlik = 4 x yarıçap), duvar yüksekliği 3.0, pencere 1.6 geniş / denizlik 0.9 / üstü 2.3. Karakter ölçüsü değişirse ev de bu oranlarla yeniden üretilmeli.
-- Salon x[-6.5,1.5] z[-1,5] (8x6): TV ünitesi + TV (batı duvar), kanepe, boy aynası (kuzey duvar), mutfak tezgâhı kutusu.
-- Yatak odası x[1.5,6.5] z[-1,5] (5x6): yatak, dolap. Salon ile kapısı x=1.5 duvarında z=2.
-- Giriş holü x[-6.5,1.5] z[-5,-1]: ana kapı güney duvarda x=-2.5. Salona z=-1 duvarında 2.8 m açıklık.
-- Banyo x[1.5,6.5] z[-5,-1]: holden kapısı x=1.5 duvarında z=-3.
-- Zemin, sahnedeki büyük `Cube` slab. Tavanın gölge atması kapalı (ışıklandırma yapılana kadar iç mekan karanlık kalmasın).
-- Malzemeler: `Assets/Materials/Blockout_Gri.mat`, `Blockout_Mobilya.mat`. Player salonda (-4.6, 1) doğar, TV'ye (batıya) bakar.
+- Salon + amerikan mutfak x[-8,2] z[-1,6]: TV ünitesi + TV (kuzey duvar), kanepe (TV'ye bakar, üstünde `Kumanda`), sehpa, halı, abajur, yan sehpa, kitaplık ve boy aynası (x=2 duvarı). Mutfak batıda: L tezgâh, evye, ocak, üst dolap, aspiratör, buzdolabı, 4 sandalyeli yemek masası.
+- Yatak odası x[2,8] z[-1,6]: yatak (başucu doğu duvarda), 2 komodin, dolap (güney duvar, GDD'deki etkileşimli dolap), çalışma masası + sandalye, kişisel eşya rafı, halı. Salondan kapısı x=2 duvarında z=0.5.
+- Hol x[-3,2] z[-6,-1]: ana kapı güney duvarda x=-0.5, ayakkabılık, anahtarlık, portmanto, 2 tablo, paspas. Salona z=-1 duvarında 3 m kemer.
+- Banyo x[-8,-3] z[-6,-1]: küvet, klozet, lavabo + ayna, havluluk, yüksek pencere. Holden kapısı x=-3 duvarında z=-3.5.
+- Kapalı oda x[2,8] z[-6,-1]: kapısı (x=2, z=-3.5) KAPALI, içinde birkaç kutu.
+- Dış mekan: veranda + basamak, `Eski_Esya_Alani` boş objesi (GDD'de kapı önünde biriken eski eşyaların konumu).
+- Kapılar: `Kapi_*/Kanat_Pivot` menteşe noktasıdır, açma/kapama scripti bu pivotu Y ekseninde döndürmeli. Giriş, yatak odası ve banyo kapıları açık, kapalı oda kapısı kapalı.
+- Pencereler: kasa, cam (`Blockout_Cam`, şeffaf), iç denizlik, perde.
+- Tavanın gölge atması kapalı (ışıklandırma yapılana kadar iç mekan karanlık kalmasın). Avizeler sadece şekil, ışık yok.
+- Malzemeler `Assets/Materials/Blockout_*.mat`: Gri (duvar), Zemin, Fayans, Mobilya, Kumas, Beyaz, Koyu, Kapi, Ayna, Vurgu, Cam.
+- Küçük süs objelerinin (kitap, yastık, perde, halı vb.) collider'ı yok. Büyük mobilyaların ve kapı kanatlarının var.
+- Player salonda (0.8, 3.2) doğar, batıya (kanepe/TV tarafına) bakar.
 - Boşlukları olan duvarlar CSG değil, parçalara bölünmüş kutulardır. Kapı/pencere yerini değiştirirken ilgili duvar parçalarını yeniden böl.
+- Edit modunda fizik sorgusu (OverlapCapsule vb.) yapmadan önce `Physics.SyncTransforms()` çağır. Yoksa yeni oluşturulan veya dönen collider'lar görünmez ve sonuç yanlış "boş" çıkar.
 
 ## Notlar
 - UI'da yazılar legacy `UnityEngine.UI.Text` ile (TMP kurulu değil). Kod içinde `Image` adı bir namespace ile çakışırsa `UnityEngine.UI.Image` olarak tam yaz.
