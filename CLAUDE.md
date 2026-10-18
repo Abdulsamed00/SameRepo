@@ -18,6 +18,19 @@ Build Settings sırası: `MainMenu` → `Loading` → `HouseScene` → `StreetSc
 - Head bob `CameraRoot`'un local pozisyonunu oynatır (`bobHeight`, `bobSway`, `bobFrequency`, `sprintBobMultiplier`, `bobReturnSpeed`).
 - İmleç kilitlenirken gelen ilk fare delta'sı kamerayı aşağı çekiyordu. `OnEnable`'da ilk 3 karenin bakış girdisi atlanır, tek karedeki delta da `MaxLookDeltaPerFrame` ile sınırlanır.
 
+### Interaction/ (etkileşim sistemi)
+Ortak mantık ile eşyaya özel davranış ayrıdır. Yeni etkileşim = `Interactable` türevi yeni script; algılama, F bildirimi ve input'a dokunulmaz.
+- `Interactable` (abstract): `Prompt`, `CanInteract(PlayerInteractor)`, `Interact(PlayerInteractor)`. Collider'ı olan objeye (ya da üst objesine) eklenir.
+- `PlayerInteractor` (Player kökünde): kameradan `interactDistance` (2.5 m) ışın atar, `GetComponentInParent<Interactable>` bulur, `Interact` tuşunda `Interact`'i çağırır. Elde tutma (`Hold`/`DropHeld`/`HeldItem`) de burada. Trigger collider'lar ışına girmez.
+- `PickupItem : Interactable` (+Rigidbody): alınınca kinematic ve collider'sız olur, `PlayerInteractor.holdPoint`'i yumuşak takip eder (LateUpdate, kafa sallanması yansır). G ile bırakılınca eşya sahnedeki **ilk konumuna (yerel poz) geri döner** (`returnToStartOnDrop`, varsayılan açık). Kapatılırsa bakılan yönde `dropDistance` (1.2 m) önüne, duvar varsa onun önüne düşer. Eşya başına `holdPositionOffset`/`holdEulerOffset` ayarlanabilir.
+- `Openable : Interactable`: kapı, dolap kapağı, çekmece. Her `Part` (target, kapalı/açık yerel konum + Euler) tek bir `amount` (0-1, `duration` 0.6 sn, SmoothStep) ile birlikte hareket eder. Kapı/kapak için menteşe pivotu Euler Y ile döndürülür (açı 180'den küçük olmalı, Slerp kısa yolu seçer). `startsOpen`, `openPrompt`/`closePrompt` ("Kapıyı aç"/"Kapıyı kapat"). Parçaların altındaki collider'lar hareketle gelir. Yeni kapı/çekmece script değil kurulum işi: kökte `Openable`, pivotta menteşe, sonra kapalı/açık pozlar.
+- `InteractionPromptView` (Player/`InteractionUI` canvas'ı): sadece gösterir. Ekran ortasının altında "F  Kumandayı al", elde eşya varken altta "G  Bırak". Tuş etiketi input binding'inden okunur. Legacy `Text` kullanır.
+- Input (`InputSystem_Actions` > Player): `Interact` = **F** (eski `E` ve `Hold` interaction'ı kaldırıldı), yeni `Drop` = **G** (gamepad: dpad aşağı).
+- Player prefab'ında: `PlayerInteractor` (Player kökü), `HoldPoint` (Main Camera altında, local (0.28, -0.22, 0.6)), `InteractionUI`. Üç sahne aynı prefab'ı kullandığı için hepsinde çalışır.
+- Test eşyası: HouseScene `Kanepe/Kumanda` (BoxCollider + Rigidbody + `PickupItem`, prompt "Kumandayı al"). Elde eşya varken başka `PickupItem` alınamaz; başka tür `Interactable`'lar çalışmaya devam eder.
+- Açılabilirler (HouseScene): `Kapi_Giris`, `Kapi_Oturma_Odasi`, `Kapi_Yatak_Odasi` (kökte `Openable`, pivot `Kanat_Pivot`, açık başlar: kapalı Euler Y = 0, açık = 270/90) ve `Yatak_Odasi/Dolap` (iki kapak `Kapak_Sol_Pivot`/`Kapak_Sag_Pivot`, ±90° odaya doğru açılır, kapalı başlar, `Ic_Bosluk` koyu iç yüzey). `Kapi_Kapali_Oda` sahte kapıdır, açılmaz. Komodin ve ayakkabılık tek parça kutudur, kapak/çekmece geometrisi yok.
+- Henüz yok: oturma, TV/kumanda etkileşimi, mağazada kıyafet alma. Hepsi `Interactable` türevi olarak eklenecek.
+
 ### Loading/
 - `SceneLoader` (static): `Load(sceneName)` hedefi saklar, `Loading` sahnesini açar.
 - `LoadingScreen`: hedef sahneyi `LoadSceneAsync` ile yükler, ilerleme çubuğunu doldurur. `minimumDuration` (1.5 sn) kadar ekranda kalır, bitince sahneyi etkinleştirir.
@@ -77,8 +90,17 @@ Evde sadece oturma odası ve yatak odası var. İkisi de giriş koridoruna açı
 - Oyuncu `Assets/Prefabs/Player.prefab` örneği, `Eve_Giden_Sokak` içinde doğar. Ev, sokak ve mağaza aynı prefab'ı kullanır: Player'ı değiştirirken prefab'ı değiştir.
 - Ölçüler İstiklal'den yaklaşık (hafızadan, ölçülmüş değil).
 
-## ShopScene
-Şimdilik boş (kamera + ışık). Kullanıcı istemeden mağaza içi kurulmayacak; mağaza şimdilik sadece sokaktaki cephe (`Buyuk_Magaza_Binasi`).
+## ShopScene blokajı (Boyner tarzı kıyafet mağazası)
+`ShopBlockout` (dünya orijininde), iç ölçü 24x28 m (x -12..12, z 0..28), tavan 4.6 m, duvar 0.2. Giriş güneyde (z=0), mağaza +z yönünde. Sol/Sağ girişten içeri bakana göre (sol = -x). Ön cephe sokaktaki `Buyuk_Magaza_Binasi` ile birebir: 24 m, iki yanda 2'şer vitrin bölmesi (2 m derin, 0.3 platform, bölme başına 2 manken, arkadan duvarla kapalı), ortada 2 m girintili 3.2x2.6 otomatik kapı (kanatlar açık konumda).
+- Hiyerarşi: `Yapi` (Zemin, Duvarlar, Cephe, Giris, Tavan, Kolonlar), `Vitrinler`, `Giris_Alani`, `Reyon_Kadin`, `Reyon_Erkek`, `Odak_Alani`, `Kasa`, `Deneme_Kabinleri`, `Personel_Alani`, `Dis_Mekan`.
+- Ana koridor x[-2.5,2.5] girişten arka duvardaki manken podyumuna kadar BOŞ. Diğer geçitler ≥1.8 m. Yeni obje eklerken bunu koru.
+- Reyonlar: sol kadın (duvar askılıkları, yuvarlak/düz askılık, ürün masaları), sağ erkek (duvar rafları, askılıklar, masalar, gondol raflar). 4 kolon (±6.5, z 11.25 / 18.25), ana koridora bakan yüzlerinde ayna.
+- `Kasa`: sağ önde girişin yanında, banko x[3.6,10.4] z[4.25,5.05]; kasiyer alanına doğu uçtan girilir. `Kasiyer_Noktasi_1/2`, `Musteri_Noktasi_1/2` boş objeleri.
+- `Deneme_Kabinleri`: sol arkada 5 kabin (iç 1.3x1.7, bölme 2.3 m, yarı açık perde, ayna, oturak), bekleme bankı, görevli bankosu, ortak ayna.
+- `Personel_Kapisi` arka duvarda açılmayan sahte kapı. `Dis_Mekan` sadece kapıdan görünen sokak (gölge atmaz, collider sadece kaldırımda).
+- Mobilya kökünde tek `BoxCollider` (askıdaki kıyafet hacmi dahil); çocuklarda collider yok. Kıyafet/ürün kutuları `Blockout_Kumas`.
+- `Giris/Gecis_Sokak` trigger'ı girintide, önünde `Gorunmez_Sinir` (oyuncu dışarı çıkamaz). Sahne geçiş scripti henüz YOK.
+- Sahnede ayrı kamera yok; `Player.prefab` örneği (0, 0, 4)'te içeri (+z) bakarak doğar. Tavan gölge atmaz. NavMesh henüz pişirilmedi.
 
 ## Notlar
 - Unity MCP komutlarında `AssetDatabase.DeleteAsset` kullanma: onay istiyor ve komut hiç çalışmıyor. Var olan asset'i güncellemek için `EditorUtility.CopySerialized` kullan.

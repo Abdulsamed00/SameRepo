@@ -1325,6 +1325,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 156144911}
+  - component: {fileID: 156144912}
   m_Layer: 0
   m_Name: Kapi_Yatak_Odasi
   m_TagString: Untagged
@@ -1351,6 +1352,29 @@ Transform:
   - {fileID: 891327028}
   m_Father: {fileID: 814286455}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &156144912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156144910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcb5f8b89a3387641a9f3ebc0be61a82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Openable
+  prompt: "Etkile\u015Fime gir"
+  openPrompt: "Kap\u0131y\u0131 a\xE7"
+  closePrompt: "Kap\u0131y\u0131 kapat"
+  startsOpen: 1
+  duration: 0.6
+  parts:
+  - target: {fileID: 891327028}
+    closedPosition: {x: 3.1, y: 0, z: -1.8}
+    closedEuler: {x: 0, y: 0, z: 0}
+    openPosition: {x: 3.1, y: 0, z: -1.8}
+    openEuler: {x: -0, y: 90, z: 0}
 --- !u!1 &184144202
 GameObject:
   m_ObjectHideFlags: 0
@@ -4622,6 +4646,7 @@ GameObject:
   - component: {fileID: 443508629}
   - component: {fileID: 443508631}
   - component: {fileID: 443508630}
+  - component: {fileID: 443508632}
   m_Layer: 0
   m_Name: Kapak_Sol
   m_TagString: Untagged
@@ -4638,11 +4663,11 @@ Transform:
   m_GameObject: {fileID: 443508628}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 1.1, z: 0.31}
+  m_LocalPosition: {x: 0.485, y: 0, z: 0}
   m_LocalScale: {x: 0.97, y: 2.14, z: 0.02}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 965765486}
+  m_Father: {fileID: 1724192058}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &443508630
 MeshRenderer:
@@ -4701,6 +4726,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 443508628}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!65 &443508632
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 443508628}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0.0000038146973}
 --- !u!1 &445706258
 GameObject:
   m_ObjectHideFlags: 0
@@ -5807,6 +5853,9 @@ GameObject:
   - component: {fileID: 523792625}
   - component: {fileID: 523792627}
   - component: {fileID: 523792626}
+  - component: {fileID: 523792630}
+  - component: {fileID: 523792629}
+  - component: {fileID: 523792628}
   m_Layer: 0
   m_Name: Kumanda
   m_TagString: Untagged
@@ -5886,6 +5935,71 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 523792624}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &523792628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 523792624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aafa0a42c5ef83f4fa6d872c9d54237b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupItem
+  prompt: "Kumanday\u0131 al"
+  returnToStartOnDrop: 1
+  holdPositionOffset: {x: 0, y: 0, z: 0}
+  holdEulerOffset: {x: 0, y: 0, z: 0}
+  followSharpness: 18
+--- !u!54 &523792629
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 523792624}
+  serializedVersion: 5
+  m_Mass: 0.2
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!65 &523792630
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 523792624}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0.00000047683716}
 --- !u!1 &527812915
 GameObject:
   m_ObjectHideFlags: 0
@@ -6741,6 +6855,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 618223756}
+  - component: {fileID: 618223757}
   m_Layer: 0
   m_Name: Kapi_Giris
   m_TagString: Untagged
@@ -6767,6 +6882,29 @@ Transform:
   - {fileID: 388915850}
   m_Father: {fileID: 814286455}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &618223757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 618223755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcb5f8b89a3387641a9f3ebc0be61a82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Openable
+  prompt: "Etkile\u015Fime gir"
+  openPrompt: "Kap\u0131y\u0131 a\xE7"
+  closePrompt: "Kap\u0131y\u0131 kapat"
+  startsOpen: 1
+  duration: 0.6
+  parts:
+  - target: {fileID: 388915850}
+    closedPosition: {x: -1.1, y: 0, z: -4}
+    closedEuler: {x: 0, y: 0, z: 0}
+    openPosition: {x: -1.1, y: 0, z: -4}
+    openEuler: {x: 0, y: 270, z: 0}
 --- !u!1 &625837550
 GameObject:
   m_ObjectHideFlags: 0
@@ -7163,11 +7301,11 @@ Transform:
   m_GameObject: {fileID: 658653366}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.06, y: 1.1, z: 0.34}
+  m_LocalPosition: {x: 0.925, y: 0, z: 0.025}
   m_LocalScale: {x: 0.03, y: 0.25, z: 0.03}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 965765486}
+  m_Father: {fileID: 1724192058}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &658653368
 MeshRenderer:
@@ -8973,6 +9111,96 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 768324354}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &769146589
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 769146590}
+  - component: {fileID: 769146592}
+  - component: {fileID: 769146591}
+  m_Layer: 0
+  m_Name: Ic_Bosluk
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &769146590
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 769146589}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.1, z: 0.305}
+  m_LocalScale: {x: 1.94, y: 2.1, z: 0.01}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 965765486}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &769146591
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 769146589}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 12d433c01d4cffc40a3701f0f38dad24, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 1
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &769146592
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 769146589}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &781077100
 GameObject:
   m_ObjectHideFlags: 0
@@ -9875,6 +10103,39 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 863213138}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &869207742
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 869207743}
+  m_Layer: 0
+  m_Name: Kapak_Sag_Pivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &869207743
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 869207742}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.985, y: 1.1, z: 0.32}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1194483037}
+  - {fileID: 1553547343}
+  m_Father: {fileID: 965765486}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &870173211
 GameObject:
   m_ObjectHideFlags: 0
@@ -10819,6 +11080,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 965765486}
+  - component: {fileID: 965765487}
   m_Layer: 0
   m_Name: Dolap
   m_TagString: Untagged
@@ -10840,12 +11102,39 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 207802280}
-  - {fileID: 443508629}
-  - {fileID: 1194483037}
-  - {fileID: 658653367}
-  - {fileID: 1553547343}
+  - {fileID: 769146590}
+  - {fileID: 1724192058}
+  - {fileID: 869207743}
   m_Father: {fileID: 65382296}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &965765487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 965765485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcb5f8b89a3387641a9f3ebc0be61a82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Openable
+  prompt: "Etkile\u015Fime gir"
+  openPrompt: "Dolab\u0131 a\xE7"
+  closePrompt: "Dolab\u0131 kapat"
+  startsOpen: 0
+  duration: 0.6
+  parts:
+  - target: {fileID: 1724192058}
+    closedPosition: {x: -0.985, y: 1.1, z: 0.32}
+    closedEuler: {x: 0, y: 0, z: 0}
+    openPosition: {x: -0.985, y: 1.1, z: 0.32}
+    openEuler: {x: 0, y: -90, z: 0}
+  - target: {fileID: 869207743}
+    closedPosition: {x: 0.985, y: 1.1, z: 0.32}
+    closedEuler: {x: 0, y: 0, z: 0}
+    openPosition: {x: 0.985, y: 1.1, z: 0.32}
+    openEuler: {x: 0, y: 90, z: 0}
 --- !u!1 &967223573
 GameObject:
   m_ObjectHideFlags: 0
@@ -13184,6 +13473,7 @@ GameObject:
   - component: {fileID: 1194483037}
   - component: {fileID: 1194483039}
   - component: {fileID: 1194483038}
+  - component: {fileID: 1194483040}
   m_Layer: 0
   m_Name: Kapak_Sag
   m_TagString: Untagged
@@ -13200,11 +13490,11 @@ Transform:
   m_GameObject: {fileID: 1194483036}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 1.1, z: 0.31}
+  m_LocalPosition: {x: -0.485, y: 0, z: 0}
   m_LocalScale: {x: 0.97, y: 2.14, z: 0.02}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 965765486}
+  m_Father: {fileID: 869207743}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &1194483038
 MeshRenderer:
@@ -13263,6 +13553,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1194483036}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!65 &1194483040
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194483036}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0.0000038146973}
 --- !u!1 &1211047298
 GameObject:
   m_ObjectHideFlags: 0
@@ -17688,11 +17999,11 @@ Transform:
   m_GameObject: {fileID: 1553547342}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.06, y: 1.1, z: 0.34}
+  m_LocalPosition: {x: -0.925, y: 0, z: 0.025}
   m_LocalScale: {x: 0.03, y: 0.25, z: 0.03}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 965765486}
+  m_Father: {fileID: 869207743}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &1553547344
 MeshRenderer:
@@ -19388,6 +19699,39 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1713612200}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1724192057
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1724192058}
+  m_Layer: 0
+  m_Name: Kapak_Sol_Pivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1724192058
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1724192057}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.985, y: 1.1, z: 0.32}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 443508629}
+  - {fileID: 658653367}
+  m_Father: {fileID: 965765486}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1726987226
 GameObject:
   m_ObjectHideFlags: 0
@@ -23149,6 +23493,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2110993478}
+  - component: {fileID: 2110993479}
   m_Layer: 0
   m_Name: Kapi_Oturma_Odasi
   m_TagString: Untagged
@@ -23175,6 +23520,29 @@ Transform:
   - {fileID: 994694425}
   m_Father: {fileID: 814286455}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2110993479
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2110993477}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcb5f8b89a3387641a9f3ebc0be61a82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Openable
+  prompt: "Etkile\u015Fime gir"
+  openPrompt: "Kap\u0131y\u0131 a\xE7"
+  closePrompt: "Kap\u0131y\u0131 kapat"
+  startsOpen: 1
+  duration: 0.6
+  parts:
+  - target: {fileID: 994694425}
+    closedPosition: {x: -3.1, y: 0, z: -1.8}
+    closedEuler: {x: 0, y: 0, z: 0}
+    openPosition: {x: -3.1, y: 0, z: -1.8}
+    openEuler: {x: 0, y: 270, z: 0}
 --- !u!1 &2112049074
 GameObject:
   m_ObjectHideFlags: 0
