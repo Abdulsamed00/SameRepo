@@ -8887,6 +8887,7 @@ GameObject:
   - component: {fileID: 53319387}
   - component: {fileID: 53319389}
   - component: {fileID: 53319388}
+  - component: {fileID: 53319390}
   m_Layer: 0
   m_Name: Gecis_Magaza
   m_TagString: Untagged
@@ -8928,8 +8929,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 6, y: 2.4, z: 5}
+  m_Center: {x: 0, y: 0, z: -1.7}
 --- !u!33 &53319389
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -8938,6 +8939,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 53319386}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &53319390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 53319386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 951a489719bfb8b4397a0d7b8edfb449, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneZone
+  prompt: "Ma\u011Fazaya gir"
+  targetScene: ShopScene
+  spawnId: 
+  requireLeaveFirst: 0
 --- !u!1 &53555118
 GameObject:
   m_ObjectHideFlags: 0
@@ -36983,6 +37000,7 @@ Transform:
   - {fileID: 1295905156}
   - {fileID: 1174902061}
   - {fileID: 1797053743}
+  - {fileID: 1552715439}
   m_Father: {fileID: 706046544}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &213186707
@@ -94467,6 +94485,7 @@ GameObject:
   - component: {fileID: 577768842}
   - component: {fileID: 577768844}
   - component: {fileID: 577768843}
+  - component: {fileID: 577768845}
   m_Layer: 0
   m_Name: Gecis_Ev
   m_TagString: Untagged
@@ -94482,8 +94501,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 577768841}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 22.5, y: 1.2, z: 7.2}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 17, y: 1.2, z: 14.5}
   m_LocalScale: {x: 4.6, y: 2.4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -94508,7 +94527,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 4, y: 2.4, z: 4}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!33 &577768844
 MeshFilter:
@@ -94518,6 +94537,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 577768841}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &577768845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 577768841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 951a489719bfb8b4397a0d7b8edfb449, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneZone
+  prompt: "Eve d\xF6n"
+  targetScene: HouseScene
+  spawnId: 
+  requireLeaveFirst: 1
 --- !u!1 &578405595
 GameObject:
   m_ObjectHideFlags: 0
@@ -243951,6 +243986,51 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1552408250}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1552715438
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1552715439}
+  - component: {fileID: 1552715440}
+  m_Layer: 0
+  m_Name: Oyuncu_Dogma_Magaza_Onu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1552715439
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1552715438}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: -0.00000004371139}
+  m_LocalPosition: {x: 0, y: 0, z: 235}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 211529655}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1552715440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1552715438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec5e739c9737227488161dbbf7a01ffb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnOverride
+  spawnId: Magaza_Onu
 --- !u!1 &1553279624
 GameObject:
   m_ObjectHideFlags: 0

@@ -51,6 +51,7 @@ public class LoadingScreen : MonoBehaviour
         statusText.text = "Hazırlanıyor...";
         SetProgress(1f);
         yield return null;
+        yield return ScreenFader.FadeOut(0.4f);
         load.allowSceneActivation = true;
     }
 

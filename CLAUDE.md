@@ -20,6 +20,8 @@ Build Settings sırası: `MainMenu` → `Loading` → `HouseScene` → `StreetSc
 
 ### Interaction/ (etkileşim sistemi)
 Ortak mantık ile eşyaya özel davranış ayrıdır. Yeni etkileşim = `Interactable` türevi yeni script; algılama, F bildirimi ve input'a dokunulmaz.
+- `SceneZone : Interactable`: trigger collider'lı bölge, içindeyken `PlayerInteractor.Zone` set edilir; ışın bir şeye bakmıyorsa `Focused` olarak bölge kullanılır (F ile sahne geçişi). Işın trigger'ları görmediği için bölgeler böyle çalışır.
+- Doğma noktası seçimi: `SceneLoader.Load(sahne, spawnId)` kimliği saklar; hedef sahnedeki `SpawnOverride` (aynı kimlik) oyuncuyu kendi konum/yönüne taşır (Start'ta, CC kapatılarak). `SceneZone.spawnId` ile verilir. Kimlik yoksa sahnenin varsayılan noktası. Örn. mağazadan çıkış → `Oyuncu_Dogma_Magaza_Onu` (0, 0, 235), sokağa doğru (-z) bakar.
 - `Interactable` (abstract): `Prompt`, `CanInteract(PlayerInteractor)`, `Interact(PlayerInteractor)`. Collider'ı olan objeye (ya da üst objesine) eklenir.
 - `PlayerInteractor` (Player kökünde): kameradan `interactDistance` (2.5 m) ışın atar, `GetComponentInParent<Interactable>` bulur, `Interact` tuşunda `Interact`'i çağırır. Elde tutma (`Hold`/`DropHeld`/`HeldItem`) de burada. Trigger collider'lar ışına girmez.
 - `PickupItem : Interactable` (+Rigidbody): alınınca kinematic ve collider'sız olur, `PlayerInteractor.holdPoint`'i yumuşak takip eder (LateUpdate, kafa sallanması yansır). G ile bırakılınca eşya sahnedeki **ilk konumuna (yerel poz) geri döner** (`returnToStartOnDrop`, varsayılan açık). Kapatılırsa bakılan yönde `dropDistance` (1.2 m) önüne, duvar varsa onun önüne düşer. Eşya başına `holdPositionOffset`/`holdEulerOffset` ayarlanabilir.
@@ -28,11 +30,13 @@ Ortak mantık ile eşyaya özel davranış ayrıdır. Yeni etkileşim = `Interac
 - Input (`InputSystem_Actions` > Player): `Interact` = **F** (eski `E` ve `Hold` interaction'ı kaldırıldı), yeni `Drop` = **G** (gamepad: dpad aşağı).
 - Player prefab'ında: `PlayerInteractor` (Player kökü), `HoldPoint` (Main Camera altında, local (0.28, -0.22, 0.6)), `InteractionUI`. Üç sahne aynı prefab'ı kullandığı için hepsinde çalışır.
 - Test eşyası: HouseScene `Kanepe/Kumanda` (BoxCollider + Rigidbody + `PickupItem`, prompt "Kumandayı al"). Elde eşya varken başka `PickupItem` alınamaz; başka tür `Interactable`'lar çalışmaya devam eder.
-- Açılabilirler (HouseScene): `Kapi_Giris`, `Kapi_Oturma_Odasi`, `Kapi_Yatak_Odasi` (kökte `Openable`, pivot `Kanat_Pivot`, açık başlar: kapalı Euler Y = 0, açık = 270/90) ve `Yatak_Odasi/Dolap` (iki kapak `Kapak_Sol_Pivot`/`Kapak_Sag_Pivot`, ±90° odaya doğru açılır, kapalı başlar, `Ic_Bosluk` koyu iç yüzey). `Kapi_Kapali_Oda` sahte kapıdır, açılmaz. Komodin ve ayakkabılık tek parça kutudur, kapak/çekmece geometrisi yok.
+- Açılabilirler (HouseScene): `Kapi_Oturma_Odasi`, `Kapi_Yatak_Odasi` (kökte `Openable`, pivot `Kanat_Pivot`, açık başlar: kapalı Euler Y = 0, açık = 270/90) ve `Yatak_Odasi/Dolap` (iki kapak `Kapak_Sol_Pivot`/`Kapak_Sag_Pivot`, ±90° odaya doğru açılır, kapalı başlar, `Ic_Bosluk` koyu iç yüzey). `Kapi_Kapali_Oda` sahte kapıdır, açılmaz. Komodin ve ayakkabılık tek parça kutudur, kapak/çekmece geometrisi yok.
+- `Kapi_Giris` ise `SceneDoor : Openable` (kapalı başlar, F ile dışarı doğru açılır: kapalı Euler Y = 0, açık = 90). F'ye basınca hemen `SceneLoader.Load(targetScene)` (varsayılan `StreetScene`) çağrılır: kapı açılırken ekran kararır. Bir kez tetiklenir.
 - Henüz yok: oturma, TV/kumanda etkileşimi, mağazada kıyafet alma. Hepsi `Interactable` türevi olarak eklenecek.
 
 ### Loading/
 - `SceneLoader` (static): `Load(sceneName)` hedefi saklar, `Loading` sahnesini açar.
+- `ScreenFader` (kodla oluşan, DontDestroyOnLoad siyah perde): `SceneLoader.Load` oyuncuyu dondurur (`FirstPersonController` + `PlayerInteractor` kapanır), ekranı 0.8 sn karartır, sonra `Loading` açılır. Loading sahnesi 0.4 sn'de aydınlanır, hedef sahne etkinleşmeden 0.4 sn kararır, yeni sahne gelince 0.8 sn'de aydınlanır. Tüm geçişler (kapı, `SceneZone`, ana menü) aynı yolu kullanır. Geçiş sürerken ikinci `Load` yok sayılır.
 - `LoadingScreen`: hedef sahneyi `LoadSceneAsync` ile yükler, ilerleme çubuğunu doldurur. `minimumDuration` (1.5 sn) kadar ekranda kalır, bitince sahneyi etkinleştirir.
   - **Önemli:** `Resources.UnloadUnusedAssets()` sahne yüklemesi başlamadan ÖNCE çağrılır. `allowSceneActivation = false` iken çağrılırsa yükleme kuyruğunun arkasında sonsuza kadar bekler ("Hazırlanıyor..." ekranında takılır).
 - `MainMenu`: `OnPlayClicked` ve `OnQuitClicked`. Hedef sahne `gameScene` alanında (varsayılan `HouseScene`).
@@ -86,7 +90,7 @@ Evde sadece oturma odası ve yatak odası var. İkisi de giriş koridoruna açı
 - Ara sokak dubaları 1.6 m aralıklı: NavMesh ajanı (yarıçap 0.5) 1 m'den dar aralıktan geçemez. Duba/engel eklerken bunu koru.
 - `NPC_Alani`: `Rota_Kuzey` (x=-2.5), `Rota_Guney` (x=2.5), `Rota_Kaldirim_Sol/Sag` (x=±7, kafe önleri atlanır) her 10 m'de nokta. `Dogma_Noktalari` (cadde uçları, ara sokaklar, mağaza girişi). `NPC_Yer_Tutuculari`: collider'sız kapsüller, sadece yoğunluğu göstermek için (NPC sistemi gelince silinecek).
 - NavMesh: `StreetBlockout` üzerinde `NavMeshSurface` (PhysicsColliders), veri `Assets/Scenes/StreetScene/NavMesh-StreetBlockout.asset`. Sahne değişince yeniden pişir.
-- Gecis_* trigger'ları sadece kutu. Sahne geçiş scripti henüz YOK (SceneLoader.Load ile bağlanacak).
+- Sahne geçişleri `SceneZone : Interactable` ile (trigger bölgesinde F, yükleme ekranı): `Gecis_Magaza` ("Mağazaya gir" → ShopScene, girintinin önü z 237-242), `Gecis_Ev` ("Eve dön" → HouseScene, spawn noktasında 4x4 m, `requireLeaveFirst`: oyuncu bölgeden bir kez çıkmadan etkinleşmez).
 - Oyuncu `Assets/Prefabs/Player.prefab` örneği, `Eve_Giden_Sokak` içinde doğar. Ev, sokak ve mağaza aynı prefab'ı kullanır: Player'ı değiştirirken prefab'ı değiştir.
 - Ölçüler İstiklal'den yaklaşık (hafızadan, ölçülmüş değil).
 
@@ -99,10 +103,11 @@ Evde sadece oturma odası ve yatak odası var. İkisi de giriş koridoruna açı
 - `Deneme_Kabinleri`: sol arkada 5 kabin (iç 1.3x1.7, bölme 2.3 m, yarı açık perde, ayna, oturak), bekleme bankı, görevli bankosu, ortak ayna.
 - `Personel_Kapisi` arka duvarda açılmayan sahte kapı. `Dis_Mekan` sadece kapıdan görünen sokak (gölge atmaz, collider sadece kaldırımda).
 - Mobilya kökünde tek `BoxCollider` (askıdaki kıyafet hacmi dahil); çocuklarda collider yok. Kıyafet/ürün kutuları `Blockout_Kumas`.
-- `Giris/Gecis_Sokak` trigger'ı girintide, önünde `Gorunmez_Sinir` (oyuncu dışarı çıkamaz). Sahne geçiş scripti henüz YOK.
+- `Giris/Gecis_Sokak` trigger'ı girintide, önünde `Gorunmez_Sinir` (oyuncu dışarı çıkamaz). `Gecis_Sokak` bölgesi girişin önünde (z 0-3), `SceneZone` "Sokağa çık" → StreetScene.
 - Sahnede ayrı kamera yok; `Player.prefab` örneği (0, 0, 4)'te içeri (+z) bakarak doğar. Tavan gölge atmaz. NavMesh henüz pişirilmedi.
 
 ## Notlar
+- **Kullanıcı açıkça söylemeden commit/push yapma.**
 - Unity MCP komutlarında `AssetDatabase.DeleteAsset` kullanma: onay istiyor ve komut hiç çalışmıyor. Var olan asset'i güncellemek için `EditorUtility.CopySerialized` kullan.
 - UI'da yazılar legacy `UnityEngine.UI.Text` ile (TMP kurulu değil). Kod içinde `Image` adı bir namespace ile çakışırsa `UnityEngine.UI.Image` olarak tam yaz.
 - Unity MCP kullanılırken script değişikliğinden sonra domain reload sırasında bağlantı kısa süre kopar ("Unity not detected"). Derleme bitince tekrar dene.
