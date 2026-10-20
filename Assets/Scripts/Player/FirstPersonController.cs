@@ -33,6 +33,10 @@ public class FirstPersonController : MonoBehaviour
 
     public bool InputEnabled { get; set; } = true;
 
+    /// <summary>Yatay hız (m/sn). Karakter animasyonu bunu okur.</summary>
+    public float HorizontalSpeed => horizontalVelocity.magnitude;
+    public float SprintSpeed => sprintSpeed;
+
     private CharacterController controller;
     private InputAction moveAction;
     private InputAction lookAction;
