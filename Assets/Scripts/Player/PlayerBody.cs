@@ -15,7 +15,7 @@ public class PlayerBody : MonoBehaviour
     [SerializeField] private float animationSpeedPerMeter = 0.75f;
     [SerializeField] private float speedSmoothing = 12f;
     [Tooltip("Oyuncu kamerasından gizlenecek renderer adları (kafaya ait ayrı parçalar).")]
-    [SerializeField] private string[] hiddenRendererNames = { "Hair", "TopuzSac", "Glasses" };
+    [SerializeField] private string[] hiddenRendererNames = { "TopuzSac", "BlondeHair", "Glasses" };
 
     private Animator animator;
     private float smoothedSpeed;

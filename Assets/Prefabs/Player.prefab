@@ -127,9 +127,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 3476190953268921843}
   - {fileID: 5027564025543594378}
   - {fileID: 2010916199899950792}
-  - {fileID: 233452571854150013}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &6342026879311054250
@@ -170,18 +170,108 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirstPersonController
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  walkSpeed: 3.5
-  sprintSpeed: 5.5
-  gravity: -20
-  cameraRoot: {fileID: 5027564025543594378}
-  mouseSensitivity: 0.1
-  maxPitch: 85
+  walkSpeed: 2
+  runSpeed: 3
+  runstepLengthen: 0.7
+  jumpSpeed: 10
+  stickToGroundForce: 10
+  gravityMultiplier: 2
+  stepInterval: 5
   acceleration: 12
-  bobFrequency: 1.8
-  bobHeight: 0.04
-  bobSway: 0.025
-  sprintBobMultiplier: 1.5
+  cameraRoot: {fileID: 5027564025543594378}
+  xSensitivity: 2
+  ySensitivity: 2
+  minPitch: -90
+  maxPitch: 90
+  smooth: 0
+  smoothTime: 5
+  lockCursor: 1
+  useHeadBob: 1
+  horizontalBobRange: 0.1
+  verticalBobRange: 0.1
+  verticalToHorizontalRatio: 2
+  bobCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1.5
+      value: -1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 2
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   bobReturnSpeed: 10
+  jumpBobDuration: 0.2
+  jumpBobAmount: 0.1
+  useFovKick: 1
+  fovIncrease: 3
+  fovTimeToIncrease: 1
+  fovTimeToDecrease: 1
+  fovCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &2386983785401018873
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -322,7 +412,7 @@ Transform:
   m_GameObject: {fileID: 5189773045830346345}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.6, z: 0}
+  m_LocalPosition: {x: 0, y: 1.7, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -599,7 +689,7 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!1001 &1772010119628896874
+--- !u!1001 &3141255728847742692
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -607,10 +697,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 575486986343613980}
     m_Modifications:
-    - target: {fileID: 756908402188196270, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-      propertyPath: m_UpdateWhenOffscreen
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 1216467352809666989, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
       propertyPath: m_Name
       value: Body
@@ -625,7 +711,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.08
+      value: -0.28
       objectReference: {fileID: 0}
     - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -655,68 +741,45 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2659897713418157152, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-      propertyPath: m_UpdateWhenOffscreen
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3378799402508980999, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-      propertyPath: m_UpdateWhenOffscreen
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3441929607733439370, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-      propertyPath: m_UpdateWhenOffscreen
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5569333040902699373, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 0894d7ada28d0c04f90b34903410a634, type: 2}
-    - target: {fileID: 5569333040902699373, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-      propertyPath: m_CullingMode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5569333040902699373, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5836181431428116529, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-      propertyPath: m_UpdateWhenOffscreen
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7249220885884872305, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-      propertyPath: m_UpdateWhenOffscreen
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1216467352809666989, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4042883211403458756}
+      addedObject: {fileID: 8983040811910891835}
   m_SourcePrefab: {fileID: 100100000, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
---- !u!4 &233452571854150013 stripped
+--- !u!4 &3476190953268921843 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-  m_PrefabInstance: {fileID: 1772010119628896874}
+  m_PrefabInstance: {fileID: 3141255728847742692}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &609871938754757575 stripped
+--- !u!1 &4284675787836432201 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1216467352809666989, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
-  m_PrefabInstance: {fileID: 1772010119628896874}
+  m_PrefabInstance: {fileID: 3141255728847742692}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4042883211403458756
+--- !u!114 &8983040811910891835
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 609871938754757575}
+  m_GameObject: {fileID: 4284675787836432201}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6041c732d684c7d4695e434fa87e9f80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBody
   controller: {fileID: 188383448409000982}
+  playerCamera: {fileID: 0}
   animationSpeedPerMeter: 0.75
   speedSmoothing: 12
+  hiddenRendererNames:
+  - TopuzSac
+  - BlondeHair
+  - Glasses
