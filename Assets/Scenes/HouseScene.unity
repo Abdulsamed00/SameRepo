@@ -3859,7 +3859,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 388915849}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.1, y: 0, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -6891,20 +6891,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 618223755}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bcb5f8b89a3387641a9f3ebc0be61a82, type: 3}
+  m_Script: {fileID: 11500000, guid: c1e31ed498b2f444fa8f16d85b1ec07d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Openable
+  m_EditorClassIdentifier: Assembly-CSharp::SceneDoor
   prompt: "Etkile\u015Fime gir"
   openPrompt: "Kap\u0131y\u0131 a\xE7"
-  closePrompt: "Kap\u0131y\u0131 kapat"
-  startsOpen: 1
+  closePrompt: Kapat
+  startsOpen: 0
   duration: 0.6
   parts:
   - target: {fileID: 388915850}
     closedPosition: {x: -1.1, y: 0, z: -4}
     closedEuler: {x: 0, y: 0, z: 0}
     openPosition: {x: -1.1, y: 0, z: -4}
-    openEuler: {x: 0, y: 270, z: 0}
+    openEuler: {x: 0, y: 90, z: 0}
+  targetScene: StreetScene
 --- !u!1 &625837550
 GameObject:
   m_ObjectHideFlags: 0

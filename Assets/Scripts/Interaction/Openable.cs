@@ -28,6 +28,7 @@ public class Openable : Interactable
     private float amount;
 
     public bool IsOpen => isOpen;
+    public float Duration => duration;
 
     public override string Prompt => isOpen ? closePrompt : openPrompt;
 

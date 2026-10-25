@@ -24,6 +24,9 @@ public class PlayerInteractor : MonoBehaviour
     private InputAction dropAction;
 
     public Interactable Focused { get; private set; }
+
+    /// <summary>Bir bölgenin (<see cref="SceneZone"/>) içindeyken ışın bir şeye bakmasa da F ile tetiklenen etkileşim.</summary>
+    public Interactable Zone { get; set; }
     public PickupItem HeldItem { get; private set; }
     public bool IsHolding => HeldItem != null;
 
@@ -48,11 +51,14 @@ public class PlayerInteractor : MonoBehaviour
         interactAction.Disable();
         dropAction.Disable();
         Focused = null;
+        Zone = null;
     }
 
     private void Update()
     {
         Focused = FindFocused();
+        if (Focused == null && Zone != null && Zone.CanInteract(this))
+            Focused = Zone;
 
         if (Focused != null && interactAction.WasPressedThisFrame())
             Focused.Interact(this);

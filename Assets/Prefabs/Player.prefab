@@ -95,96 +95,6 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 0.8}
   m_EffectDistance: {x: 1.5, y: -1.5}
   m_UseGraphicAlpha: 1
---- !u!1 &3995479308994933235
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5379064255751660704}
-  - component: {fileID: 5592840386096479643}
-  - component: {fileID: 779246406025897124}
-  m_Layer: 0
-  m_Name: Body
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5379064255751660704
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3995479308994933235}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.9, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.9, z: 0.6}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 575486986343613980}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &5592840386096479643
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3995479308994933235}
-  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &779246406025897124
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3995479308994933235}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &4098894570814774113
 GameObject:
   m_ObjectHideFlags: 0
@@ -217,8 +127,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 3476190953268921843}
   - {fileID: 5027564025543594378}
-  - {fileID: 5379064255751660704}
   - {fileID: 2010916199899950792}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -260,18 +170,108 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirstPersonController
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  walkSpeed: 3.5
-  sprintSpeed: 5.5
-  gravity: -20
-  cameraRoot: {fileID: 5027564025543594378}
-  mouseSensitivity: 0.1
-  maxPitch: 85
+  walkSpeed: 2
+  runSpeed: 3
+  runstepLengthen: 0.7
+  jumpSpeed: 10
+  stickToGroundForce: 10
+  gravityMultiplier: 2
+  stepInterval: 5
   acceleration: 12
-  bobFrequency: 1.8
-  bobHeight: 0.04
-  bobSway: 0.025
-  sprintBobMultiplier: 1.5
+  cameraRoot: {fileID: 5027564025543594378}
+  xSensitivity: 2
+  ySensitivity: 2
+  minPitch: -90
+  maxPitch: 90
+  smooth: 0
+  smoothTime: 5
+  lockCursor: 1
+  useHeadBob: 1
+  horizontalBobRange: 0.1
+  verticalBobRange: 0.1
+  verticalToHorizontalRatio: 2
+  bobCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1.5
+      value: -1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 2
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   bobReturnSpeed: 10
+  jumpBobDuration: 0.2
+  jumpBobAmount: 0.1
+  useFovKick: 1
+  fovIncrease: 3
+  fovTimeToIncrease: 1
+  fovTimeToDecrease: 1
+  fovCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &2386983785401018873
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -412,7 +412,7 @@ Transform:
   m_GameObject: {fileID: 5189773045830346345}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.6, z: 0}
+  m_LocalPosition: {x: 0, y: 1.7, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -689,3 +689,97 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1001 &3141255728847742692
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 575486986343613980}
+    m_Modifications:
+    - target: {fileID: 1216467352809666989, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_Name
+      value: Body
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.28
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5569333040902699373, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 0894d7ada28d0c04f90b34903410a634, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1216467352809666989, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8983040811910891835}
+  m_SourcePrefab: {fileID: 100100000, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+--- !u!4 &3476190953268921843 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+  m_PrefabInstance: {fileID: 3141255728847742692}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4284675787836432201 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1216467352809666989, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+  m_PrefabInstance: {fileID: 3141255728847742692}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8983040811910891835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4284675787836432201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6041c732d684c7d4695e434fa87e9f80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBody
+  controller: {fileID: 188383448409000982}
+  playerCamera: {fileID: 0}
+  animationSpeedPerMeter: 0.75
+  speedSmoothing: 12
+  hiddenRendererNames:
+  - TopuzSac
+  - BlondeHair
+  - Glasses

@@ -43,10 +43,10 @@ ModelImporter:
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 0
-      loopBlend: 0
+      loopTime: 1
+      loopBlend: 1
       loopBlendOrientation: 0
-      loopBlendPositionY: 0
+      loopBlendPositionY: 1
       loopBlendPositionXZ: 0
       keepOriginalOrientation: 0
       keepOriginalPositionY: 1
@@ -838,17 +838,17 @@ ModelImporter:
     - name: mixamorig:LeftUpLeg
       parentName: mixamorig:Hips
       position: {x: -0.082077995, y: -0.067718, z: -0.015121999}
-      rotation: {x: -0.00006246975, y: 0.14838292, z: 0.988318, w: 0.03478679}
+      rotation: {x: 0.0025974044, y: 0.20488502, z: 0.97831285, w: 0.030320967}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig:LeftLeg
       parentName: mixamorig:LeftUpLeg
       position: {x: -0, y: 0.443714, z: 0}
-      rotation: {x: -0.3417741, y: -0.014062844, z: -0.033237018, w: 0.939089}
+      rotation: {x: -0.56204426, y: -0.014753674, z: -0.061262686, w: 0.8247033}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig:LeftFoot
       parentName: mixamorig:LeftLeg
       position: {x: -0, y: 0.44527802, z: 0}
-      rotation: {x: 0.28802755, y: -0.29480708, z: -0.06530513, w: 0.9087707}
+      rotation: {x: 0.4480217, y: 0.0070579215, z: 0.011089482, w: 0.8939261}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig:LeftToeBase
       parentName: mixamorig:LeftFoot
