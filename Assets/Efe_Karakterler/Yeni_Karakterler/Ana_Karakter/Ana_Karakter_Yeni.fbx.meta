@@ -1,19 +1,19 @@
 fileFormatVersion: 2
 guid: 6019d6bd2f67f974ab18df49e1cfd4a5
 ModelImporter:
-  serializedVersion: 24501
+  serializedVersion: 24300
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0
-    second: {fileID: 2100000, guid: 7ff439886652e7149899d79d7afae142, type: 2}
+    second: {fileID: 2100000, guid: eb006becfdf2c2046b6b4cffe870b0b9, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.001
-    second: {fileID: 2100000, guid: 34d3178366d64394a8cb88285ba386b2, type: 2}
+    second: {fileID: 2100000, guid: 1dfcf9c5462a7a346b4038002ea5d3d5, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -23,62 +23,62 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.006
-    second: {fileID: 2100000, guid: dcd0b21052ee90d4e9b02784f24ce0ed, type: 2}
+    second: {fileID: 2100000, guid: 98cb3de19e1ee3d48ab291166f9f8678, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.009
-    second: {fileID: 2100000, guid: 8a2b70ec99edd204aac2dbe5309027a9, type: 2}
+    second: {fileID: 2100000, guid: 9faf86af71803e8449dc26bf1f36680f, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.010
-    second: {fileID: 2100000, guid: 3a29944361cda5a498af239453afb731, type: 2}
+    second: {fileID: 2100000, guid: 6822f958ea70d314bbccf69cea871b9a, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.011
-    second: {fileID: 2100000, guid: 8e40ce35615b081428aa679bf2c70fcc, type: 2}
+    second: {fileID: 2100000, guid: 1da77224bde0567429e1d154da23c40c, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.012
-    second: {fileID: 2100000, guid: ad81713bb862f6743b587b9252301eed, type: 2}
+    second: {fileID: 2100000, guid: 6bc5949d3baa2b54499bd10c4e296543, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.019
-    second: {fileID: 2100000, guid: 7dff1b6fdd4280a409fdb6fd63af0f93, type: 2}
+    second: {fileID: 2100000, guid: 407a73d6f15cf61458403b975199936b, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.020
-    second: {fileID: 2100000, guid: 9c5b6397b1b92e3499ac84cf1c1763c4, type: 2}
+    second: {fileID: 2100000, guid: 960079e1fcacb5f4085ed11aafe74dd9, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.021
-    second: {fileID: 2100000, guid: 13d655e914ff1804bb7608d8b755639d, type: 2}
+    second: {fileID: 2100000, guid: ba2cc8c29e645664bb2bf992e96f7f2d, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material_0.022
-    second: {fileID: 2100000, guid: e6e616bd6b6b607479f65312a0546a81, type: 2}
+    second: {fileID: 2100000, guid: a9623d4b266c7824c99f30cc86384d64, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Image_0
-    second: {fileID: 2800000, guid: 45e55eacd33357946927bc6416f06e1a, type: 3}
+    second: {fileID: 2800000, guid: fcba129e41093d84eb4f7445e5880639, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Image_2
-    second: {fileID: 2800000, guid: 3b4220b292ab1aa43a986880c244eb5c, type: 3}
+    second: {fileID: 2800000, guid: d4c6782c6d0e5cc46ad5d28f4c7684cb, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Image_3
-    second: {fileID: 2800000, guid: f3c00ee6f9b8a53498b4bbac497a98cc, type: 3}
+    second: {fileID: 2800000, guid: 8f75e20ee68b6d94e9319f62cf6ae0f4, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -135,8 +135,6 @@ ModelImporter:
     generateMeshLods: 0
     meshLodGenerationFlags: 0
     maximumMeshLod: -1
-    importUVs: -1
-    importVertexColors: 1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -156,7 +154,6 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-    calculateBlendshapeNormalsDeltaFromImportedNormals: 0
   referencedClips: []
   importAnimation: 1
   humanDescription:
