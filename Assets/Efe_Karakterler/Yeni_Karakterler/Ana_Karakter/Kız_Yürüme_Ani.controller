@@ -2,7 +2,7 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1107 &-4721893797682708413
 AnimatorStateMachine:
-  serializedVersion: 7
+  serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -11,7 +11,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 1192523740292260668}
-    m_Position: {x: 340, y: 223, z: 0}
+    m_Position: {x: 30, y: 220, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -29,7 +29,7 @@ AnimatorController:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: "K\u0131z_Y\xFCr\xFCme_Ani"
-  serializedVersion: 6
+  serializedVersion: 5
   m_AnimatorParameters: []
   m_AnimatorLayers:
   - serializedVersion: 5
@@ -44,7 +44,6 @@ AnimatorController:
     m_IKPass: 0
     m_SyncedLayerAffectsTiming: 0
     m_Controller: {fileID: 9100000}
-  m_EvaluateTransitionsOnStart: 1
 --- !u!1102 &1192523740292260668
 AnimatorState:
   serializedVersion: 6
