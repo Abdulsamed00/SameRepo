@@ -4898,6 +4898,37 @@ Transform:
   - {fileID: 922318562}
   m_Father: {fileID: 1337342090}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &453575932
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 453575933}
+  m_Layer: 0
+  m_Name: Oturma_Noktasi_2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &453575933
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 453575932}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.45000005, y: -0.0023999512, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1470830040}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &454240729
 GameObject:
   m_ObjectHideFlags: 0
@@ -14136,6 +14167,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1269353911}
+  - component: {fileID: 1269353912}
   m_Layer: 0
   m_Name: Berjer
   m_TagString: Untagged
@@ -14160,8 +14192,25 @@ Transform:
   - {fileID: 1050557142}
   - {fileID: 2008396601}
   - {fileID: 1260514244}
+  - {fileID: 1962761517}
   m_Father: {fileID: 669379049}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1269353912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1269353910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f3ef02700d715a4396afff93155b6cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Seat
+  prompt: Otur
+  sitPoints:
+  - {fileID: 1962761517}
+  standDistance: 0.3
 --- !u!1 &1286373547
 GameObject:
   m_ObjectHideFlags: 0
@@ -16732,6 +16781,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1470830040}
+  - component: {fileID: 1470830041}
   m_Layer: 0
   m_Name: Kanepe
   m_TagString: Untagged
@@ -16760,8 +16810,27 @@ Transform:
   - {fileID: 2031633412}
   - {fileID: 1615587334}
   - {fileID: 523792625}
+  - {fileID: 2122620256}
+  - {fileID: 453575933}
   m_Father: {fileID: 669379049}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1470830041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1470830039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f3ef02700d715a4396afff93155b6cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Seat
+  prompt: Otur
+  sitPoints:
+  - {fileID: 2122620256}
+  - {fileID: 453575933}
+  standDistance: 0.3
 --- !u!1 &1477408752
 GameObject:
   m_ObjectHideFlags: 0
@@ -20451,99 +20520,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1747307374}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &1755083206
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -1.2960621
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.3624
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.96503824
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -7730075261853647636, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -4819466370027472074, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -2570809642273235786, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -32878414817059066, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_Name
-      value: Ana_Karakter_Yeni
-      objectReference: {fileID: 0}
-    - target: {fileID: 1285708551777934105, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2314505919143015208, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3862650203362654127, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866666021909216657, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: 45df748ddce6e314482021d79a04237b, type: 2}
-    - target: {fileID: 6329269315641665674, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
 --- !u!1 &1792248662
 GameObject:
   m_ObjectHideFlags: 0
@@ -22204,6 +22180,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1960457174}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1962761516
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1962761517}
+  m_Layer: 0
+  m_Name: Oturma_Noktasi_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1962761517
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1962761516}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.000000059604645, y: -0.0023999512, z: 0.5299998}
+  m_LocalScale: {x: 0.99999976, y: 1, z: 0.99999976}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1269353911}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1987691045
 GameObject:
   m_ObjectHideFlags: 0
@@ -23749,6 +23756,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2112049074}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &2122620255
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2122620256}
+  m_Layer: 0
+  m_Name: Oturma_Noktasi_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2122620256
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2122620255}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.45000005, y: -0.0023999512, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1470830040}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2133146723
 GameObject:
   m_ObjectHideFlags: 0
@@ -24197,4 +24235,3 @@ SceneRoots:
   - {fileID: 1362603194}
   - {fileID: 6096850207744127479}
   - {fileID: 1337342090}
-  - {fileID: 1755083206}

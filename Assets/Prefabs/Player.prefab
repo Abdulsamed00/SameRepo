@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 6342026879311054250}
   - component: {fileID: 188383448409000982}
   - component: {fileID: 2386983785401018873}
+  - component: {fileID: 2968114843655384052}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -127,9 +128,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3476190953268921843}
   - {fileID: 5027564025543594378}
   - {fileID: 2010916199899950792}
+  - {fileID: 7340967042879333801}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &6342026879311054250
@@ -292,6 +293,28 @@ MonoBehaviour:
     m_Bits: 4294967295
   holdPoint: {fileID: 1091789442566508170}
   dropDistance: 1.2
+--- !u!114 &2968114843655384052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4098894570814774113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70ab0bc2076e48b4c912882e6e900c22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSitController
+  inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  cameraRoot: {fileID: 5027564025543594378}
+  body: {fileID: 7533646907768059652}
+  seatedCameraHeight: 1.2
+  seatedCameraForward: -0.35
+  seatedYawLimit: 70
+  seatedMinPitch: -60
+  seatedMaxPitch: 60
+  lookSensitivity: 2
+  fallbackDuration: 1.2
 --- !u!1 &4439884551695695279
 GameObject:
   m_ObjectHideFlags: 0
@@ -741,44 +764,54 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4988987264655497719, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_Name
+      value: Body
+      objectReference: {fileID: 0}
     - target: {fileID: 5569333040902699373, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 0894d7ada28d0c04f90b34903410a634, type: 2}
+    - target: {fileID: 5654165774463222605, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.28
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1216467352809666989, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 4988987264655497719, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8983040811910891835}
+      addedObject: {fileID: 7533646907768059652}
   m_SourcePrefab: {fileID: 100100000, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
---- !u!4 &3476190953268921843 stripped
+--- !u!4 &7340967042879333801 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 1993425783097664279, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+  m_CorrespondingSourceObject: {fileID: 5654165774463222605, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
   m_PrefabInstance: {fileID: 3141255728847742692}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &4284675787836432201 stripped
+--- !u!1 &7974619354570194707 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 1216467352809666989, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
+  m_CorrespondingSourceObject: {fileID: 4988987264655497719, guid: 3c4ca58cc7b3be34bb020d00b3152fa4, type: 3}
   m_PrefabInstance: {fileID: 3141255728847742692}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8983040811910891835
+--- !u!114 &7533646907768059652
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4284675787836432201}
+  m_GameObject: {fileID: 7974619354570194707}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6041c732d684c7d4695e434fa87e9f80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBody
-  controller: {fileID: 188383448409000982}
+  controller: {fileID: 0}
   playerCamera: {fileID: 0}
-  animationSpeedPerMeter: 0.75
+  walkClipSpeed: 1.4
   speedSmoothing: 12
+  crossFade: 0.2
+  sitToStandClip: {fileID: -203655887218126122, guid: a88a9881bd879204eabf3394b9009017, type: 3}
   hiddenRendererNames:
   - TopuzSac
   - BlondeHair

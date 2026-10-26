@@ -838,17 +838,17 @@ ModelImporter:
     - name: mixamorig:LeftUpLeg
       parentName: mixamorig:Hips
       position: {x: -0.082077995, y: -0.067718, z: -0.015121999}
-      rotation: {x: -0.09202565, y: 0.14654331, z: 0.98465276, w: 0.022699533}
+      rotation: {x: 0.06238379, y: -0.12608863, z: -0.98979723, w: 0.022616187}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig:LeftLeg
       parentName: mixamorig:LeftUpLeg
       position: {x: -0, y: 0.443714, z: 0}
-      rotation: {x: -0.340981, y: -0.046839602, z: -0.0013169535, w: 0.93890166}
+      rotation: {x: -0.21061777, y: -0.02850905, z: -0.028290706, w: 0.97674304}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig:LeftFoot
       parentName: mixamorig:LeftLeg
       position: {x: -0, y: 0.44527802, z: 0}
-      rotation: {x: 0.38692537, y: 0.015481411, z: 0.043940175, w: 0.9209334}
+      rotation: {x: 0.4579535, y: 0.0057989405, z: 0.011905008, w: 0.8888775}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig:LeftToeBase
       parentName: mixamorig:LeftFoot

@@ -1,7 +1,16 @@
 using UnityEngine;
 
+/// <summary>Bir etkileşimin hangi tuşla tetiklendiği.</summary>
+public enum InteractionKey
+{
+    /// <summary>F (Interact action'ı).</summary>
+    Interact,
+    /// <summary>E (Sit action'ı): oturma/kalkma, mağazada ürünü eline alma.</summary>
+    Secondary
+}
+
 /// <summary>
-/// Oyuncunun F ile etkileşime girebileceği her objenin tabanı.
+/// Oyuncunun etkileşime girebileceği her objenin tabanı.
 /// Yeni etkileşim (oturma, TV açma, kıyafet alma...) bu sınıfı türetip Interact'i doldurur;
 /// algılama ve bildirim <see cref="PlayerInteractor"/> tarafında ortaktır.
 /// </summary>
@@ -11,6 +20,9 @@ public abstract class Interactable : MonoBehaviour
 
     /// <summary>Ekranda tuş etiketinin yanında görünen metin.</summary>
     public virtual string Prompt => prompt;
+
+    /// <summary>Etkileşimi tetikleyen tuş. Varsayılan F.</summary>
+    public virtual InteractionKey Key => InteractionKey.Interact;
 
     /// <summary>False dönerse obje algılanmaz ve bildirim gösterilmez.</summary>
     public virtual bool CanInteract(PlayerInteractor interactor) => true;

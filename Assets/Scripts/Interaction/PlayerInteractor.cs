@@ -22,6 +22,7 @@ public class PlayerInteractor : MonoBehaviour
 
     private InputAction interactAction;
     private InputAction dropAction;
+    private InputAction sitAction;
 
     public Interactable Focused { get; private set; }
 
@@ -32,24 +33,30 @@ public class PlayerInteractor : MonoBehaviour
 
     public string InteractKeyLabel => KeyLabel(interactAction);
     public string DropKeyLabel => KeyLabel(dropAction);
+    public string SitKeyLabel => KeyLabel(sitAction);
+
+    public string KeyLabelFor(InteractionKey key) => key == InteractionKey.Secondary ? SitKeyLabel : InteractKeyLabel;
 
     private void Awake()
     {
         InputActionMap playerMap = inputActions.FindActionMap("Player", true);
         interactAction = playerMap.FindAction("Interact", true);
         dropAction = playerMap.FindAction("Drop", true);
+        sitAction = playerMap.FindAction("Sit", true);
     }
 
     private void OnEnable()
     {
         interactAction.Enable();
         dropAction.Enable();
+        sitAction.Enable();
     }
 
     private void OnDisable()
     {
         interactAction.Disable();
         dropAction.Disable();
+        sitAction.Disable();
         Focused = null;
         Zone = null;
     }
@@ -60,7 +67,7 @@ public class PlayerInteractor : MonoBehaviour
         if (Focused == null && Zone != null && Zone.CanInteract(this))
             Focused = Zone;
 
-        if (Focused != null && interactAction.WasPressedThisFrame())
+        if (Focused != null && WasPressed(Focused.Key))
             Focused.Interact(this);
         else if (IsHolding && dropAction.WasPressedThisFrame())
             DropHeld();
@@ -73,6 +80,16 @@ public class PlayerInteractor : MonoBehaviour
 
         HeldItem = item;
         item.OnPickedUp(holdPoint);
+    }
+
+    /// <summary>
+    /// Elde tutulan eşyayı yerine koymadan elden çıkarır (ör. kasada satın alınan ürün). Eşyanın ne olacağına çağıran karar verir.
+    /// </summary>
+    public PickupItem ReleaseHeld()
+    {
+        PickupItem item = HeldItem;
+        HeldItem = null;
+        return item;
     }
 
     public void DropHeld()
@@ -88,7 +105,7 @@ public class PlayerInteractor : MonoBehaviour
     private Interactable FindFocused()
     {
         Ray ray = new Ray(viewCamera.position, viewCamera.forward);
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactMask, QueryTriggerInteraction.Ignore))
+        if (!RaycastIgnoringSelf(ray, interactDistance, out RaycastHit hit))
             return null;
 
         Interactable interactable = hit.collider.GetComponentInParent<Interactable>();
@@ -107,6 +124,28 @@ public class PlayerInteractor : MonoBehaviour
 
         return origin + direction * distance;
     }
+
+    private readonly RaycastHit[] hits = new RaycastHit[16];
+
+    // Kamera CharacterController kapsülünün tepesine yakın (1.7 / 1.8); aşağı bakınca ışın önce
+    // oyuncunun kendi kapsülüne çarpıyordu. Oyuncuya ait collider'lar atlanır.
+    private bool RaycastIgnoringSelf(Ray ray, float distance, out RaycastHit closest)
+    {
+        int count = Physics.RaycastNonAlloc(ray, hits, distance, interactMask, QueryTriggerInteraction.Ignore);
+        closest = default;
+        float best = float.MaxValue;
+        for (int i = 0; i < count; i++)
+        {
+            if (hits[i].collider.transform.IsChildOf(transform) || hits[i].distance >= best)
+                continue;
+            best = hits[i].distance;
+            closest = hits[i];
+        }
+        return best < float.MaxValue;
+    }
+
+    private bool WasPressed(InteractionKey key) =>
+        (key == InteractionKey.Secondary ? sitAction : interactAction).WasPressedThisFrame();
 
     private static string KeyLabel(InputAction action)
     {

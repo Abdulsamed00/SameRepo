@@ -56,6 +56,12 @@ public class FirstPersonController : MonoBehaviour
 
     public bool InputEnabled { get; set; } = true;
 
+    /// <summary>
+    /// True iken kontrolcü hiçbir şey yapmaz (hareket, yer çekimi, bakış, kamera konumu).
+    /// Oturma gibi oyuncuyu ve kamerayı başka bir scriptin taşıdığı durumlar için.
+    /// </summary>
+    public bool Frozen { get; set; }
+
     /// <summary>Yatay hız (m/sn). Karakter animasyonu bunu okur.</summary>
     public float HorizontalSpeed => horizontalVelocity.magnitude;
 
@@ -131,8 +137,18 @@ public class FirstPersonController : MonoBehaviour
         }
     }
 
+    /// <summary>Gövde/kamera dönüşü dışarıdan değiştirildiyse bakış hedeflerini o anki yöne eşitler.</summary>
+    public void SyncLookToTransforms()
+    {
+        targetBodyRotation = transform.localRotation;
+        targetCameraRotation = cameraRoot.localRotation;
+    }
+
     private void Update()
     {
+        if (Frozen)
+            return;
+
         bool sprinting = false;
         if (InputEnabled)
         {

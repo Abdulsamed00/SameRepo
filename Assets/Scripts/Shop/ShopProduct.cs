@@ -1,0 +1,19 @@
+using UnityEngine;
+
+/// <summary>
+/// Mağaza standındaki ürün. E ile ele alınır (G ile standdaki yerine döner), kasada F ile satın alınır.
+/// Aynı türden ürün satın alındıysa standdaki diğerleri artık alınamaz.
+/// </summary>
+public class ShopProduct : PickupItem
+{
+    [SerializeField] private ProductType product;
+
+    public ProductType Product => product;
+
+    public override InteractionKey Key => InteractionKey.Secondary;
+
+    public override string Prompt => $"{product.Accusative()} al";
+
+    public override bool CanInteract(PlayerInteractor interactor) =>
+        base.CanInteract(interactor) && !PlayerPurchases.Owns(product);
+}

@@ -12,9 +12,16 @@ public class SceneZone : Interactable
     [SerializeField] private string targetScene = "HouseScene";
     [SerializeField] private string spawnId;
     [SerializeField] private bool requireLeaveFirst;
+    [Tooltip("Kilitliyken gösterilen bildirim (ör. mağazadan ödeme yapmadan çıkılamaz).")]
+    [SerializeField] private string lockedPrompt = "Kapı kilitli";
 
     private bool armed;
     private bool triggered;
+
+    /// <summary>Kilitliyken bölge bildirimi gösterir ama sahne geçişi yapmaz (ör. <see cref="ShopExitGate"/>).</summary>
+    public bool Locked { get; set; }
+
+    public override string Prompt => Locked ? lockedPrompt : base.Prompt;
 
     private void Awake() => armed = !requireLeaveFirst;
 
@@ -24,7 +31,7 @@ public class SceneZone : Interactable
 
     public override void Interact(PlayerInteractor interactor)
     {
-        if (triggered)
+        if (triggered || Locked)
             return;
 
         triggered = true;

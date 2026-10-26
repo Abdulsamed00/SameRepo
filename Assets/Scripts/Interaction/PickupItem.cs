@@ -11,6 +11,8 @@ public class PickupItem : Interactable
     [Header("Bırakma")]
     [Tooltip("Açıksa bırakılan eşya ilk bulunduğu konuma döner; kapalıysa oyuncunun önüne düşer.")]
     [SerializeField] private bool returnToStartOnDrop = true;
+    [Tooltip("Açıksa eşya yerindeyken de fizik almaz (standda/askıda duran ürünler düşmesin).")]
+    [SerializeField] private bool staysKinematic;
 
     [Header("Elde Tutma")]
     [Tooltip("El noktasına göre konum farkı.")]
@@ -36,8 +38,16 @@ public class PickupItem : Interactable
         body = GetComponent<Rigidbody>();
         startLocalPosition = transform.localPosition;
         startLocalRotation = transform.localRotation;
-        // İnce eşyalar zemini yarıp geçmesin.
-        body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        if (staysKinematic)
+        {
+            body.isKinematic = true;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+        }
+        else
+        {
+            // İnce eşyalar zemini yarıp geçmesin.
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        }
         colliders = GetComponentsInChildren<Collider>();
 
         Bounds bounds = new Bounds(transform.position, Vector3.zero);
@@ -53,8 +63,11 @@ public class PickupItem : Interactable
     public void OnPickedUp(Transform hand)
     {
         holdPoint = hand;
-        body.linearVelocity = Vector3.zero;
-        body.angularVelocity = Vector3.zero;
+        if (!body.isKinematic)
+        {
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+        }
         body.isKinematic = true;
         SetCollidersEnabled(false);
     }
@@ -68,7 +81,7 @@ public class PickupItem : Interactable
         else
             transform.position = fallbackPosition;
         SetCollidersEnabled(true);
-        body.isKinematic = false;
+        body.isKinematic = staysKinematic;
     }
 
     private void LateUpdate()
