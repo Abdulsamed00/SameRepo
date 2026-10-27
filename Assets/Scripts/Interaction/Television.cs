@@ -3,9 +3,8 @@ using UnityEngine;
 using UnityEngine.Video;
 
 /// <summary>
-/// Televizyon: kumanda eldeyken oturma bölgesinde F ile açılır, sıradaki ürünün reklamını ekranda oynatır,
-/// oyuncu F'ye tekrar basana ya da kumandayı elinden bırakana kadar döngüde oynar. Sıradaki reklam, henüz satın alınmamış ilk üründür
-/// (<see cref="ads"/> sırasıyla: palto, pantolon, ayakkabı, çanta, gözlük).
+/// Televizyon: kumanda eldeyken oturma bölgesinde F ile açılır, o günün ürününün (<see cref="GameDay.Product"/>)
+/// reklamını ekranda oynatır, oyuncu F'ye tekrar basana ya da kumandayı elinden bırakana kadar döngüde oynar.
 /// Bölge mantığı <see cref="SceneZone"/> ile aynıdır (ışın gerekmez), ama trigger olayı yerine konum kontrolüyle:
 /// otururken CharacterController kapandığı için trigger çıkışı tetiklenip bölgeyi sıfırlıyordu.
 /// </summary>
@@ -55,7 +54,7 @@ public class Television : Interactable
     public override string Prompt => IsOn ? turnOffPrompt : turnOnPrompt;
 
     public override bool CanInteract(PlayerInteractor who) =>
-        who.HeldItem == remote && (IsOn || TryGetNextAd(out _));
+        who.HeldItem == remote && (IsOn || TryGetTodaysAd(out _));
 
     private void Awake()
     {
@@ -123,15 +122,15 @@ public class Television : Interactable
     {
         if (IsOn)
             TurnOff();
-        else if (TryGetNextAd(out Ad ad))
+        else if (TryGetTodaysAd(out Ad ad))
             TurnOn(ad);
     }
 
-    private bool TryGetNextAd(out Ad ad)
+    private bool TryGetTodaysAd(out Ad ad)
     {
         foreach (Ad candidate in ads)
         {
-            if (candidate.clip != null && !PlayerPurchases.Owns(candidate.product))
+            if (candidate.clip != null && candidate.product == GameDay.Product)
             {
                 ad = candidate;
                 return true;

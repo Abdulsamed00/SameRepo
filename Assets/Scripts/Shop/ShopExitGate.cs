@@ -3,8 +3,8 @@ using UnityEngine;
 /// <summary>
 /// Mağaza çıkışı: o günün ürünü satın alınana kadar otomatik kapı kapalı ve sokağa çıkış bölgesi kilitli.
 /// Satın alınınca kanatlar iki yana kayar ve bölge açılır.
-/// Şimdilik (gün sistemi yok) <see cref="requiredProducts"/> boşsa bu ziyarette herhangi bir ürün almak yeter;
-/// alınacak ürün kalmadıysa kapı baştan açıktır.
+/// <see cref="requiredProducts"/> boşsa o günün ürünü (<see cref="GameDay.Product"/>) alınmış olmalı;
+/// daha önce alındıysa (mağazaya tekrar girildiyse) kapı baştan açıktır.
 /// </summary>
 public class ShopExitGate : MonoBehaviour
 {
@@ -14,12 +14,11 @@ public class ShopExitGate : MonoBehaviour
     [Tooltip("Kanatların kapalı konumdan açılırken yana kayma mesafesi (m).")]
     [SerializeField] private float slideDistance = 1.65f;
     [SerializeField] private float duration = 0.8f;
-    [Tooltip("Kapının açılması için alınması gereken ürünler. Boşsa bu ziyarette herhangi bir ürün yeter.")]
+    [Tooltip("Kapının açılması için alınması gereken ürünler. Boşsa o günün ürünü yeter.")]
     [SerializeField] private ProductType[] requiredProducts;
 
     private Vector3 leftOpen;
     private Vector3 rightOpen;
-    private bool purchasedThisVisit;
     private bool open;
     private float amount;
 
@@ -43,7 +42,6 @@ public class ShopExitGate : MonoBehaviour
 
     private void OnPurchased(ProductType type)
     {
-        purchasedThisVisit = true;
         if (IsSatisfied())
             open = true;
     }
@@ -57,7 +55,7 @@ public class ShopExitGate : MonoBehaviour
                     return false;
             return true;
         }
-        return purchasedThisVisit || PlayerPurchases.OwnsAll;
+        return PlayerPurchases.Owns(GameDay.Product);
     }
 
     private void Update()
