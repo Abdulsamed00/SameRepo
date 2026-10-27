@@ -38,6 +38,9 @@ public class ScreenFader : MonoBehaviour
     /// <summary>Ekranı karartır; bitince ekran siyahtır.</summary>
     public static IEnumerator FadeOut(float duration = FadeOutDuration) => Instance.Fade(1f, duration);
 
+    /// <summary>Ekranı aydınlatır (aynı sahnede ışınlanma gibi, sahne yüklenmeden karartılan durumlar için).</summary>
+    public static IEnumerator FadeIn(float duration = FadeInDuration) => Instance.Fade(0f, duration);
+
     private void Build()
     {
         Canvas canvas = gameObject.AddComponent<Canvas>();
