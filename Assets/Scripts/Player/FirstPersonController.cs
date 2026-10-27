@@ -34,14 +34,22 @@ public class FirstPersonController : MonoBehaviour
 
     [Header("Baş Sallanması")]
     [SerializeField] private bool useHeadBob = true;
-    [SerializeField] private float horizontalBobRange = 0.1f;
-    [SerializeField] private float verticalBobRange = 0.1f;
+    [Tooltip("Yürürken. Koşarken hız oranında küçülür.")]
+    [SerializeField] private float horizontalBobRange = 0.04f;
+    [Tooltip("Yürürken. Koşarken hız oranında küçülür.")]
+    [SerializeField] private float verticalBobRange = 0.05f;
     [SerializeField] private float verticalToHorizontalRatio = 2f;
     [SerializeField] private AnimationCurve bobCurve = new AnimationCurve(
         new Keyframe(0f, 0f), new Keyframe(0.5f, 1f), new Keyframe(1f, 0f),
         new Keyframe(1.5f, -1f), new Keyframe(2f, 0f));
     [Tooltip("Durunca kameranın merkeze dönüş hızı.")]
     [SerializeField] private float bobReturnSpeed = 10f;
+    [Tooltip("Varsa sallanma ritmi gövdenin yürüme animasyonundan alınır (her adımda bir iniş). Boşsa alt objelerde aranır.")]
+    [SerializeField] private PlayerBody body;
+    [Tooltip("Yürüme klibinde kafanın en alçak olduğu an ile eğrinin dibi arasındaki faz farkı (adım döngüsü oranı).")]
+    [SerializeField] private float verticalBobPhase = 0.35f;
+    [Tooltip("Klip döngüsünde kafanın en sağda olduğu an ile eğrinin tepesi arasındaki faz farkı.")]
+    [SerializeField] private float horizontalBobPhase = 0.25f;
 
     [Header("Zıplama/İniş Sarsıntısı")]
     [SerializeField] private float jumpBobDuration = 0.2f;
@@ -105,6 +113,8 @@ public class FirstPersonController : MonoBehaviour
         targetCameraRotation = cameraRoot.localRotation;
         if (playerCamera != null)
             baseFov = playerCamera.fieldOfView;
+        if (body == null)
+            body = GetComponentInChildren<PlayerBody>(true);
 
         InputActionMap playerMap = inputActions.FindActionMap("Player", true);
         moveAction = playerMap.FindAction("Move", true);
@@ -293,13 +303,29 @@ public class FirstPersonController : MonoBehaviour
             return;
         }
 
-        float bobSpeed = moveSpeed + speed * (sprinting ? runstepLengthen : 1f);
         float curveLength = bobCurve[bobCurve.length - 1].time;
-        float step = bobSpeed * Time.deltaTime / stepInterval;
-        bobCycleX = Mathf.Repeat(bobCycleX + step, curveLength);
-        bobCycleY = Mathf.Repeat(bobCycleY + step * verticalToHorizontalRatio, curveLength);
+        if (body != null && body.TryGetWalkCycle(out float cycle))
+        {
+            // Hızdan hesaplanan ritim (Standard Assets) 5 m/s'ye göreydi; 2 m/s'de kamera saniyede ~0.8 kez inerken
+            // bacaklar ~2.4 adım atıyordu. Ritim yürüme klibinden alınır: bir klip döngüsü iki adım, dikey sallanma
+            // döngüde iki kez (her adımda bir), yatay bir kez.
+            bobCycleX = Mathf.Repeat(cycle + horizontalBobPhase, 1f) * curveLength;
+            bobCycleY = Mathf.Repeat(cycle * verticalToHorizontalRatio + verticalBobPhase, 1f) * curveLength;
+        }
+        else
+        {
+            float bobSpeed = moveSpeed + speed * (sprinting ? runstepLengthen : 1f);
+            float step = bobSpeed * Time.deltaTime / stepInterval;
+            bobCycleX = Mathf.Repeat(bobCycleX + step, curveLength);
+            bobCycleY = Mathf.Repeat(bobCycleY + step * verticalToHorizontalRatio, curveLength);
+        }
+
+        // Kalkışta sallanma faz ortasından başlayıp kamerayı sıçratmasın diye hızla birlikte açılır.
+        // Yürüme hızının üstünde ritim hızla birlikte arttığı için genlik aynı oranda küçülür; kameranın
+        // inip çıkma hızı koşarken de yürümedeki kadar kalır (koşarken çok hızlı sallanıyordu).
+        float amount = Mathf.Clamp01(moveSpeed / walkSpeed) * Mathf.Min(1f, walkSpeed / moveSpeed);
         bobOffset = new Vector2(bobCurve.Evaluate(bobCycleX) * horizontalBobRange,
-                                bobCurve.Evaluate(bobCycleY) * verticalBobRange);
+                                bobCurve.Evaluate(bobCycleY) * verticalBobRange) * amount;
     }
 
     private void UpdateCameraPosition(bool sprinting)

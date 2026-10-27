@@ -72,6 +72,17 @@ public class PlayerBody : MonoBehaviour
 
     public bool IsPosing { get; private set; }
 
+    /// <summary>
+    /// Yürüme döngüsünün fazı (Locomotion state'inin normalize zamanı; bir döngü = iki adım).
+    /// Kamera sallanması adımlarla aynı ritimde olsun diye <see cref="FirstPersonController"/> okur.
+    /// </summary>
+    public bool TryGetWalkCycle(out float cycle)
+    {
+        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+        cycle = info.normalizedTime;
+        return !overridden && info.IsName(LocomotionState);
+    }
+
     /// <summary>Sağ avuç içindeki tutma noktası. İleri ekseni avuç boyunca (işaret parmağından serçeye ters), yukarısı avuçtan dışarı.</summary>
     public Transform RightHandHold { get; private set; }
 

@@ -188,8 +188,8 @@ MonoBehaviour:
   smoothTime: 5
   lockCursor: 1
   useHeadBob: 1
-  horizontalBobRange: 0.1
-  verticalBobRange: 0.1
+  horizontalBobRange: 0.04
+  verticalBobRange: 0.05
   verticalToHorizontalRatio: 2
   bobCurve:
     serializedVersion: 2
@@ -243,6 +243,9 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   bobReturnSpeed: 10
+  body: {fileID: 0}
+  verticalBobPhase: 0.35
+  horizontalBobPhase: 0.25
   jumpBobDuration: 0.2
   jumpBobAmount: 0.1
   useFovKick: 1
