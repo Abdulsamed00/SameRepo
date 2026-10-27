@@ -5661,7 +5661,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 180f8b4e7c03fd644b49dcccc6ee683a, type: 2}
+  - {fileID: 2100000, guid: fa4d4d9eec69fc84a9a72632871fc95a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7641,6 +7641,7 @@ Transform:
   - {fileID: 1904724598}
   - {fileID: 1861388453}
   - {fileID: 1941695350}
+  - {fileID: 2117297291}
   m_Father: {fileID: 1337342090}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &673569209
@@ -23835,6 +23836,91 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2112049074}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &2117297290
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2117297291}
+  - component: {fileID: 2117297293}
+  - component: {fileID: 2117297292}
+  m_Layer: 2
+  m_Name: TV_Alani
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2117297291
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117297290}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.5, y: 1.6876001, z: 1.4}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 669379049}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2117297292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117297290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 963eb6178b26c8f459257265b4d3fcfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Television
+  prompt: "Etkile\u015Fime gir"
+  ads:
+  - product: 0
+    clip: {fileID: 32900000, guid: 03f647747b6a6d540b38dc708620f004, type: 3}
+  - product: 1
+    clip: {fileID: 32900000, guid: b8394dee7efc0e14f8ba35d6a4b5c328, type: 3}
+  - product: 2
+    clip: {fileID: 32900000, guid: a1e9e0da07fb20a45ad58bc9d0f7427c, type: 3}
+  - product: 3
+    clip: {fileID: 32900000, guid: 333012e4300dae54897ba1cb6a7d819a, type: 3}
+  - product: 4
+    clip: {fileID: 32900000, guid: fc9f26e8c705c0544bbff0a651cbf816, type: 3}
+  remote: {fileID: 523792628}
+  turnOnPrompt: "TV'yi a\xE7"
+  turnOffPrompt: TV'yi kapat
+  screen: {fileID: 495640320}
+  offMaterial: {fileID: 2100000, guid: fa4d4d9eec69fc84a9a72632871fc95a, type: 2}
+  onMaterial: {fileID: 2100000, guid: 5d335a0e323d008429f32b1411d26565, type: 2}
+  volume: 0.8
+--- !u!65 &2117297293
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117297290}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 6, y: 3.4, z: 3.6}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2122620255
 GameObject:
   m_ObjectHideFlags: 0
