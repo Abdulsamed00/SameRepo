@@ -26,8 +26,11 @@ public class InteractionPromptView : MonoBehaviour
             promptText.text = $"<b>{interactor.KeyLabelFor(focused.Key)}</b>  {focused.Prompt}";
 
         bool seated = sitter != null && sitter.IsSeated;
-        heldText.enabled = interactor.IsHolding || seated;
-        if (seated)
+        bool hint = !string.IsNullOrEmpty(interactor.Hint);
+        heldText.enabled = interactor.IsHolding || seated || hint;
+        if (hint)
+            heldText.text = interactor.Hint;
+        else if (seated)
             heldText.text = $"<b>{interactor.SitKeyLabel}</b>  Kalk";
         else if (interactor.IsHolding)
             heldText.text = $"<b>{interactor.DropKeyLabel}</b>  Bırak";

@@ -30,6 +30,8 @@ public class PlayerInteractor : MonoBehaviour
 
     /// <summary>Bir bölgenin (<see cref="SceneZone"/>) içindeyken ışın bir şeye bakmasa da F ile tetiklenen etkileşim.</summary>
     public Interactable Zone { get; set; }
+    /// <summary>Ekranın altında gösterilen ek tuş ipucu (ör. incelerken "G  Geri as"). Boşsa gösterilmez.</summary>
+    public string Hint { get; set; }
     public PickupItem HeldItem { get; private set; }
     public bool IsHolding => HeldItem != null;
 
