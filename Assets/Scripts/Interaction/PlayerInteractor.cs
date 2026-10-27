@@ -19,6 +19,8 @@ public class PlayerInteractor : MonoBehaviour
     [Header("Elde Tutma")]
     [SerializeField] private Transform holdPoint;
     [SerializeField] private float dropDistance = 1.2f;
+    [Tooltip("Eşya alınınca alma animasyonu oynatılan gövde. Boşsa alt objelerde aranır.")]
+    [SerializeField] private PlayerBody body;
 
     private InputAction interactAction;
     private InputAction dropAction;
@@ -43,6 +45,8 @@ public class PlayerInteractor : MonoBehaviour
         interactAction = playerMap.FindAction("Interact", true);
         dropAction = playerMap.FindAction("Drop", true);
         sitAction = playerMap.FindAction("Sit", true);
+        if (body == null)
+            body = GetComponentInChildren<PlayerBody>(true);
     }
 
     private void OnEnable()
@@ -79,7 +83,12 @@ public class PlayerInteractor : MonoBehaviour
             return;
 
         HeldItem = item;
-        item.OnPickedUp(holdPoint);
+        bool inHand = body != null && item.HoldInHand;
+        float reachTime = body != null ? body.PlayPickup(inHand ? item.transform.position : (Vector3?)null) : 0f;
+        if (inHand)
+            item.OnPickedUp(this, body.RightHandHold, reachTime);
+        else
+            item.OnPickedUp(this, holdPoint);
     }
 
     /// <summary>
@@ -92,14 +101,19 @@ public class PlayerInteractor : MonoBehaviour
         return item;
     }
 
-    public void DropHeld()
+    /// <param name="animate">Açıksa ve eşya eldeyse alma animasyonu tersten oynar, eşya el yerine değince bırakılır.</param>
+    public void DropHeld(bool animate = true)
     {
         if (!IsHolding)
             return;
 
         PickupItem item = HeldItem;
         HeldItem = null;
-        item.OnDropped(FindDropPosition(item.Radius));
+        Vector3 fallback = FindDropPosition(item.Radius);
+        float releaseTime = animate && body != null && item.HoldInHand
+            ? body.PlayPutDown(item.DropPosition(fallback))
+            : 0f;
+        item.OnDropped(fallback, releaseTime);
     }
 
     private Interactable FindFocused()

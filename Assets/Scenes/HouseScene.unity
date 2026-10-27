@@ -5980,6 +5980,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PickupItem
   prompt: "Kumanday\u0131 al"
   returnToStartOnDrop: 1
+  staysKinematic: 0
+  homeArea: {fileID: 1941695351}
+  holdInHand: 1
   holdPositionOffset: {x: 0, y: 0, z: 0}
   holdEulerOffset: {x: 0, y: 0, z: 0}
   followSharpness: 18
@@ -7637,6 +7640,7 @@ Transform:
   - {fileID: 527812916}
   - {fileID: 1904724598}
   - {fileID: 1861388453}
+  - {fileID: 1941695350}
   m_Father: {fileID: 1337342090}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &673569209
@@ -21438,6 +21442,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1904724598}
+  - component: {fileID: 1904724599}
   m_Layer: 0
   m_Name: Boy_Aynasi
   m_TagString: Untagged
@@ -21462,6 +21467,27 @@ Transform:
   - {fileID: 1074086899}
   m_Father: {fileID: 669379049}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1904724599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1904724597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0c31154d75fd9f449fdccbcaba58112, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MirrorPose
+  prompt: Poz ver
+  stopPrompt: "Poz vermeyi b\u0131rak"
+  surface: {fileID: 1074086899}
+  standDistance: 1.4
+  moveDuration: 0.5
+  mirrorCamera: {fileID: 0}
+  cameraFov: 70
+  cameraOffset: 0.05
+  flipHorizontally: 1
 --- !u!1 &1911104920
 GameObject:
   m_ObjectHideFlags: 0
@@ -21866,6 +21892,59 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1941639591}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1941695349
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1941695350}
+  - component: {fileID: 1941695351}
+  m_Layer: 2
+  m_Name: Kumanda_Alani
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1941695350
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941695349}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -3.5, y: 1.5, z: 1.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 669379049}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1941695351
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941695349}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 7, y: 3, z: 5.8}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1941987655
 GameObject:
   m_ObjectHideFlags: 0

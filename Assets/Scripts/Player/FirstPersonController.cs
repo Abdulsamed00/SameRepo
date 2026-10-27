@@ -65,6 +65,9 @@ public class FirstPersonController : MonoBehaviour
     /// <summary>Yatay hız (m/sn). Karakter animasyonu bunu okur.</summary>
     public float HorizontalSpeed => horizontalVelocity.magnitude;
 
+    /// <summary>Yatay hız vektörü (dünya). Gövde bununla hareket yönüne döner.</summary>
+    public Vector3 HorizontalVelocity => horizontalVelocity;
+
     private CharacterController controller;
     private Camera playerCamera;
     private InputAction moveAction;
@@ -75,6 +78,7 @@ public class FirstPersonController : MonoBehaviour
     private Quaternion targetBodyRotation;
     private Quaternion targetCameraRotation;
     private float verticalVelocity;
+    private float moveStartFeetY;
     private Vector3 horizontalVelocity;
     private bool wasGrounded;
     private int framesToSkip;
@@ -218,13 +222,45 @@ public class FirstPersonController : MonoBehaviour
         horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, wishDir * speed, acceleration * Time.deltaTime * speed);
 
         ApplyVertical(jumpAction.WasPressedThisFrame());
+        moveStartFeetY = transform.position.y;
         CollisionFlags flags = controller.Move((horizontalVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
         // Tavana çarpınca yukarı hız sıfırlanır, yoksa kafa tavana yapışık kalır.
         if ((flags & CollisionFlags.Above) != 0 && verticalVelocity > 0f)
             verticalVelocity = 0f;
 
+        // CharacterController basamaktan yüksek eşyalara çarpınca (özellikle köşe ve kenarlarda) kendini
+        // stepOffset kadar yukarı atıp eşyanın kenarına oturtuyordu: kamera zıplıyor, bazen eşyanın üstüne
+        // çıkıyordu (çoğu zaman altında hiçbir şey yokken yan temasla havada kalıyordu). Yükselinen karede
+        // oyuncunun altında taşıyan bir yüzey yoksa ya da o yüzey basamak sınırından yüksekse yükselme geri alınır.
+        float rise = transform.position.y - moveStartFeetY;
+        // Eşik küçük: kenara sıkışınca kare başına birkaç mm'lik yavaş tırmanma da oluyor.
+        if (verticalVelocity <= 0f && rise > 0.001f)
+        {
+            float support = SupportHeight();
+            if (float.IsNegativeInfinity(support) || support - moveStartFeetY > controller.stepOffset + 0.02f)
+            {
+                // Move ile aşağı itmek işe yaramıyor: kapsül eşyanın kenarına sıkışıp yerinde kalıyor.
+                Vector3 position = transform.position;
+                position.y = moveStartFeetY;
+                controller.enabled = false;
+                transform.position = position;
+                controller.enabled = true;
+            }
+        }
+
         UpdateHeadBob(speed, sprinting);
         return sprinting;
+    }
+
+    // Kapsülün alt yarım küresinin altındaki ilk temas noktasının yüksekliği (oyuncuyu taşıyan nokta).
+    private float SupportHeight()
+    {
+        float radius = controller.radius * 0.95f;
+        Vector3 bottom = transform.position + controller.center + Vector3.down * (controller.height * 0.5f - controller.radius);
+        float distance = 0.1f + controller.skinWidth;
+        if (Physics.SphereCast(bottom + Vector3.up * 0.05f, radius, Vector3.down, out RaycastHit hit, distance, ~0, QueryTriggerInteraction.Ignore))
+            return hit.point.y;
+        return float.NegativeInfinity;
     }
 
     private void ApplyVertical(bool jump)

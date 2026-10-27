@@ -12,6 +12,9 @@ public class ShopProduct : PickupItem
 
     public override InteractionKey Key => InteractionKey.Secondary;
 
+    // Ürünlerin tutma ofsetleri kameradaki tutma noktasına göre ayarlı; ele bağlanmazlar.
+    public override bool HoldInHand => false;
+
     public override string Prompt => $"{product.Accusative()} al";
 
     public override bool CanInteract(PlayerInteractor interactor) =>

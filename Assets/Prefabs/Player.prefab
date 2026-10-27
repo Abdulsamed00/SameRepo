@@ -154,8 +154,8 @@ CharacterController:
   m_Height: 1.8
   m_Radius: 0.3
   m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_StepOffset: 0.2
+  m_SkinWidth: 0.03
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &188383448409000982
@@ -293,6 +293,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   holdPoint: {fileID: 1091789442566508170}
   dropDistance: 1.2
+  body: {fileID: 0}
 --- !u!114 &2968114843655384052
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -816,3 +817,10 @@ MonoBehaviour:
   - TopuzSac
   - BlondeHair
   - Glasses
+  turnSpeed: 540
+  maxTurnAngle: 90
+  pickupReachTime: 0.75
+  palmDepth: 0.03
+  pickupReleaseTime: 0.5
+  putDownReachTime: 1
+  putDownDuration: 1.75
