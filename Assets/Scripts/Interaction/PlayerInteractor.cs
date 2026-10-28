@@ -15,6 +15,10 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private Transform viewCamera;
     [SerializeField] private float interactDistance = 2.5f;
     [SerializeField] private LayerMask interactMask = ~0;
+    [Tooltip("Işın doğrudan bir etkileşime değmezse çevresinde bu yarıçapta aranır (küçük eşyalar için, m).")]
+    [SerializeField] private float aimAssistRadius = 0.12f;
+    [Tooltip("Hedef yardımında bakılan yüzeyin bu kadar arkasına kadar olan etkileşimler de sayılır (m).")]
+    [SerializeField] private float aimAssistDepth = 0.3f;
 
     [Header("Elde Tutma")]
     [SerializeField] private Transform holdPoint;
@@ -121,11 +125,32 @@ public class PlayerInteractor : MonoBehaviour
     private Interactable FindFocused()
     {
         Ray ray = new Ray(viewCamera.position, viewCamera.forward);
-        if (!RaycastIgnoringSelf(ray, interactDistance, out RaycastHit hit))
-            return null;
+        bool hitSomething = RaycastIgnoringSelf(ray, interactDistance, out RaycastHit hit);
+        if (hitSomething)
+        {
+            Interactable direct = hit.collider.GetComponentInParent<Interactable>();
+            if (direct != null && direct.CanInteract(this))
+                return direct;
+        }
 
-        Interactable interactable = hit.collider.GetComponentInParent<Interactable>();
-        return interactable != null && interactable.CanInteract(this) ? interactable : null;
+        // Hedef yardımı: kumanda gibi küçük eşyalar tam ortalanmasa da (özellikle otururken uzaktan)
+        // ışının çevresinde, bakılan yüzeyin hemen önünde/yakınında kalan etkileşimler de seçilir.
+        float limit = hitSomething ? hit.distance + aimAssistDepth : interactDistance;
+        int count = Physics.SphereCastNonAlloc(ray, aimAssistRadius, hits, limit, interactMask, QueryTriggerInteraction.Ignore);
+        Interactable best = null;
+        float bestDistance = float.MaxValue;
+        for (int i = 0; i < count; i++)
+        {
+            // distance 0: küre başlangıçta zaten içindeydi (kameranın dibindeki kapı kanadı vb.), sayılmaz.
+            if (hits[i].collider.transform.IsChildOf(transform) || hits[i].distance <= 0f || hits[i].distance >= bestDistance)
+                continue;
+            Interactable candidate = hits[i].collider.GetComponentInParent<Interactable>();
+            if (candidate == null || !candidate.CanInteract(this))
+                continue;
+            best = candidate;
+            bestDistance = hits[i].distance;
+        }
+        return best;
     }
 
     // Bakılan yönde dropDistance kadar ileri; duvar/zemin/mobilya varsa onun önünde dur.

@@ -34,6 +34,18 @@ public class Seat : Interactable
         return best;
     }
 
+    /// <summary>
+    /// Oyuncu en yakın oturma noktasının önünde mi (oturma yönü tarafında). Kanepenin arkasından ya da
+    /// sırtlık tarafından oturulmasın diye.
+    /// </summary>
+    public bool IsInFront(Vector3 playerPosition)
+    {
+        Transform point = ClosestSitPoint(playerPosition);
+        Vector3 toPlayer = playerPosition - point.position;
+        toPlayer.y = 0f;
+        return Vector3.Dot(toPlayer, point.forward) > 0f;
+    }
+
     public Vector3 StandPosition(Transform sitPoint) => sitPoint.position + sitPoint.forward * standDistance;
 
     public override bool CanInteract(PlayerInteractor interactor)
@@ -41,7 +53,7 @@ public class Seat : Interactable
         if (Occupied)
             return false;
         PlayerSitController sitter = interactor.GetComponent<PlayerSitController>();
-        return sitter != null && sitter.CanSit;
+        return sitter != null && sitter.CanSit && IsInFront(interactor.transform.position);
     }
 
     public override void Interact(PlayerInteractor interactor)
