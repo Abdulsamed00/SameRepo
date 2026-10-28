@@ -25,6 +25,8 @@ public class MirrorPose : Interactable
     [SerializeField] private float cameraFov = 70f;
     [Tooltip("Kameranın ayna yüzeyinin önünde duracağı mesafe (m).")]
     [SerializeField] private float cameraOffset = 0.05f;
+    [Tooltip("Kameranın aşağı eğimi (derece). Karakter ayaklarıyla birlikte kadraja girsin.")]
+    [SerializeField] private float cameraPitch = 7f;
     [Tooltip("Görüntüyü yatayda çevirir, ayna gibi görünür.")]
     [SerializeField] private bool flipHorizontally = true;
 
@@ -43,7 +45,7 @@ public class MirrorPose : Interactable
             mirrorCamera.transform.SetParent(transform, false);
         }
         mirrorCamera.transform.SetPositionAndRotation(surface.position + surface.forward * cameraOffset,
-            Quaternion.LookRotation(surface.forward, Vector3.up));
+            Quaternion.LookRotation(surface.forward, Vector3.up) * Quaternion.Euler(cameraPitch, 0f, 0f));
         mirrorCamera.fieldOfView = cameraFov;
         mirrorCamera.nearClipPlane = 0.05f;
         mirrorCamera.enabled = false;
