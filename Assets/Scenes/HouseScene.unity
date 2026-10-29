@@ -22144,6 +22144,7 @@ MonoBehaviour:
   mirrorCamera: {fileID: 0}
   cameraFov: 70
   cameraOffset: 0.05
+  cameraPitch: 7
   flipHorizontally: 1
 --- !u!1 &1911104920
 GameObject:

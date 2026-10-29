@@ -19,5 +19,5 @@ public class ShopProduct : PickupItem
     public override string Prompt => $"{product.Accusative()} al";
 
     public override bool CanInteract(PlayerInteractor interactor) =>
-        base.CanInteract(interactor) && product == GameDay.Product && !PlayerPurchases.Owns(product);
+        base.CanInteract(interactor) && GameDay.IsAvailable(product) && !PlayerPurchases.Owns(product);
 }

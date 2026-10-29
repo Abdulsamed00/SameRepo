@@ -15,6 +15,15 @@ public static class GameDay
     /// <summary>Bugün reklamı verilen ve mağazada alınabilen ürün.</summary>
     public static ProductType Product => (ProductType)Math.Min(Index, ProductCount - 1);
 
+    /// <summary>
+    /// Geçici (kullanıcı kararı, 29.10): true iken gün kısıtı yok, 5 ürünün her biri tek tek satın alınabilir
+    /// ve mağaza kapısı bu ziyarette herhangi bir ürün alınınca açılır. Gün/uyku sistemi bağlanınca false yapılacak.
+    /// </summary>
+    public static bool AllProductsAvailable = true;
+
+    /// <summary>Ürün bugün mağazada alınabilir mi.</summary>
+    public static bool IsAvailable(ProductType product) => AllProductsAvailable || product == Product;
+
     public static event Action Changed;
 
     /// <summary>Ertesi güne geçer (uyku sistemi çağıracak).</summary>

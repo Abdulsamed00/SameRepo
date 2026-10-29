@@ -21,6 +21,7 @@ public class ShopExitGate : MonoBehaviour
     private Vector3 rightOpen;
     private bool open;
     private float amount;
+    private bool purchasedThisVisit;
 
     private void Awake()
     {
@@ -42,6 +43,7 @@ public class ShopExitGate : MonoBehaviour
 
     private void OnPurchased(ProductType type)
     {
+        purchasedThisVisit = true;
         if (IsSatisfied())
             open = true;
     }
@@ -55,6 +57,9 @@ public class ShopExitGate : MonoBehaviour
                     return false;
             return true;
         }
+        // Geçici mod: her ürün alınabilirken bu ziyarette bir ürün almak yeter (alınacak ürün kalmadıysa kapı açık).
+        if (GameDay.AllProductsAvailable)
+            return purchasedThisVisit || PlayerPurchases.OwnsAll;
         return PlayerPurchases.Owns(GameDay.Product);
     }
 

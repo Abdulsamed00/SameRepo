@@ -9,7 +9,7 @@ public class Checkout : Interactable
     public override string Prompt => "Satın al";
 
     public override bool CanInteract(PlayerInteractor interactor) =>
-        interactor.HeldItem is ShopProduct product && product.Product == GameDay.Product
+        interactor.HeldItem is ShopProduct product && GameDay.IsAvailable(product.Product)
         && !PlayerPurchases.Owns(product.Product);
 
     public override void Interact(PlayerInteractor interactor)
