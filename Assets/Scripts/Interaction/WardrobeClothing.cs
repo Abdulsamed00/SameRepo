@@ -22,8 +22,20 @@ public class WardrobeClothing : Interactable
     [SerializeField] private float moveDuration = 0.4f;
     [Tooltip("Fareyle döndürme hızı (derece/piksel).")]
     [SerializeField] private float rotateSpeed = 0.4f;
+    [Tooltip("İncelerken modelin ek dönüşü (derece). Önü +z'ye bakmayan modeller için (ör. çantanın yüzü yana bakıyor).")]
+    [SerializeField] private Vector3 inspectEuler;
     [SerializeField] private string wearPrompt = "Giy";
     [SerializeField] private string putBackHint = "Geri as";
+
+    [Header("Ses")]
+    [Tooltip("Askıdan alınınca, geri asılınca ve giyilince çalar.")]
+    [SerializeField] private AudioClip handleSound;
+
+    private static readonly System.Collections.Generic.List<WardrobeClothing> instances =
+        new System.Collections.Generic.List<WardrobeClothing>();
+
+    /// <summary>Sahnede bu ürün için dolapta kıyafet var mı (yoksa günlük döngüde giyme adımı atlanır).</summary>
+    public static bool ExistsFor(ProductType type) => instances.Exists(c => c.product == type);
 
     private InputAction lookAction;
     private InputAction dropAction;
@@ -51,6 +63,10 @@ public class WardrobeClothing : Interactable
         modelCenter = filter != null ? filter.sharedMesh.bounds.center : Vector3.zero;
         model.gameObject.SetActive(Available);
     }
+
+    private void OnEnable() => instances.Add(this);
+
+    private void OnDisable() => instances.Remove(this);
 
     public override bool CanInteract(PlayerInteractor interactor)
     {
@@ -109,6 +125,7 @@ public class WardrobeClothing : Interactable
         // Kıyafet kameranın önüne gelince ışın ona bakmayabilir; F her durumda giysin.
         interactor.Zone = this;
         interactor.Hint = $"<b>{interactor.DropKeyLabel}</b>  {putBackHint}";
+        GameAudio.PlayAt(handleSound, model.position);
 
         yield return Move(model.position, model.rotation, () => InspectRotation(), true);
         busy = false;
@@ -117,6 +134,7 @@ public class WardrobeClothing : Interactable
     private IEnumerator PutBack()
     {
         busy = true;
+        GameAudio.PlayAt(handleSound, model.position);
         Transform parent = model.parent;
         yield return Move(model.position, model.rotation, () => parent.rotation * homeRotation, false);
         model.SetLocalPositionAndRotation(homePosition, homeRotation);
@@ -125,10 +143,13 @@ public class WardrobeClothing : Interactable
 
     private void Wear()
     {
+        GameAudio.PlayAt(handleSound, model.position);
         PlayerOutfit.Wear(product);
         model.SetLocalPositionAndRotation(homePosition, homeRotation);
         model.gameObject.SetActive(false);
         EndInspection();
+        // Günün ürünü giyildiyse uyku gelmeye başlar (esneme).
+        DayRoutine.NotifyWorn(product);
     }
 
     private void EndInspection()
@@ -162,7 +183,7 @@ public class WardrobeClothing : Interactable
 
     // Kıyafetin önü (+z) kameraya bakar; fareyle kendi dikey ekseni etrafında döner.
     private Quaternion InspectRotation() =>
-        Quaternion.LookRotation(-view.forward, view.up) * Quaternion.Euler(0f, yaw, 0f);
+        Quaternion.LookRotation(-view.forward, view.up) * Quaternion.Euler(0f, yaw, 0f) * Quaternion.Euler(inspectEuler);
 
     // Modelin pivotu askıda (üst orta); görüntünün ortasına modelin merkezi gelir.
     private Vector3 InspectPosition(Quaternion rotation) =>

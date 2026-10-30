@@ -21,6 +21,7 @@ public class PlayerBody : MonoBehaviour
     private const string SittingIdleState = "SittingIdle";
     private const string SitToStandState = "SitToStand";
     private const string PoseState = "Pose";
+    private const string LyingDownState = "LyingDown";
     private const string UpperBodyLayerName = "UpperBody";
     private const string PickupState = "Pickup";
     private const string PutDownState = "PutDown";
@@ -36,6 +37,8 @@ public class PlayerBody : MonoBehaviour
     [SerializeField] private float crossFade = 0.2f;
     [Tooltip("Kalkma klibi (tersten oynatılınca oturma). Süreler buradan okunur.")]
     [SerializeField] private AnimationClip sitToStandClip;
+    [Tooltip("Oturuştan uzanmaya geçiş süresi (sn).")]
+    [SerializeField] private float lieDownBlend = 0.4f;
     [Tooltip("Oyuncu kamerasından gizlenecek renderer adları (kafaya ait ayrı parçalar).")]
     [SerializeField] private string[] hiddenRendererNames = { "TopuzSac", "BlondeHair", "Glasses" };
 
@@ -195,6 +198,20 @@ public class PlayerBody : MonoBehaviour
         overridden = true;
         animator.CrossFadeInFixedTime(SitToStandState, crossFade);
         return ClipLength;
+    }
+
+    /// <summary>Otururken yatağa uzanma (yatak). Klip sonunda sırtüstü yatar pozda kalır.</summary>
+    /// <param name="blend">Oturuştan uzanma klibine geçiş süresi (sn).</param>
+    /// <returns>Uzanma süresi (sn).</returns>
+    public float PlayLieDown(out float blend)
+    {
+        overridden = true;
+        blend = lieDownBlend;
+        animator.CrossFadeInFixedTime(LyingDownState, lieDownBlend);
+        foreach (AnimationClip clip in animator.runtimeAnimatorController.animationClips)
+            if (clip.name == LyingDownState)
+                return clip.length;
+        return 5f;
     }
 
     public void PlayLocomotion()

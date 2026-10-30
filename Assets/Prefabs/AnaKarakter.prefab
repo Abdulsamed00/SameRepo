@@ -139,3 +139,23 @@ MonoBehaviour:
     - Coat
     hide:
     - "Tsh\u0131rt"
+  - product: 1
+    show:
+    - BlueJean
+    hide:
+    - "EsofmanAlt\u0131"
+  - product: 2
+    show:
+    - GoldenShoeLeft
+    - GoldenShoeRight
+    hide:
+    - ShoeLeft
+    - ShoeRight
+  - product: 3
+    show:
+    - Bag
+    hide: []
+  - product: 4
+    show:
+    - Glasses
+    hide: []

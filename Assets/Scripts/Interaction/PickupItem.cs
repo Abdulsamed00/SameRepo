@@ -26,6 +26,10 @@ public class PickupItem : Interactable
     [SerializeField] private Vector3 holdEulerOffset;
     [SerializeField] private float followSharpness = 18f;
 
+    [Header("Ses")]
+    [Tooltip("Ele alınınca ve bırakılınca çalar (ör. mağazada kıyafet hışırtısı). Boşsa ses yok.")]
+    [SerializeField] private AudioClip handleSound;
+
     private Rigidbody body;
     private Collider[] colliders;
     private PlayerInteractor holder;
@@ -98,6 +102,7 @@ public class PickupItem : Interactable
         }
         body.isKinematic = true;
         SetCollidersEnabled(false);
+        GameAudio.PlayAt(handleSound, transform.position);
     }
 
     /// <param name="fallbackPosition">İlk konuma dönülmüyorsa eşyanın konacağı dünya konumu.</param>
@@ -106,6 +111,7 @@ public class PickupItem : Interactable
     {
         holder = null;
         pendingDropPosition = fallbackPosition;
+        GameAudio.PlayAt(handleSound, transform.position);
         if (releaseDelay > 0f)
             releaseTime = Time.time + releaseDelay;
         else

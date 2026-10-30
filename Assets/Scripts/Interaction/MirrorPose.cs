@@ -30,6 +30,10 @@ public class MirrorPose : Interactable
     [Tooltip("Görüntüyü yatayda çevirir, ayna gibi görünür.")]
     [SerializeField] private bool flipHorizontally = true;
 
+    [Header("Ses")]
+    [Tooltip("Poz vermeye başlarken çalar.")]
+    [SerializeField] private AudioClip poseSound;
+
     private PlayerInteractor posingPlayer;
     private bool busy;
 
@@ -109,6 +113,7 @@ public class MirrorPose : Interactable
         player.SetPositionAndRotation(standPos, standRot);
 
         body.PlayPose();
+        GameAudio.PlayAt(poseSound, surface.position);
         mirrorCamera.enabled = true;
         Camera playerCamera = Camera.main;
         if (playerCamera != null)
@@ -139,6 +144,8 @@ public class MirrorPose : Interactable
             interactor.Zone = null;
         posingPlayer = null;
         busy = false;
+        // Günün kıyafetiyle poz verildiyse uyku gelir (esneme), yatak açılır.
+        DayRoutine.NotifyPoseEnded();
     }
 
     // Yatay çevirme için projeksiyon aynalanır; üçgen sırası tersine döndüğü için culling de ters çevrilir.
