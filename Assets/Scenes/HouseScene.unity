@@ -6063,7 +6063,8 @@ MonoBehaviour:
   height: 1.7193562
   material: {fileID: 2100000, guid: 3cdf53ad5ee91aa45aa961f7e4f20a38, type: 2}
   tint: {r: 0.9, g: 0.92, b: 0.93, a: 1}
-  textureHeight: 1024
+  resolutionScale: 1.5
+  maxTextureHeight: 2048
   maxDistance: 10
   farClip: 30
 --- !u!1001 &1079948109
