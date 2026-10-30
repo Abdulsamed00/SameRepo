@@ -14,7 +14,6 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float runSpeed = 3f;
     [Tooltip("Koşarken baş sallanması ritmine eklenen hız çarpanı.")]
     [Range(0f, 1f)] [SerializeField] private float runstepLengthen = 0.7f;
-    [SerializeField] private float jumpSpeed = 10f;
     [Tooltip("Yerdeyken aşağı itme hızı: rampa ve basamak inerken zemine yapışık kalır.")]
     [SerializeField] private float stickToGroundForce = 10f;
     [SerializeField] private float gravityMultiplier = 2f;
@@ -81,7 +80,6 @@ public class FirstPersonController : MonoBehaviour
     private InputAction moveAction;
     private InputAction lookAction;
     private InputAction sprintAction;
-    private InputAction jumpAction;
 
     private Quaternion targetBodyRotation;
     private Quaternion targetCameraRotation;
@@ -120,7 +118,6 @@ public class FirstPersonController : MonoBehaviour
         moveAction = playerMap.FindAction("Move", true);
         lookAction = playerMap.FindAction("Look", true);
         sprintAction = playerMap.FindAction("Sprint", true);
-        jumpAction = playerMap.FindAction("Jump", true);
     }
 
     private void OnEnable()
@@ -128,7 +125,6 @@ public class FirstPersonController : MonoBehaviour
         moveAction.Enable();
         lookAction.Enable();
         sprintAction.Enable();
-        jumpAction.Enable();
         // İmleç kilitlenirken gelen ilk fare delta'sı kamerayı aşağı çekiyordu.
         framesToSkip = 3;
         if (lockCursor)
@@ -143,7 +139,6 @@ public class FirstPersonController : MonoBehaviour
         moveAction.Disable();
         lookAction.Disable();
         sprintAction.Disable();
-        jumpAction.Disable();
         if (lockCursor)
         {
             Cursor.lockState = CursorLockMode.None;
@@ -172,7 +167,7 @@ public class FirstPersonController : MonoBehaviour
         else
         {
             horizontalVelocity = Vector3.zero;
-            ApplyVertical(false);
+            ApplyVertical();
             controller.Move(Vector3.up * verticalVelocity * Time.deltaTime);
         }
 
@@ -231,7 +226,7 @@ public class FirstPersonController : MonoBehaviour
 
         horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, wishDir * speed, acceleration * Time.deltaTime * speed);
 
-        ApplyVertical(jumpAction.WasPressedThisFrame());
+        ApplyVertical();
         moveStartFeetY = transform.position.y;
         CollisionFlags flags = controller.Move((horizontalVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
         // Tavana çarpınca yukarı hız sıfırlanır, yoksa kafa tavana yapışık kalır.
@@ -273,11 +268,11 @@ public class FirstPersonController : MonoBehaviour
         return float.NegativeInfinity;
     }
 
-    private void ApplyVertical(bool jump)
+    private void ApplyVertical()
     {
         if (controller.isGrounded)
         {
-            verticalVelocity = jump ? jumpSpeed : -stickToGroundForce;
+            verticalVelocity = -stickToGroundForce;
         }
         else
         {
