@@ -63,6 +63,9 @@ public class FirstPersonController : MonoBehaviour
 
     public bool InputEnabled { get; set; } = true;
 
+    /// <summary>Oyuncunun input action asset'i (duraklatma girdiyi buradan kapatır).</summary>
+    public InputActionAsset InputActions => inputActions;
+
     /// <summary>
     /// True iken kontrolcü hiçbir şey yapmaz (hareket, yer çekimi, bakış, kamera konumu).
     /// Oturma gibi oyuncuyu ve kamerayı başka bir scriptin taşıdığı durumlar için.
@@ -192,6 +195,10 @@ public class FirstPersonController : MonoBehaviour
         }
 
         Vector2 delta = Vector2.ClampMagnitude(rawDelta, MaxLookDeltaPerFrame) * LegacyMouseAxisScale;
+        // Ayarlar ekranı: hassasiyet çarpanı ve Y ekseni ters çevirme.
+        delta *= GameSettings.LookSensitivityMultiplier;
+        if (GameSettings.InvertY)
+            delta.y = -delta.y;
         targetBodyRotation *= Quaternion.Euler(0f, delta.x * xSensitivity, 0f);
         targetCameraRotation = ClampPitch(targetCameraRotation * Quaternion.Euler(-delta.y * ySensitivity, 0f, 0f));
 

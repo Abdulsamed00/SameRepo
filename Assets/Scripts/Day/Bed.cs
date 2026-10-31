@@ -161,6 +161,8 @@ public class Bed : Interactable
         body.PlaySittingIdle();
         player.SetPositionAndRotation(seated, sitRotation);
         cameraRoot.SetLocalPositionAndRotation(seatedCameraPosition, Quaternion.identity);
+        // Gün geçişi yazısı karanlıkta belirir, ekran açılmadan söner.
+        StartCoroutine(ScreenFader.Caption("ERTESİ SABAH", $"{GameDay.Index + 1}. GÜN", Mathf.Max(1f, sleepDuration - 0.5f)));
         yield return new WaitForSeconds(sleepDuration);
 
         // 4) Ekran açılır, oyuncu kalkar.

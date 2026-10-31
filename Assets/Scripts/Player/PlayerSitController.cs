@@ -90,7 +90,10 @@ public class PlayerSitController : MonoBehaviour
             return;
         }
 
-        Vector2 delta = Vector2.ClampMagnitude(lookAction.ReadValue<Vector2>(), 50f) * 0.1f * lookSensitivity;
+        Vector2 delta = Vector2.ClampMagnitude(lookAction.ReadValue<Vector2>(), 50f) * 0.1f * lookSensitivity
+            * GameSettings.LookSensitivityMultiplier;
+        if (GameSettings.InvertY)
+            delta.y = -delta.y;
         seatedYaw = Mathf.Clamp(seatedYaw + delta.x, -seatedYawLimit, seatedYawLimit);
         seatedPitch = Mathf.Clamp(seatedPitch - delta.y, seatedMinPitch, seatedMaxPitch);
         cameraRoot.localRotation = Quaternion.Euler(seatedPitch, seatedYaw, 0f);

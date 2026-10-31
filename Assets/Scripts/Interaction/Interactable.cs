@@ -21,6 +21,9 @@ public abstract class Interactable : MonoBehaviour
     /// <summary>Ekranda tuş etiketinin yanında görünen metin.</summary>
     public virtual string Prompt => prompt;
 
+    /// <summary>Bildirimin üstünde küçük harflerle görünen nesne adı ("PALTO"). Boşsa gösterilmez.</summary>
+    public virtual string Title => null;
+
     /// <summary>Etkileşimi tetikleyen tuş. Varsayılan F.</summary>
     public virtual InteractionKey Key => InteractionKey.Interact;
 

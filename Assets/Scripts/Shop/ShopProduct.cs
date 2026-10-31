@@ -17,7 +17,9 @@ public class ShopProduct : PickupItem
     // Ürünlerin tutma ofsetleri kameradaki tutma noktasına göre ayarlı; ele bağlanmazlar.
     public override bool HoldInHand => false;
 
-    public override string Prompt => $"{product.Accusative()} al";
+    public override string Prompt => "Al";
+
+    public override string Title => product.DisplayName().ToUpper(new System.Globalization.CultureInfo("tr-TR"));
 
     public override bool CanInteract(PlayerInteractor interactor) =>
         base.CanInteract(interactor) && GameDay.IsAvailable(product) && DayRoutine.AdRequirementMet

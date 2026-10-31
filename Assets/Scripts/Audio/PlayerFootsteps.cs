@@ -61,7 +61,7 @@ public class PlayerFootsteps : MonoBehaviour
         bool walking = controller != null && !controller.Frozen && characterController.enabled
             && characterController.isGrounded && speed > minSpeed;
 
-        float target = walking ? volume : 0f;
+        float target = walking ? volume * GameSettings.Volume(AudioCategory.Effects) : 0f;
         source.volume = Mathf.MoveTowards(source.volume, target, volume * Time.deltaTime / fadeTime);
         if (walking)
             source.pitch = Mathf.Lerp(1f, runPitch, Mathf.InverseLerp(walkSpeed, runSpeed, speed));

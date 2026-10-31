@@ -20,7 +20,7 @@ public class FastTravel : MonoBehaviour
 
     private void Update()
     {
-        if (busy || Keyboard.current == null || !Keyboard.current[key].wasPressedThisFrame)
+        if (busy || PauseMenu.IsPaused || Keyboard.current == null || !Keyboard.current[key].wasPressedThisFrame)
             return;
 
         FirstPersonController player = FindFirstObjectByType<FirstPersonController>();

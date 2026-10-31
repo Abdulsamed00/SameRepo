@@ -29,7 +29,7 @@ public class RandomOneShot : MonoBehaviour
         source.transform.SetParent(transform, false);
         source.transform.position = point.position;
         source.clip = clip;
-        source.volume = volume;
+        source.volume = volume * GameSettings.Volume(AudioCategory.Ambient);
         source.spatialBlend = 1f;
         source.rolloffMode = AudioRolloffMode.Linear;
         source.minDistance = minDistance;

@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// Oyun sonu (GDD): beş ürün de alınıp giyilmiş, son poz verilmiş, oyuncu evden sokağa çıkmıştır
@@ -24,14 +23,11 @@ public class FinalSequence : MonoBehaviour
     [SerializeField] private float holdDuration = 2.5f;
 
     [Header("Jenerik")]
+    [Tooltip("Görüntünün solup jeneriğin belirdiği süre (sn).")]
     [SerializeField] private float fadeToBlackDuration = 2.5f;
-    [SerializeField] private float titleDuration = 3.5f;
-    [SerializeField] private float creditsDuration = 6f;
+    [SerializeField] private float creditsDuration = 8f;
     [SerializeField] private string menuScene = "MainMenu";
-    [SerializeField] private string[] credits =
-    {
-        "SILA AÇIK", "MURATHAN ÖĞDÜR", "ABDULSAMED EKER", "MEHMET EFE ALP",
-    };
+    [SerializeField] private AudioClip clickSound;
 
     private FirstPersonController player;
     private Vector3 startPosition;
@@ -118,70 +114,28 @@ public class FinalSequence : MonoBehaviour
         }
     }
 
+    // Son kare renginden tamamen solar ve kararır, üstünde Hazırlayanlar ekranı belirir (ESC ile atlanır).
     private IEnumerator Credits()
     {
-        GameObject canvasObject = new GameObject("FinalJenerik");
-        Canvas canvas = canvasObject.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        Canvas canvas = UiKit.CreateCanvas("FinalJenerik", short.MaxValue - 1);
         // ScreenFader perdesinin (short.MaxValue) altında kalır, yükleme geçişi bunun üstünden kararır.
-        canvas.sortingOrder = short.MaxValue - 1;
-
-        Image curtain = new GameObject("Perde").AddComponent<Image>();
-        curtain.transform.SetParent(canvasObject.transform, false);
-        curtain.color = new Color(0f, 0f, 0f, 0f);
-        curtain.raycastTarget = false;
-        Stretch(curtain.rectTransform);
-
-        for (float t = 0f; t < fadeToBlackDuration; t += Time.deltaTime)
-        {
-            curtain.color = new Color(0f, 0f, 0f, t / fadeToBlackDuration);
-            yield return null;
-        }
-        curtain.color = Color.black;
+        bool skipped = false;
+        CreditsView view = CreditsView.Create(canvas.transform, 0.6f, clickSound, () => skipped = true);
+        view.Group.alpha = 0f;
         Cursor.visible = false;
 
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        Text title = CreateText(canvasObject.transform, font, "SAME", 96, FontStyle.Bold);
-        yield return FadeText(title, titleDuration);
-
-        Text heading = CreateText(canvasObject.transform, font, "HAZIRLAYANLAR\n\n" + string.Join("\n", credits), 44, FontStyle.Normal);
-        yield return FadeText(heading, creditsDuration);
-
-        Destroy(canvasObject);
-    }
-
-    private static Text CreateText(Transform parent, Font font, string content, int size, FontStyle style)
-    {
-        Text text = new GameObject("Yazi").AddComponent<Text>();
-        text.transform.SetParent(parent, false);
-        text.font = font;
-        text.text = content;
-        text.fontSize = size;
-        text.fontStyle = style;
-        text.alignment = TextAnchor.MiddleCenter;
-        text.color = new Color(1f, 1f, 1f, 0f);
-        text.raycastTarget = false;
-        Stretch(text.rectTransform);
-        return text;
-    }
-
-    // Yazı belirir, bir süre kalır, söner.
-    private static IEnumerator FadeText(Text text, float duration)
-    {
-        float fade = Mathf.Min(1f, duration * 0.25f);
-        for (float t = 0f; t < duration; t += Time.deltaTime)
+        float startFade = Shader.GetGlobalFloat("_Solma");
+        for (float t = 0f; t < fadeToBlackDuration && !skipped; t += Time.deltaTime)
         {
-            float alpha = Mathf.Min(Mathf.Clamp01(t / fade), Mathf.Clamp01((duration - t) / fade));
-            text.color = new Color(1f, 1f, 1f, alpha);
+            float k = t / fadeToBlackDuration;
+            Shader.SetGlobalFloat("_Solma", Mathf.Lerp(startFade, 1f, k));
+            view.Group.alpha = k;
             yield return null;
         }
-        Destroy(text.gameObject);
-    }
+        Shader.SetGlobalFloat("_Solma", 1f);
+        view.Group.alpha = 1f;
 
-    private static void Stretch(RectTransform rect)
-    {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = rect.offsetMax = Vector2.zero;
+        for (float t = 0f; t < creditsDuration && !skipped; t += Time.deltaTime)
+            yield return null;
     }
 }

@@ -106935,14 +106935,9 @@ MonoBehaviour:
   finalFieldOfView: 45
   holdDuration: 2.5
   fadeToBlackDuration: 2.5
-  titleDuration: 3.5
   creditsDuration: 6
   menuScene: MainMenu
-  credits:
-  - "SILA A\xC7IK"
-  - "MURATHAN \xD6\u011ED\xDCR"
-  - ABDULSAMED EKER
-  - MEHMET EFE ALP
+  clickSound: {fileID: 0}
 --- !u!4 &1145704861
 Transform:
   m_ObjectHideFlags: 0
@@ -179876,6 +179871,7 @@ GameObject:
   - component: {fileID: 1962615175}
   - component: {fileID: 1962615177}
   - component: {fileID: 1962615176}
+  - component: {fileID: 1962615178}
   m_Layer: 0
   m_Name: Ortam_Sesleri
   m_TagString: Untagged
@@ -180026,6 +180022,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1962615178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1962615174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fd0f7845da1977409fc4c5000bc2ace, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CategoryVolume
+  category: 2
 --- !u!1 &1966181446
 GameObject:
   m_ObjectHideFlags: 0

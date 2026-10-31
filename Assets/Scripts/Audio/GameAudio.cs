@@ -30,6 +30,17 @@ public static class GameAudio
         source.Play();
     }
 
+    /// <summary>Arayüz sesi: oyun duraklatılmışken (<see cref="AudioListener.pause"/>) de çalar.</summary>
+    public static void PlayUI(AudioClip clip, float volume = 1f)
+    {
+        AudioSource source = Create(clip, volume);
+        if (source == null)
+            return;
+        source.spatialBlend = 0f;
+        source.ignoreListenerPause = true;
+        source.Play();
+    }
+
     private static AudioSource Create(AudioClip clip, float volume)
     {
         if (clip == null)
@@ -38,7 +49,7 @@ public static class GameAudio
         Object.DontDestroyOnLoad(go);
         AudioSource source = go.AddComponent<AudioSource>();
         source.clip = clip;
-        source.volume = volume;
+        source.volume = volume * GameSettings.Volume(AudioCategory.Effects);
         source.playOnAwake = false;
         Object.Destroy(go, clip.length + 0.1f);
         return source;

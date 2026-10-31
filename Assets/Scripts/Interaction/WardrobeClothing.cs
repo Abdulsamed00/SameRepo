@@ -124,7 +124,8 @@ public class WardrobeClothing : Interactable
         controller.Frozen = true;
         // Kıyafet kameranın önüne gelince ışın ona bakmayabilir; F her durumda giysin.
         interactor.Zone = this;
-        interactor.Hint = $"<b>{interactor.DropKeyLabel}</b>  {putBackHint}";
+        interactor.HintKey = interactor.DropKeyLabel;
+        interactor.Hint = putBackHint;
         GameAudio.PlayAt(handleSound, model.position);
 
         yield return Move(model.position, model.rotation, () => InspectRotation(), true);

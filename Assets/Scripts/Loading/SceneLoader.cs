@@ -18,6 +18,9 @@ public static class SceneLoader
 
     private static bool transitioning;
 
+    /// <summary>Geçiş sürüyor (kararma başladı, hedef sahne henüz açılmadı).</summary>
+    public static bool IsTransitioning => transitioning;
+
     public static void Load(string targetScene, string spawnId = null)
     {
         if (transitioning)

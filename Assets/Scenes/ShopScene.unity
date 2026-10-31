@@ -6550,6 +6550,7 @@ GameObject:
   - component: {fileID: 404485645}
   - component: {fileID: 404485647}
   - component: {fileID: 404485646}
+  - component: {fileID: 404485648}
   m_Layer: 0
   m_Name: Magaza_Muzigi
   m_TagString: Untagged
@@ -6685,6 +6686,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &404485648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404485644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fd0f7845da1977409fc4c5000bc2ace, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CategoryVolume
+  category: 0
 --- !u!1 &410572494
 GameObject:
   m_ObjectHideFlags: 0

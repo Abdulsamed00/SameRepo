@@ -67,6 +67,7 @@ public class Television : Interactable
         audioSource.volume = volume;
         audioSource.minDistance = 2f;
         audioSource.maxDistance = 12f;
+        gameObject.AddComponent<CategoryVolume>();
 
         videoPlayer = gameObject.AddComponent<VideoPlayer>();
         videoPlayer.playOnAwake = false;
