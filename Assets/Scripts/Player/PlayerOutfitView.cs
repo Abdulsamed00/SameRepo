@@ -23,6 +23,10 @@ public class PlayerOutfitView : MonoBehaviour
         // Tişört mesh'i paltonun sırtından dışarı taşıyor; palto kapalı gövdeyi örttüğü için tişört gizlenir
         // (önden açık yakada gövdenin kendi atleti görünür).
         new Item { product = ProductType.Palto, show = new[] { "Coat" }, hide = new[] { "Tshırt" } },
+        new Item { product = ProductType.Pantolon, show = new[] { "BlueJean" }, hide = new[] { "EsofmanAltı" } },
+        new Item { product = ProductType.Ayakkabi, show = new[] { "GoldenShoeLeft", "GoldenShoeRight" }, hide = new[] { "ShoeLeft", "ShoeRight" } },
+        new Item { product = ProductType.Canta, show = new[] { "Bag" }, hide = new string[0] },
+        new Item { product = ProductType.Gozluk, show = new[] { "Glasses" }, hide = new string[0] },
     };
 
     private void OnEnable()

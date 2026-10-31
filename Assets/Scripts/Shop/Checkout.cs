@@ -6,6 +6,8 @@ using UnityEngine;
 /// </summary>
 public class Checkout : Interactable
 {
+    [SerializeField] private AudioClip purchaseSound;
+
     public override string Prompt => "Satın al";
 
     public override bool CanInteract(PlayerInteractor interactor) =>
@@ -18,6 +20,7 @@ public class Checkout : Interactable
             return;
 
         interactor.ReleaseHeld();
+        GameAudio.Play2D(purchaseSound);
         // Satın alınan ürün poşete girdi sayılır; sahneden kalkar.
         product.gameObject.SetActive(false);
     }

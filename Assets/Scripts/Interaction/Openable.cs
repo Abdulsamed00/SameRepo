@@ -24,6 +24,11 @@ public class Openable : Interactable
     [SerializeField] private float duration = 0.6f;
     [SerializeField] private Part[] parts;
 
+    [Header("Ses")]
+    [SerializeField] private AudioClip openSound;
+    [SerializeField] private AudioClip closeSound;
+    [SerializeField] private float volume = 1f;
+
     private bool isOpen;
     private float amount;
 
@@ -39,7 +44,12 @@ public class Openable : Interactable
         Apply();
     }
 
-    public override void Interact(PlayerInteractor interactor) => isOpen = !isOpen;
+    public override void Interact(PlayerInteractor interactor)
+    {
+        isOpen = !isOpen;
+        Vector3 at = parts != null && parts.Length > 0 && parts[0].target != null ? parts[0].target.position : transform.position;
+        GameAudio.PlayAt(isOpen ? openSound : closeSound, at, volume);
+    }
 
     private void Update()
     {

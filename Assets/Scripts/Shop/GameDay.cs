@@ -3,7 +3,7 @@ using System;
 /// <summary>
 /// Oyunun günü (GDD: 5 gün, her gün bir ürün: palto, pantolon, ayakkabı, çanta, gözlük).
 /// TV o günün reklamını oynatır, mağazada sadece o günün ürünü alınabilir.
-/// Statik: sahne geçişlerinde korunur. Gün uyku sistemiyle ilerleyecek (<see cref="Advance"/>); o gelene kadar hep 1. gün.
+/// Statik: sahne geçişlerinde korunur. Gün yatakta uyuyunca ilerler (<see cref="DayRoutine.StartNextDay"/>).
 /// </summary>
 public static class GameDay
 {
@@ -16,17 +16,17 @@ public static class GameDay
     public static ProductType Product => (ProductType)Math.Min(Index, ProductCount - 1);
 
     /// <summary>
-    /// Geçici (kullanıcı kararı, 29.10): true iken gün kısıtı yok, 5 ürünün her biri tek tek satın alınabilir
-    /// ve mağaza kapısı bu ziyarette herhangi bir ürün alınınca açılır. Gün/uyku sistemi bağlanınca false yapılacak.
+    /// Test kolaylığı: true iken gün kısıtı yok, 5 ürünün her biri tek tek satın alınabilir ve mağaza kapısı
+    /// bu ziyarette herhangi bir ürün alınınca açılır. Oyunda false (uyku döngüsü her gün bir ürün açar).
     /// </summary>
-    public static bool AllProductsAvailable = true;
+    public static bool AllProductsAvailable = false;
 
     /// <summary>Ürün bugün mağazada alınabilir mi.</summary>
     public static bool IsAvailable(ProductType product) => AllProductsAvailable || product == Product;
 
     public static event Action Changed;
 
-    /// <summary>Ertesi güne geçer (uyku sistemi çağıracak).</summary>
+    /// <summary>Ertesi güne geçer (yatakta uyuyunca).</summary>
     public static void Advance()
     {
         if (Index >= ProductCount - 1)

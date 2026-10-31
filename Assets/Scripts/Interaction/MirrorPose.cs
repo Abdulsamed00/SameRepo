@@ -18,6 +18,10 @@ public class MirrorPose : Interactable
     [SerializeField] private float standDistance = 1.6f;
     [SerializeField] private float moveDuration = 0.5f;
 
+    [Header("Ses")]
+    [Tooltip("Poz vermeye başlarken çalar.")]
+    [SerializeField] private AudioClip poseSound;
+
     private PlayerInteractor posingPlayer;
     private bool busy;
 
@@ -89,6 +93,7 @@ public class MirrorPose : Interactable
         cameraRoot.localRotation = cameraEndRot;
 
         body.PlayPose();
+        GameAudio.PlayAt(poseSound, surface.position);
         busy = false;
     }
 
@@ -114,5 +119,7 @@ public class MirrorPose : Interactable
             interactor.Zone = null;
         posingPlayer = null;
         busy = false;
+        // Günün kıyafetiyle poz verildiyse uyku gelir (esneme), yatak açılır.
+        DayRoutine.NotifyPoseEnded();
     }
 }
