@@ -31,6 +31,8 @@ public class SceneFade : MonoBehaviour
                 MarkExempt(go);
         foreach (ShopProduct product in FindObjectsByType<ShopProduct>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             MarkExempt(product.gameObject);
+        foreach (DailyPoster poster in FindObjectsByType<DailyPoster>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            MarkExempt(poster.gameObject);
         foreach (WardrobeClothing clothing in FindObjectsByType<WardrobeClothing>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             MarkExempt(clothing.gameObject);
     }
