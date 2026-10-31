@@ -9,7 +9,8 @@ using UnityEngine;
 /// dönme klibi oynar (gövde klibin kök dönüşüyle döner); oyuncu bu sırada yavaşlamaz. Geri giderken gövde
 /// arkasını dönmez, yürüme klibi tersten oynar. Elde tutulan eşyalar sağ avuçtaki RightHandHold'a oturur.
 /// Saç ve gözlük "PlayerHead" katmanına alınır ve sadece oyuncunun kendi kamerasından gizlenir
-/// (kamera kafanın içinde kalıyor). Ayna vb. başka kameralarda kafa tam görünür.
+/// (kamera kafanın içinde kalıyor). Kafa gövde mesh'iyle tek parça: gövde de bu katmana alınır, oyuncu kamerası
+/// kafası ensede bir noktaya çökmüş bir kopyasını görür. Ayna vb. başka kameralarda kafa tam görünür.
 /// Dururken fareyle sağa sola bakınca gövde yerinde kalır, sadece kafa döner; bakış gövdeden
 /// <c>headTurnLimit</c>'ten fazla ayrılınca gövde peşinden gelir.
 /// </summary>
@@ -48,6 +49,8 @@ public class PlayerBody : MonoBehaviour
     [SerializeField] private float lieDownBlend = 0.4f;
     [Tooltip("Oyuncu kamerasından gizlenecek renderer adları (kafaya ait ayrı parçalar).")]
     [SerializeField] private string[] hiddenRendererNames = { "TopuzSac", "BlondeHair", "Glasses" };
+    [Tooltip("Kafayı da içeren gövde renderer'ı: oyuncu kamerası bunun kafasız kopyasını görür.")]
+    [SerializeField] private string bodyRendererName = "Body";
 
     [Header("Yöne Dönme")]
     [Tooltip("Gövdenin hareket yönüne dönüş hızı (derece/sn).")]
@@ -106,6 +109,9 @@ public class PlayerBody : MonoBehaviour
     private float turnSign;
     private float turnScale;
     private float turnStartTime;
+    // Kafasız kopyada çöktürülen kemik (boyun) ve onun yerine geçen vekil.
+    private Transform head;
+    private Transform headProxy;
 
     public bool IsPosing { get; private set; }
 
@@ -147,8 +153,62 @@ public class PlayerBody : MonoBehaviour
                 r.gameObject.layer = layer;
         }
 
+        CreateHeadlessBody(layer);
+
         if (playerCamera != null)
             playerCamera.cullingMask &= ~(1 << layer);
+    }
+
+    // Kamera 1.7'de, kafa gövdeyle birlikte kökün 0.28 gerisinde. Gövde yürürken yöne dönünce ya da bakış hızlı
+    // çevrilince kafa kameranın yanına/önüne geliyor, aşağı bakınca görünüyordu (yakın kırpma 0.05 olduğundan beri).
+    // Kopyada boyun, kafa ve alt kemikleri yerine sıfır ölçekli bir vekil kemik var: hepsi boynun dibinde (omuz
+    // hizası, yakanın içi) bir noktaya çöker. Önce sadece kafa çöküyordu, aşağı bakınca boyun sivri bir uç gibi
+    // görünüyordu. Asıl gövde PlayerHead katmanında kalır, ayna onu tam görür.
+    private void CreateHeadlessBody(int headLayer)
+    {
+        head = animator.GetBoneTransform(HumanBodyBones.Neck);
+        if (head == null)
+            head = animator.GetBoneTransform(HumanBodyBones.Head);
+        SkinnedMeshRenderer source = null;
+        foreach (SkinnedMeshRenderer r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            if (r.name == bodyRendererName)
+            {
+                source = r;
+                break;
+            }
+        }
+        if (source == null || head == null)
+            return;
+
+        headProxy = new GameObject("Kafa_Vekil").transform;
+        headProxy.SetParent(head.parent, false);
+        SyncHeadProxy();
+
+        Transform[] bones = source.bones;
+        for (int i = 0; i < bones.Length; i++)
+        {
+            if (bones[i] != null && bones[i].IsChildOf(head))
+                bones[i] = headProxy;
+        }
+
+        GameObject copy = Instantiate(source.gameObject, source.transform.parent);
+        copy.name = source.name + "_Kafasiz";
+        copy.GetComponent<SkinnedMeshRenderer>().bones = bones;
+        source.gameObject.layer = headLayer;
+    }
+
+    private void SyncHeadProxy()
+    {
+        headProxy.SetLocalPositionAndRotation(head.localPosition, head.localRotation);
+        headProxy.localScale = Vector3.one * 0.0001f;
+    }
+
+    private void LateUpdate()
+    {
+        // Animasyon ve kafa IK'sından sonra: kopyanın çöken boynu gerçek boynun dibini izlesin.
+        if (headProxy != null)
+            SyncHeadProxy();
     }
 
     private void Update()

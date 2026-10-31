@@ -61,6 +61,11 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float fovTimeToDecrease = 1f;
     [SerializeField] private AnimationCurve fovCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Kamera Kırpma")]
+    [Tooltip("Yürürken kameranın yakın kırpma mesafesi. Kapsül yarıçapı 0.3 iken 0.3'lük yakın düzlemin köşeleri (~0.46 m) duvarın, " +
+             "kapının ve eşyaların içine taşıyordu, dibine girince arkası görünüyordu.")]
+    [SerializeField] private float walkingNearClip = 0.05f;
+
     public bool InputEnabled { get; set; } = true;
 
     /// <summary>Oyuncunun input action asset'i (duraklatma girdiyi buradan kapatır).</summary>
@@ -102,6 +107,8 @@ public class FirstPersonController : MonoBehaviour
     private float landBobTimer = float.MaxValue;
 
     private float baseFov;
+    // Kameradaki değer (0.3): donukken (oturma, ayna, uyku) kamera kafanın içinde/dibinde, kafa ve omuzlar kırpılmalı.
+    private float frozenNearClip;
     private float fovKick01;
 
     // Eski Input Manager'da "Mouse X/Y" ekseni piksel delta'sının 0.1 katıydı; hassasiyet 2 bu ölçeğe göre.
@@ -116,7 +123,10 @@ public class FirstPersonController : MonoBehaviour
         targetBodyRotation = transform.localRotation;
         targetCameraRotation = cameraRoot.localRotation;
         if (playerCamera != null)
+        {
             baseFov = playerCamera.fieldOfView;
+            frozenNearClip = playerCamera.nearClipPlane;
+        }
         if (body == null)
             body = GetComponentInChildren<PlayerBody>(true);
 
@@ -161,6 +171,8 @@ public class FirstPersonController : MonoBehaviour
 
     private void Update()
     {
+        if (playerCamera != null)
+            playerCamera.nearClipPlane = Frozen ? frozenNearClip : walkingNearClip;
         if (Frozen)
             return;
 

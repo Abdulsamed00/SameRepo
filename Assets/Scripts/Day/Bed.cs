@@ -133,6 +133,10 @@ public class Bed : Interactable
         Animator animator = body.GetComponent<Animator>();
         Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
         float lieLength = body.PlayLieDown(out float blend);
+        // Uzanırken kamera gövdenin içinden kafaya geçiyor, karakterin içi görünüyordu: ekran açılana kadar gövde çizilmez.
+        Renderer[] bodyRenderers = body.GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in bodyRenderers)
+            r.forceRenderingOff = true;
         StartCoroutine(ScreenFader.FadeOut(lieLength));
 
         Vector3 lieStart = sitPoint.position + Vector3.up * lyingStartHeight;
@@ -161,6 +165,8 @@ public class Bed : Interactable
         body.PlaySittingIdle();
         player.SetPositionAndRotation(seated, sitRotation);
         cameraRoot.SetLocalPositionAndRotation(seatedCameraPosition, Quaternion.identity);
+        foreach (Renderer r in bodyRenderers)
+            r.forceRenderingOff = false;
         // Gün geçişi yazısı karanlıkta belirir, ekran açılmadan söner.
         StartCoroutine(ScreenFader.Caption("ERTESİ SABAH", $"{GameDay.Index + 1}. GÜN", Mathf.Max(1f, sleepDuration - 0.5f)));
         yield return new WaitForSeconds(sleepDuration);

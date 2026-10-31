@@ -147,12 +147,32 @@ public class PlayerInteractor : MonoBehaviour
             if (hits[i].collider.transform.IsChildOf(transform) || hits[i].distance <= 0f || hits[i].distance >= bestDistance)
                 continue;
             Interactable candidate = hits[i].collider.GetComponentInParent<Interactable>();
-            if (candidate == null || !candidate.CanInteract(this))
+            if (candidate == null || !candidate.CanInteract(this) || !InSight(candidate, hits[i].point))
                 continue;
             best = candidate;
             bestDistance = hits[i].distance;
         }
         return best;
+    }
+
+    // Hedef yardımı bakılan yüzeyin arkasına da uzandığı için 20 cm'lik duvarın öbür yüzündeki eşyayı (yan odadaki ayna,
+    // koridordan dolap) buluyordu. Kameradan eşyanın değilen noktasına kadar arada başka bir şey olmamalı.
+    private bool InSight(Interactable candidate, Vector3 point)
+    {
+        Vector3 origin = viewCamera.position;
+        Vector3 toPoint = point - origin;
+        float distance = toPoint.magnitude - 0.02f;
+        if (distance <= 0f)
+            return true;
+
+        int count = Physics.RaycastNonAlloc(origin, toPoint.normalized, sightHits, distance, interactMask, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < count; i++)
+        {
+            Collider c = sightHits[i].collider;
+            if (!c.transform.IsChildOf(transform) && c.GetComponentInParent<Interactable>() != candidate)
+                return false;
+        }
+        return true;
     }
 
     // Bakılan yönde dropDistance kadar ileri; duvar/zemin/mobilya varsa onun önünde dur.
@@ -169,6 +189,7 @@ public class PlayerInteractor : MonoBehaviour
     }
 
     private readonly RaycastHit[] hits = new RaycastHit[16];
+    private readonly RaycastHit[] sightHits = new RaycastHit[16];
 
     // Kamera CharacterController kapsülünün tepesine yakın (1.7 / 1.8); aşağı bakınca ışın önce
     // oyuncunun kendi kapsülüne çarpıyordu. Oyuncuya ait collider'lar atlanır.
