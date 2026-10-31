@@ -3,7 +3,8 @@ using UnityEngine;
 /// <summary>
 /// Mağaza standındaki ürün. E ile ele alınır (G ile standdaki yerine döner), kasada F ile satın alınır.
 /// Sadece o günün ürünü (<see cref="GameDay.Product"/>, TV'de reklamı verilen) alınabilir; diğer standlar
-/// etkileşime kapalıdır. Aynı türden ürün satın alındıysa standdaki diğerleri artık alınamaz.
+/// etkileşime kapalıdır. Günün reklamı izlenmeden (<see cref="DayRoutine.AdWatchedToday"/>) hiçbir ürün
+/// alınamaz. Aynı türden ürün satın alındıysa standdaki diğerleri artık alınamaz.
 /// </summary>
 public class ShopProduct : PickupItem
 {
@@ -19,5 +20,6 @@ public class ShopProduct : PickupItem
     public override string Prompt => $"{product.Accusative()} al";
 
     public override bool CanInteract(PlayerInteractor interactor) =>
-        base.CanInteract(interactor) && GameDay.IsAvailable(product) && !PlayerPurchases.Owns(product);
+        base.CanInteract(interactor) && GameDay.IsAvailable(product) && DayRoutine.AdRequirementMet
+        && !PlayerPurchases.Owns(product);
 }

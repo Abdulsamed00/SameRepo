@@ -13,6 +13,8 @@ public static class PlayerOutfit
 
     public static bool IsWorn(ProductType type) => worn.Contains(type);
 
+    public static void Reset() => worn.Clear();
+
     public static void Wear(ProductType type)
     {
         if (worn.Add(type))

@@ -17,6 +17,8 @@ public static class PlayerPurchases
 
     public static bool OwnsAll => owned.Count == Enum.GetValues(typeof(ProductType)).Length;
 
+    public static void Reset() => owned.Clear();
+
     /// <returns>Ürün daha önce alınmadıysa true.</returns>
     public static bool Buy(ProductType type)
     {

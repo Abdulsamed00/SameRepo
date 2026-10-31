@@ -1,9 +1,10 @@
 using System;
 
 /// <summary>
-/// Günlük döngü: evden mağazaya git, günün ürününü al, eve dön, giy, aynada poz ver, uyu.
-/// Ürün alınınca evden çıkılamaz (<see cref="HouseExitLock"/>); yatak ancak giyip poz verdikten sonra
-/// uyutur (<see cref="Bed"/>). Uyuyunca <see cref="StartNextDay"/> ertesi güne geçer.
+/// Günlük döngü: TV'de günün reklamını izle, mağazaya git, günün ürününü al, eve dön, giy, aynada poz ver, uyu.
+/// Reklam izlenmeden mağazada ürün alınamaz ve evden çıkılamaz (<see cref="HouseExitLock"/>); ürün alınınca da
+/// o gün evden çıkılamaz; yatak ancak giyip poz verdikten sonra uyutur (<see cref="Bed"/>).
+/// Son günde (gözlük) uyku yok: giyip poz verince <see cref="FinalReady"/> olur, kapı açılır ve sokakta final başlar.
 /// Statik: sahne geçişlerinde korunur.
 /// </summary>
 public static class DayRoutine
@@ -14,20 +15,36 @@ public static class DayRoutine
     /// <summary>Bugünün ürünü aldıktan ve giydikten sonra aynada poz verildi.</summary>
     public static bool PosedToday { get; private set; }
 
+    /// <summary>Bugünün reklamı sonuna kadar izlendi (<see cref="Television.AdWatched"/>).</summary>
+    public static bool AdWatchedToday { get; private set; }
+
+    /// <summary>Reklam şartı sağlandı mı (test bayrağı <see cref="GameDay.AllProductsAvailable"/> şartı atlar).</summary>
+    public static bool AdRequirementMet => AdWatchedToday || GameDay.AllProductsAvailable;
+
     public static bool BoughtToday => PlayerPurchases.Owns(GameDay.Product);
 
     /// <summary>
-    /// Bugünün ürünü giyildi. Evde o ürün için dolapta kıyafet yoksa (<see cref="WardrobeClothing"/>
-    /// henüz sadece palto için var) giyme adımı atlanır, yoksa döngü o günde takılırdı.
+    /// Bugünün ürünü giyildi. Evde o ürün için dolapta kıyafet yoksa (<see cref="WardrobeClothing"/>)
+    /// giyme adımı atlanır, yoksa döngü o günde takılırdı.
     /// </summary>
     public static bool WornToday =>
         PlayerOutfit.IsWorn(GameDay.Product) || !WardrobeClothing.ExistsFor(GameDay.Product);
 
-    public static bool CanSleep => BoughtToday && WornToday && PosedToday;
+    /// <summary>Uyunabilir: son gün hariç (orada uyku yerine final var).</summary>
+    public static bool CanSleep => !GameDay.IsLastDay && BoughtToday && WornToday && PosedToday;
+
+    /// <summary>Son günün ürünü alındı, giyildi, poz verildi: evden çıkınca final başlar.</summary>
+    public static bool FinalReady => GameDay.IsLastDay && BoughtToday && WornToday && PosedToday;
+
+    public static void NotifyAdWatched(ProductType product)
+    {
+        if (product == GameDay.Product)
+            AdWatchedToday = true;
+    }
 
     public static void NotifyWorn(ProductType product)
     {
-        if (product == GameDay.Product && BoughtToday)
+        if (product == GameDay.Product && BoughtToday && !GameDay.IsLastDay)
             Sleepy?.Invoke();
     }
 
@@ -36,19 +53,31 @@ public static class DayRoutine
         if (!BoughtToday || !WornToday)
             return;
         PosedToday = true;
-        Sleepy?.Invoke();
+        if (!GameDay.IsLastDay)
+            Sleepy?.Invoke();
     }
 
     /// <summary>Eve dönüldüğünde giyilecek bir şey yoksa uyku hemen gelir.</summary>
     public static void NotifyArrivedHome()
     {
-        if (BoughtToday && !WardrobeClothing.ExistsFor(GameDay.Product) && !PosedToday)
+        if (BoughtToday && !WardrobeClothing.ExistsFor(GameDay.Product) && !PosedToday && !GameDay.IsLastDay)
             Sleepy?.Invoke();
     }
 
     public static void StartNextDay()
     {
         PosedToday = false;
+        AdWatchedToday = false;
         GameDay.Advance();
+    }
+
+    /// <summary>Yeni oyun: tüm ilerleme sıfırlanır (ana menüde, finalden sonra).</summary>
+    public static void ResetAll()
+    {
+        PosedToday = false;
+        AdWatchedToday = false;
+        PlayerPurchases.Reset();
+        PlayerOutfit.Reset();
+        GameDay.Reset();
     }
 }
