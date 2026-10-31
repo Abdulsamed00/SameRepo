@@ -179,6 +179,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1549540186739871979}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4297063459857402960}
   m_SourcePrefab: {fileID: 100100000, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
 --- !u!1 &450515813658187195 stripped
 GameObject:
@@ -199,3 +202,45 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcAnimationPlayer
   stateName: Women_Idle
   randomizeStartTime: 1
+  useRootMotion: 0
+  loopDrift: {x: 0, y: 0, z: 0}
+  loopLength: 1
+--- !u!114 &4297063459857402960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450515813658187195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 325b6b388ea6e1a44ae925e46f0122ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcDailyOutfit
+  group: Kadin
+  looks:
+  - product: 0
+    wear: Coat
+    alternatives:
+    - "Tsh\u0131rt"
+    - "Tsh\u0131rt_Blue"
+    - "Tsh\u0131rt_Pink"
+  - product: 1
+    wear: BlueJean
+    alternatives:
+    - "EsofmanAlt\u0131"
+    - "EsofmanAlt\u0131_Yesil"
+    - Siyah_Tayt
+  - product: 2
+    wear: GoldenShoeLeft+GoldenShoeRight
+    alternatives:
+    - LeftBoot+RightBoot
+    - ShoeLeft+ShoeRight
+    - BlackShoeLeft+BlackShoeRight
+    - BrownShoeLeft+BrownShoeRight
+  - product: 3
+    wear: Bag
+    alternatives: []
+  - product: 4
+    wear: Glasses
+    alternatives: []
