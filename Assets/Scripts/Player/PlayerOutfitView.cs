@@ -51,7 +51,12 @@ public class PlayerOutfitView : MonoBehaviour
         foreach (Transform t in GetComponentsInChildren<Transform>(true))
         {
             if (Array.IndexOf(item.show, t.name) >= 0)
+            {
                 t.gameObject.SetActive(true);
+                // Yeni ürün solmaz (GDD: reklam dünyası parlak kalır). Gözlük PlayerHead'de kalır, yoksa kameraya girer.
+                if (t.gameObject.layer == 0)
+                    SceneFade.MarkExempt(t.gameObject);
+            }
             else if (Array.IndexOf(item.hide, t.name) >= 0)
                 t.gameObject.SetActive(false);
         }
