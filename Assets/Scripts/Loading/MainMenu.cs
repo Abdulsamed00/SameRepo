@@ -7,6 +7,8 @@ public class MainMenu : MonoBehaviour
 
     private void Start()
     {
+        // Yeni oyun: önceki oyundan (final dahil) kalan gün, alışveriş ve kıyafet durumu sıfırlanır.
+        DayRoutine.ResetAll();
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }

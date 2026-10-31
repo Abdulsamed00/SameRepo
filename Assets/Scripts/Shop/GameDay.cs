@@ -26,6 +26,16 @@ public static class GameDay
 
     public static event Action Changed;
 
+    /// <summary>Son gün (gözlük): uyku yok, giyip poz verince evden çıkılınca final başlar.</summary>
+    public static bool IsLastDay => Index >= ProductCount - 1;
+
+    /// <summary>Yeni oyun: ilk güne döner.</summary>
+    public static void Reset()
+    {
+        Index = 0;
+        Changed?.Invoke();
+    }
+
     /// <summary>Ertesi güne geçer (yatakta uyuyunca).</summary>
     public static void Advance()
     {

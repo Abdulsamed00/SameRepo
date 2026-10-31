@@ -75,6 +75,9 @@ public class FirstPersonController : MonoBehaviour
     /// <summary>Yatay hız vektörü (dünya). Gövde bununla hareket yönüne döner.</summary>
     public Vector3 HorizontalVelocity => horizontalVelocity;
 
+    /// <summary>Kamera kökü (bakış eğimi bunun yerel dönüşüdür).</summary>
+    public Transform CameraRoot => cameraRoot;
+
     private CharacterController controller;
     private Camera playerCamera;
     private InputAction moveAction;

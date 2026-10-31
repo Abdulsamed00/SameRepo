@@ -78,7 +78,8 @@ public class Bed : Interactable
 
     public override bool CanInteract(PlayerInteractor interactor)
     {
-        if (busy || interactor.IsHolding)
+        // Son günde yatakla işimiz yok: giyip poz verince evden çıkılır (final).
+        if (busy || interactor.IsHolding || DayRoutine.FinalReady)
             return false;
         PlayerSitController sitter = interactor.GetComponent<PlayerSitController>();
         return sitter == null || !sitter.IsSeated;

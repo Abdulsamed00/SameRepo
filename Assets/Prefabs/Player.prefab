@@ -561,7 +561,7 @@ Transform:
   m_GameObject: {fileID: 5189773045830346345}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.7, z: 0}
+  m_LocalPosition: {x: 0, y: 1.55, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -945,6 +945,10 @@ MonoBehaviour:
   - Glasses
   turnSpeed: 540
   maxTurnAngle: 90
+  headTurnLimit: 60
+  headLookWeight: 1
+  headLookClamp: 0.6
+  headLookBlendSpeed: 4
   pickupReachTime: 0.75
   palmDepth: 0.03
   pickupReleaseTime: 0.5

@@ -194,6 +194,7 @@ public class Television : Interactable
         if (adWatchedRaised)
             return;
         adWatchedRaised = true;
+        DayRoutine.NotifyAdWatched(current.product);
         AdWatched?.Invoke(current.product);
     }
 

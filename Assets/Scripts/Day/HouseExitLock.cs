@@ -1,11 +1,34 @@
 using UnityEngine;
 
 /// <summary>
-/// Günün ürünü alındıktan sonra evin dış kapısını kilitler: oyuncu o gün tekrar dışarı çıkamaz, uyuması gerekir.
+/// Evin dış kapısının kilidi, günlük döngünün sırasına göre:
+/// reklam izlenmeden çıkılamaz; günün ürünü alındıktan sonra o gün tekrar çıkılamaz (uyumak gerekir);
+/// son günde giyip poz verince kapı açılır (final).
 /// </summary>
 public class HouseExitLock : MonoBehaviour
 {
     [SerializeField] private SceneDoor door;
+    [SerializeField] private string watchAdPrompt = "Önce televizyona bakayım";
+    [SerializeField] private string enoughPrompt = "Bugünlük dışarısı yeter";
+    [SerializeField] private string wearFirstPrompt = "Önce yeni kıyafetimi giyeyim";
+    [SerializeField] private string poseFirstPrompt = "Önce aynada kendime bakayım";
 
-    private void Update() => door.Locked = DayRoutine.BoughtToday;
+    private void Update()
+    {
+        if (DayRoutine.FinalReady)
+        {
+            door.Locked = false;
+            return;
+        }
+
+        bool needAd = !DayRoutine.AdRequirementMet;
+        bool bought = DayRoutine.BoughtToday;
+        door.Locked = needAd || bought;
+        if (needAd)
+            door.LockedPrompt = watchAdPrompt;
+        else if (!GameDay.IsLastDay)
+            door.LockedPrompt = enoughPrompt;
+        else
+            door.LockedPrompt = DayRoutine.WornToday ? poseFirstPrompt : wearFirstPrompt;
+    }
 }
