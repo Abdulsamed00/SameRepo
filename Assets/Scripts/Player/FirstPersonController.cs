@@ -75,9 +75,6 @@ public class FirstPersonController : MonoBehaviour
     /// <summary>Yatay hız vektörü (dünya). Gövde bununla hareket yönüne döner.</summary>
     public Vector3 HorizontalVelocity => horizontalVelocity;
 
-    /// <summary>Yürüme/koşma hızı çarpanı. Gövde yerinde dönme animasyonu oynarken düşürülür.</summary>
-    public float SpeedMultiplier { get; set; } = 1f;
-
     /// <summary>Kamera kökü (bakış eğimi bunun yerel dönüşüdür).</summary>
     public Transform CameraRoot => cameraRoot;
 
@@ -227,7 +224,7 @@ public class FirstPersonController : MonoBehaviour
     {
         Vector2 input = moveAction.ReadValue<Vector2>();
         bool sprinting = sprintAction.IsPressed() && input.y > 0f;
-        float speed = (sprinting ? runSpeed : walkSpeed) * SpeedMultiplier;
+        float speed = sprinting ? runSpeed : walkSpeed;
         Vector3 wishDir = Vector3.ClampMagnitude(transform.right * input.x + transform.forward * input.y, 1f);
 
         horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, wishDir * speed, acceleration * Time.deltaTime * speed);

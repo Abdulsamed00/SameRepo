@@ -6,7 +6,7 @@ using UnityEngine;
 /// Alma animasyonu sadece üst gövde katmanında (UpperBody) oynar, bacaklar yürümeye devam eder.
 /// Poz animasyonu (ayna) tüm gövdeyi alır; oyuncuyu dondurmak çağıranın işidir.
 /// Yürürken gövde basılan yöne döner (D ile sağa, A ile sola); kamera dönmez. Dururken basılırsa önce yerinde
-/// dönme klibi oynar (gövde klibin kök dönüşüyle döner), sonra yürür. Geri giderken gövde
+/// dönme klibi oynar (gövde klibin kök dönüşüyle döner); oyuncu bu sırada yavaşlamaz. Geri giderken gövde
 /// arkasını dönmez, yürüme klibi tersten oynar. Elde tutulan eşyalar sağ avuçtaki RightHandHold'a oturur.
 /// Saç ve gözlük "PlayerHead" katmanına alınır ve sadece oyuncunun kendi kamerasından gizlenir
 /// (kamera kafanın içinde kalıyor). Ayna vb. başka kameralarda kafa tam görünür.
@@ -59,8 +59,6 @@ public class PlayerBody : MonoBehaviour
     [SerializeField] private float turnClipMinAngle = 60f;
     [Tooltip("Dönme klibi sadece bu hızın altındayken başlar (m/sn); yürürken yön değiştirmek hızlı dönüşle olur.")]
     [SerializeField] private float turnClipMaxSpeed = 0.6f;
-    [Tooltip("Dönme klibi sürerken oyuncunun yürüme hızı çarpanı: önce döner, sonra yürür.")]
-    [Range(0f, 1f)] [SerializeField] private float turnMoveFactor = 0.2f;
     [SerializeField] private float turnCrossFade = 0.1f;
     [Tooltip("Dönme klibinin giriş geçişiyle birlikte gerçekte döndürdüğü açı (ölçüldü: 90° klip, 0.1 sn geçişle ~84°). " +
              "Klibin dönüşü, dönülecek açı / bu oranında ölçeklenir.")]
@@ -229,7 +227,6 @@ public class PlayerBody : MonoBehaviour
         turnSign = Mathf.Sign(angle);
         turnScale = Mathf.Clamp(Mathf.Abs(angle) / turnClipDegrees, 0.5f, 1.5f);
         turnStartTime = Time.time;
-        controller.SpeedMultiplier = turnMoveFactor;
         animator.CrossFadeInFixedTime(turnSign > 0f ? TurnRightState : TurnLeftState, turnCrossFade, 0, 0f);
     }
 
@@ -249,8 +246,6 @@ public class PlayerBody : MonoBehaviour
     private void EndTurn()
     {
         turning = false;
-        if (controller != null)
-            controller.SpeedMultiplier = 1f;
         if (!overridden)
             animator.CrossFadeInFixedTime(LocomotionState, crossFade);
     }
