@@ -45,6 +45,7 @@ public class Television : Interactable
     private bool adWatchedRaised;
     private bool preparing;
     private bool restartPending;
+    private bool pausedByMenu;
 
     /// <summary>Reklam sonuna kadar izlenince tetiklenir (günlük görev/yönlendirme sistemi buna bağlanır).</summary>
     public static event Action<ProductType> AdWatched;
@@ -63,9 +64,12 @@ public class Television : Interactable
 
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 1f;
+        // Tam 3D ve noktasal ses, oyuncu başını çevirince tek kulağa kayıp diğerinde kopuyordu: biraz 2D karışır,
+        // spread ile ses iki kulağa yayılır, yön hissi kalır.
+        audioSource.spatialBlend = 0.75f;
+        audioSource.spread = 140f;
         audioSource.volume = volume;
-        audioSource.minDistance = 2f;
+        audioSource.minDistance = 3f;
         audioSource.maxDistance = 12f;
         gameObject.AddComponent<CategoryVolume>();
 
@@ -92,6 +96,24 @@ public class Television : Interactable
 
     private void Update()
     {
+        // VideoPlayer ne Time.timeScale'e ne AudioListener.pause'a bakıyor: duraklatma menüsünde reklam ve sesi
+        // sürüyordu. Menü açılınca durdurulur, kapanınca kaldığı yerden devam eder.
+        if (PauseMenu.IsPaused)
+        {
+            if (!pausedByMenu && videoPlayer.isPlaying)
+            {
+                videoPlayer.Pause();
+                pausedByMenu = true;
+            }
+            return;
+        }
+        if (pausedByMenu)
+        {
+            pausedByMenu = false;
+            if (IsOn)
+                videoPlayer.Play();
+        }
+
         if (restartPending)
         {
             restartPending = false;
@@ -223,9 +245,10 @@ public class Television : Interactable
         if (screenInstance == null)
         {
             screenInstance = new Material(onMaterial);
-            // Ekran küpünün UV'si RenderTexture'a göre ters, görüntü baş aşağı çıkıyordu.
-            screenInstance.mainTextureScale = new Vector2(1f, -1f);
-            screenInstance.mainTextureOffset = new Vector2(0f, 1f);
+            // Ekran küpünün UV'si RenderTexture'a göre 180° dönük: sadece dikey çevirince görüntü düzeliyor ama
+            // yazılar aynalı kalıyordu (gözlük reklamı). İki eksen de çevrilir.
+            screenInstance.mainTextureScale = new Vector2(-1f, -1f);
+            screenInstance.mainTextureOffset = new Vector2(1f, 1f);
         }
         screenInstance.mainTexture = target;
         screen.sharedMaterial = screenInstance;

@@ -41,8 +41,9 @@ public class SceneFade : MonoBehaviour
 
     private void OnDestroy() => Shader.SetGlobalFloat(SolmaId, 0f);
 
-    // Beyaz ayakkabı akşam ışığında (sıcak güneş + bake) sarı-kahve çıkıyor; çevre gri olunca solmayan ayakkabı
-    // "sapsarı" kalıyordu. Solma arttıkça albedo bu renge çekilip ışığın sıcaklığı dengelenir (HDR çarpan, B > 1).
+    // Beyaz ayakkabı akşam ışığında (sıcak güneş + bake + post'un sıcak beyaz dengesi) ten rengi/sarı çıkıyordu.
+    // Albedo her zaman bu renkle çarpılıp ışığın sıcaklığı dengelenir (HDR çarpan, B > 1). Eskiden solma oranıyla
+    // ölçekleniyordu; ilk günlerde solma düşük olduğundan ayakkabı dolapta ve üstünde sarı kalıyordu (01.11, ölçüldü).
     private static readonly Color CoolTint = new Color(0.85f, 1.1f, 1.5f, 1f);
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
@@ -55,14 +56,13 @@ public class SceneFade : MonoBehaviour
         int layer = LayerMask.NameToLayer(ExemptLayerName);
         if (layer < 0)
             return;
-        float fade = Shader.GetGlobalFloat(SolmaId);
         foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
         {
             r.gameObject.layer = layer;
-            if (!neutralizeWarmth || fade <= 0f || r.sharedMaterial == null || !r.sharedMaterial.HasProperty(BaseColorId))
+            if (!neutralizeWarmth || r.sharedMaterial == null || !r.sharedMaterial.HasProperty(BaseColorId))
                 continue;
 
-            Color tint = Color.Lerp(Color.white, CoolTint, fade);
+            Color tint = CoolTint;
             Color baseColor = r.sharedMaterial.GetColor(BaseColorId);
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             block.SetColor(BaseColorId, new Color(baseColor.r * tint.r, baseColor.g * tint.g, baseColor.b * tint.b, baseColor.a));
