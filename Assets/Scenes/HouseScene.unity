@@ -10934,7 +10934,7 @@ Transform:
   m_GameObject: {fileID: 1410202591}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 1.675, z: -1.2000003}
+  m_LocalPosition: {x: -0.5, y: 1.6749997, z: -1.2000003}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10955,7 +10955,7 @@ MonoBehaviour:
   version: 2
   globalVolume: 0
   mode: 1
-  size: {x: 14.299999, y: 4.25, z: 11.699999}
+  size: {x: 14.299999, y: 4.2500005, z: 11.699999}
   overrideRendererFilters: 0
   minRendererVolumeSize: 0.1
   objectLayerMask:
@@ -14481,7 +14481,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55d028cf88e4dcb45b2b8a49be508e39, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.94
+      value: 0.48
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55d028cf88e4dcb45b2b8a49be508e39, type: 3}
       propertyPath: m_LocalRotation.w
