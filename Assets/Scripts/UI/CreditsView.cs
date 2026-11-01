@@ -24,11 +24,15 @@ public class CreditsView : MonoBehaviour
     private CanvasGroup group;
     private Action onSkip;
     private AudioClip clickSound;
+    private string quote;
+    private string quoteAuthor;
 
     public CanvasGroup Group => group;
 
     /// <param name="dimAlpha">Arkadaki görüntünün karartması (#080A0E).</param>
-    public static CreditsView Create(Transform parent, float dimAlpha, AudioClip clickSound, Action onSkip)
+    /// <param name="quote">Verilirse isimlerin altında özlü söz olarak gösterilir (oyun sonu).</param>
+    public static CreditsView Create(Transform parent, float dimAlpha, AudioClip clickSound, Action onSkip,
+        string quote = null, string quoteAuthor = null)
     {
         RectTransform root = UiKit.CreateRect("Hazirlayanlar", parent);
         UiKit.Stretch(root);
@@ -36,6 +40,8 @@ public class CreditsView : MonoBehaviour
         view.group = root.gameObject.AddComponent<CanvasGroup>();
         view.onSkip = onSkip;
         view.clickSound = clickSound;
+        view.quote = quote;
+        view.quoteAuthor = quoteAuthor;
         view.Build(dimAlpha);
         return view;
     }
@@ -65,6 +71,19 @@ public class CreditsView : MonoBehaviour
             TextMeshProUGUI name = UiKit.CreateText("Isim", center, Credits[i].name, UiKit.FontKind.Regular, 27f, 0f,
                 UiKit.White, TextAlignmentOptions.Center);
             UiKit.Place(name.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(x, y - 35f), new Vector2(460f, 36f));
+        }
+
+        if (!string.IsNullOrEmpty(quote))
+        {
+            TextMeshProUGUI text = UiKit.CreateText("OzluSoz", center, "“" + quote + "”", UiKit.FontKind.Light, 24f, 34f,
+                UiKit.White, TextAlignmentOptions.Center);
+            UiKit.Place(text.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -235f), new Vector2(900f, 72f));
+            if (!string.IsNullOrEmpty(quoteAuthor))
+            {
+                TextMeshProUGUI author = UiKit.CreateText("OzluSozYazar", center, quoteAuthor, UiKit.FontKind.Medium, 16.5f, 24f,
+                    UiKit.Secondary, TextAlignmentOptions.Center);
+                UiKit.Place(author.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -292f), new Vector2(600f, 24f));
+            }
         }
 
         RectTransform skip = UiKit.CreateFooterHint(transform, "ESC", "Atla", new Vector2(1f, 0f), new Vector2(-72f, 69f));
