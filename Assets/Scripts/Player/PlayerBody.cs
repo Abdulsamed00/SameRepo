@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// Birinci şahıs oyuncunun görünür gövdesi (AnaKarakter). Animator'daki yürüme/durma geçişini hıza bağlar,
@@ -59,6 +61,8 @@ public class PlayerBody : MonoBehaviour
     [SerializeField] private float maxTurnAngle = 90f;
     [Tooltip("Dururken kafanın gövdeye göre en fazla dönebileceği açı; bakış bunu aşınca gövde döner.")]
     [SerializeField] private float headTurnLimit = 60f;
+    [Tooltip("Gövde bakıştan bu kadar fazla ayrılınca (hızlı arkaya dönüş) oyuncu kamerası gövdeyi çizmez: kamera yakanın önünden gövdenin içini görüyordu. Gölge kalır.")]
+    [SerializeField] private float hideBodyAngle = 100f;
 
     [Header("Dönme Animasyonu")]
     [Tooltip("Dururken ya da yürümeye yeni başlarken gövde en az bu kadar dönecekse (A/D) dönme klibi oynar.")]
@@ -134,6 +138,9 @@ public class PlayerBody : MonoBehaviour
     private Transform head;
     private Transform headProxy;
     private SkinnedMeshRenderer headlessBody;
+    private bool thirdPerson;
+    private bool bodyHidden;
+    private readonly List<SkinnedMeshRenderer> hiddenBody = new List<SkinnedMeshRenderer>();
 
     public bool IsPosing { get; private set; }
 
@@ -287,6 +294,7 @@ public class PlayerBody : MonoBehaviour
         else
             bodyYaw = Mathf.MoveTowardsAngle(bodyYaw, targetYaw, turnSpeed * Time.deltaTime);
         ApplyBodyYaw();
+        UpdateBodyVisibility();
 
         animator.SetFloat(SpeedId, smoothedSpeed);
         animator.SetFloat(WalkAnimSpeedId, playback * Mathf.Max(1f, smoothedSpeed / walkClipSpeed));
@@ -299,6 +307,42 @@ public class PlayerBody : MonoBehaviour
             animator.CrossFadeInFixedTime(EmptyState, crossFade, upperBodyLayer);
         }
     }
+
+    // Hızlı arkaya dönünce gövde (headTurnLimit'ten sonra dönme klibiyle) peşinden gelir; o yarım saniyede kamera
+    // gövdenin önüne bakıyor ve boynu çöken yakadan gövdenin içi görünüyor. Gövde bakıştan çok ayrılmışken parçalar
+    // sadece gölge atar (ShadowsOnly), çizilmez; gövde dönünce geri gelir. Üçüncü şahısta (menü, final) dokunulmaz.
+    private void UpdateBodyVisibility()
+    {
+        bool hide = !thirdPerson && Mathf.Abs(Mathf.DeltaAngle(0f, bodyYaw)) > hideBodyAngle;
+        if (hide == bodyHidden)
+            return;
+        bodyHidden = hide;
+
+        if (hide)
+        {
+            int headLayer = LayerMask.NameToLayer(HeadLayerName);
+            foreach (SkinnedMeshRenderer r in GetComponentsInChildren<SkinnedMeshRenderer>(false))
+            {
+                if (r.gameObject.layer == headLayer || r.shadowCastingMode != ShadowCastingMode.On)
+                    continue;
+                r.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                hiddenBody.Add(r);
+            }
+            return;
+        }
+        RestoreBody();
+    }
+
+    private void RestoreBody()
+    {
+        foreach (SkinnedMeshRenderer r in hiddenBody)
+            if (r != null)
+                r.shadowCastingMode = ShadowCastingMode.On;
+        hiddenBody.Clear();
+        bodyHidden = false;
+    }
+
+    private void OnDisable() => RestoreBody();
 
     private void ApplyBodyYaw()
     {
@@ -477,6 +521,9 @@ public class PlayerBody : MonoBehaviour
         }
         if (headlessBody != null)
             headlessBody.enabled = !on;
+        thirdPerson = on;
+        if (on)
+            RestoreBody();
     }
 
     /// <returns>Kalkma süresi (sn).</returns>
