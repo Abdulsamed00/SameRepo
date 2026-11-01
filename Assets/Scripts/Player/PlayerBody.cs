@@ -198,10 +198,15 @@ public class PlayerBody : MonoBehaviour
             return;
         }
 
+        // Oyuncu solmaz (aynada kendini soluk görmesin): gövde solmadan sonra çizilen Reklam katmanında,
+        // kafa parçaları PlayerHead'de (PC_Renderer o katmanı da solmadan sonra çizer).
+        int exemptLayer = LayerMask.NameToLayer(SceneFade.ExemptLayerName);
         foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
         {
             if (System.Array.IndexOf(hiddenRendererNames, r.name) >= 0)
                 r.gameObject.layer = layer;
+            else if (exemptLayer >= 0)
+                r.gameObject.layer = exemptLayer;
         }
 
         CreateHeadlessBody(layer);

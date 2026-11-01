@@ -43,6 +43,10 @@ public class PlanarMirror : MonoBehaviour
     {
         GameObject surface = new GameObject("Ayna_Yuzey");
         surface.transform.SetParent(transform, false);
+        // Yansımayı yansıma kamerası zaten soldurdu (oyuncu hariç); yüzey ikinci kez solmasın.
+        int exemptLayer = LayerMask.NameToLayer(SceneFade.ExemptLayerName);
+        if (exemptLayer >= 0)
+            surface.layer = exemptLayer;
         surface.AddComponent<MeshFilter>().sharedMesh = BuildQuad();
         surfaceRenderer = surface.AddComponent<MeshRenderer>();
         surfaceRenderer.sharedMaterial = material;
