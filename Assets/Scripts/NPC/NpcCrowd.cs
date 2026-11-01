@@ -146,6 +146,24 @@ public class NpcCrowd : MonoBehaviour
     [Tooltip("Oyuncuya bundan yakın ve görüş alanındaki çıkışlarda NPC doğmaz/kaybolmaz.")]
     [SerializeField] private float hiddenDistance = 35f;
 
+    [Header("Final")]
+    [Tooltip("Final başlayınca görüş dışında ayrıca doğan NPC sayısı (oyuncunun çevresini kalabalık doldursun).")]
+    [SerializeField] private int finaleExtra = 40;
+    [Tooltip("Finalde NPC'ler oyuncunun çevresinde bu yarıçap içinde dolaşır (m).")]
+    [SerializeField] private float finaleRadius = 9f;
+    [Tooltip("Oyuncunun dibinde bu kadar boşluk kalır (m).")]
+    [SerializeField] private float finaleClearance = 1.6f;
+    [Tooltip("Ek NPC'lerin doğduğu bant: oyuncunun cadde boyunca bu kadar önü/arkası (m, min-max).")]
+    [SerializeField] private Vector2 finaleSpawnBand = new Vector2(9f, 24f);
+    [Tooltip("Caddenin NPC şeridi (dünya x, min-max): ek NPC'ler ve hedefler bunun içinde.")]
+    [SerializeField] private Vector2 finaleLaneX = new Vector2(-4.5f, 4.5f);
+    [Tooltip("Caddenin boyu (dünya z, min-max): dışında doğan ek NPC'ler caddenin başındaki binanın kapısına yığılıyordu.")]
+    [SerializeField] private Vector2 finaleLaneZ = new Vector2(3f, 236f);
+
+    private bool finale;
+    private Vector3 finaleCenter;
+    private NavMeshPath finalePath;
+
     private readonly List<Vector3> wanderPoints = new List<Vector3>();
     private readonly List<NpcSpot> spots = new List<NpcSpot>();
     private readonly List<NpcAgent> agents = new List<NpcAgent>();
@@ -256,9 +274,72 @@ public class NpcCrowd : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Oyun sonu: NPC'ler artık bank/vitrin noktalarına gitmez, sahneden ayrılmaz; hepsi <paramref name="center"/>
+    /// (caddenin ortasındaki oyuncu) çevresinde dolaşır. Ayrıca kameranın görmediği yerlerden <see cref="finaleExtra"/>
+    /// kadar NPC doğar. Son ürün alındığı için hepsi oyuncuyla aynı giyinir (<see cref="NpcFashion"/>): oyuncu kendine
+    /// benzeyenlerin kalabalığında kalır.
+    /// </summary>
+    public void BeginFinale(Vector3 center)
+    {
+        if (finale || wanderPoints.Count == 0)
+            return;
+        finale = true;
+        finaleCenter = center;
+        finalePath = new NavMeshPath();
+        foreach (NpcAgent agent in agents)
+            agent.Interrupt();
+
+        Camera cam = playerCamera != null ? playerCamera : Camera.main;
+        int spawned = 0;
+        for (int attempt = 0; attempt < finaleExtra * 8 && spawned < finaleExtra; attempt++)
+        {
+            float side = Random.value < 0.5f ? -1f : 1f;
+            Vector3 p = new Vector3(Random.Range(finaleLaneX.x, finaleLaneX.y), center.y,
+                center.z + side * Random.Range(finaleSpawnBand.x, finaleSpawnBand.y));
+            if (p.z < finaleLaneZ.x || p.z > finaleLaneZ.y || (cam != null && InView(cam, p)))
+                continue;
+            if (!NavMesh.SamplePosition(p, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
+                continue;
+            // Caddeye bağlı olmayan adacıklar (binanın kapı basamakları) elenir: orada doğan NPC yerinden kıpırdamıyordu.
+            if (!NavMesh.CalculatePath(hit.position, center, NavMesh.AllAreas, finalePath)
+                || finalePath.status != NavMeshPathStatus.PathComplete)
+                continue;
+            Vector3 toCenter = center - hit.position;
+            toCenter.y = 0f;
+            NpcAgent npc = Spawn(hit.position, Quaternion.LookRotation(toCenter), null);
+            npc.GoalLimit = int.MaxValue;
+            spawned++;
+        }
+    }
+
+    private static bool InView(Camera cam, Vector3 position)
+    {
+        Vector3 v = cam.WorldToViewportPoint(position + Vector3.up);
+        return v.z > 0f && v.x > -0.15f && v.x < 1.15f && v.y > -0.15f && v.y < 1.15f;
+    }
+
+    // Oyuncunun çevresinde, dibinde boşluk bırakan bir halka içinde rastgele bir nokta (caddenin NPC şeridinde).
+    private Vector3 FinalePoint()
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            Vector2 r = Random.insideUnitCircle.normalized * Random.Range(finaleClearance, finaleRadius);
+            Vector3 p = finaleCenter + new Vector3(r.x, 0f, r.y);
+            p.x = Mathf.Clamp(p.x, finaleLaneX.x, finaleLaneX.y);
+            p.z = Mathf.Clamp(p.z, finaleLaneZ.x, finaleLaneZ.y);
+            if (NavMesh.SamplePosition(p, out NavMeshHit hit, 1f, NavMesh.AllAreas))
+                return hit.position;
+        }
+        return finaleCenter + Vector3.forward * finaleRadius;
+    }
+
     public Goal NextGoal(NpcAgent npc)
     {
         Vector3 from = npc.transform.position;
+
+        if (finale)
+            return new Goal { kind = GoalKind.Wander, point = FinalePoint() };
 
         if (exits != null && exits.Length > 0 && npc.GoalsDone >= npc.GoalLimit)
         {

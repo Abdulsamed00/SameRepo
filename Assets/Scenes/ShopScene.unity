@@ -746,6 +746,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 290f338483044804eb5257f9eb7dbdee, type: 3}
   m_PrefabInstance: {fileID: 39099793}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &42688163
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 42688164}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &42688164
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 42688163}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
+  m_LocalPosition: {x: -0.26, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 374838181}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &51847080
 GameObject:
   m_ObjectHideFlags: 0
@@ -1081,6 +1112,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 62451e3ca24a866479eda70a8b67951a, type: 3}
   m_PrefabInstance: {fileID: 62284948}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &66945402
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 66945403}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &66945403
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66945402}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.061628412, y: -0.7044161, z: 0.06162842, w: 0.70441604}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1532769276}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &73740911
 GameObject:
   m_ObjectHideFlags: 0
@@ -1114,6 +1176,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 54899818}
+  - {fileID: 1655053414}
+  - {fileID: 655501816}
   m_Father: {fileID: 388571602}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &73740913
@@ -1133,9 +1197,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.02, z: 0}
-  holdEulerOffset: {x: 25, y: 200, z: 0}
+  holdPositionOffset: {x: -0.28, y: 0.042261958, z: -0.2093687}
+  holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 1655053414}
+  gripB: {fileID: 655501816}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 2
 --- !u!54 &73740914
@@ -1186,6 +1252,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.41944337, y: 0.114594966, z: 0.25716025}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &76521418
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 76521419}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &76521419
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76521418}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
+  m_LocalPosition: {x: -0.26, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 84559877}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &77719519
 GameObject:
   m_ObjectHideFlags: 0
@@ -1272,6 +1369,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 963774514}
+  - {fileID: 2129060830}
+  - {fileID: 76521419}
   m_Father: {fileID: 553154122}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &84559878
@@ -1291,9 +1390,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.2, z: 0.25}
-  holdEulerOffset: {x: 0, y: 200, z: 0}
+  holdPositionOffset: {x: -0.28, y: -0.15, z: -0.14999972}
+  holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 2129060830}
+  gripB: {fileID: 76521419}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
 --- !u!54 &84559879
@@ -1526,6 +1627,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 101198562}
+  - component: {fileID: 101198563}
   m_Layer: 0
   m_Name: NPC_Alani
   m_TagString: Untagged
@@ -1551,6 +1653,23 @@ Transform:
   - {fileID: 762414822}
   m_Father: {fileID: 297503110}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &101198563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101198561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53adfbe87ac6f9b4aa3bf073a7965d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcShadowDistance
+  shadowDistance: 20
+  hideDistance: 80
+  hideHysteresis: 5
+  interval: 0.25
+  refreshInterval: 1
 --- !u!1 &103004743
 GameObject:
   m_ObjectHideFlags: 0
@@ -1848,6 +1967,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 697583268}
+  - {fileID: 521632642}
   m_Father: {fileID: 1613362067}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &115822259
@@ -1867,9 +1987,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.05, y: 0.08, z: -0.15}
+  holdPositionOffset: {x: -0.11, y: 0.039999932, z: -0.29999983}
   holdEulerOffset: {x: 10, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 521632642}
+  gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 4
 --- !u!54 &115822260
@@ -1953,6 +2075,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1347735023}
+  - {fileID: 1920213988}
+  - {fileID: 994432862}
   m_Father: {fileID: 553154122}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &116337821
@@ -1972,9 +2096,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.2, z: 0.25}
-  holdEulerOffset: {x: 0, y: 200, z: 0}
+  holdPositionOffset: {x: -0.28, y: -0.15, z: -0.1500002}
+  holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 1920213988}
+  gripB: {fileID: 994432862}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
 --- !u!54 &116337822
@@ -3019,6 +3145,68 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 19397473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &171392074
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 171392075}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &171392075
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171392074}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
+  m_LocalPosition: {x: 0.26, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 549134208}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &172583402
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 172583403}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &172583403
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 172583402}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
+  m_LocalPosition: {x: 0.17, y: 0.2, z: 0.045}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 976642875}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &172955989
 GameObject:
@@ -5790,6 +5978,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 239944387}
+  - {fileID: 1624796783}
   m_Father: {fileID: 2035548054}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &338176120
@@ -5809,9 +5998,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.1, z: 0.05}
+  holdPositionOffset: {x: -0.07999999, y: -0.1799998, z: -0.2999998}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
+  gripA: {fileID: 1624796783}
+  gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 3
 --- !u!54 &338176121
@@ -6029,6 +6220,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1573721744}
+  - {fileID: 1137471778}
+  - {fileID: 42688164}
   m_Father: {fileID: 553154122}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &374838182
@@ -6048,9 +6241,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.2, z: 0.25}
-  holdEulerOffset: {x: 0, y: 200, z: 0}
+  holdPositionOffset: {x: -0.28, y: -0.15, z: -0.1500002}
+  holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 1137471778}
+  gripB: {fileID: 42688164}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
 --- !u!54 &374838183
@@ -6873,6 +7068,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1371684437}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &437620474
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 437620475}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &437620475
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 437620474}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5963678, y: 0.5963679, z: 0.3799282, w: -0.3799282}
+  m_LocalPosition: {x: -0.19, y: 0, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1272332974}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &439534412
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6993,6 +7219,37 @@ MonoBehaviour:
   - {fileID: 1746686050}
   duration: {x: 6, y: 16}
   approachDistance: 0
+--- !u!1 &442982653
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 442982654}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &442982654
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 442982653}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.061628412, y: -0.7044161, z: 0.06162842, w: 0.70441604}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1736261736}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &446062303
 GameObject:
   m_ObjectHideFlags: 0
@@ -7155,6 +7412,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1802138392}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &466375144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 466375145}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &466375145
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 466375144}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.6963643, y: 0.1227878, z: 0.1227878, w: -0.6963643}
+  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1478044924}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &466976202
 GameObject:
@@ -7816,6 +8104,37 @@ Transform:
   - {fileID: 1617625143}
   m_Father: {fileID: 1623332318}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &521632641
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 521632642}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &521632642
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521632641}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.061628412, y: -0.7044161, z: 0.06162842, w: 0.70441604}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 115822258}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &523187437
 GameObject:
   m_ObjectHideFlags: 0
@@ -7960,6 +8279,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 527696742}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &531412985
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 531412986}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &531412986
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531412985}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
+  m_LocalPosition: {x: 0.17, y: 0.2, z: 0.045}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 683422680}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &534524816
 GameObject:
   m_ObjectHideFlags: 0
@@ -8242,6 +8592,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1857831909}
+  - {fileID: 171392075}
+  - {fileID: 718406985}
   m_Father: {fileID: 553154122}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &549134209
@@ -8261,9 +8613,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.2, z: 0.25}
-  holdEulerOffset: {x: 0, y: 200, z: 0}
+  holdPositionOffset: {x: -0.28, y: -0.15, z: -0.1500002}
+  holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 171392075}
+  gripB: {fileID: 718406985}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
 --- !u!54 &549134210
@@ -8987,6 +9341,37 @@ Transform:
   - {fileID: 250647590}
   m_Father: {fileID: 218678766}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &655501815
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 655501816}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &655501816
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 655501815}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5963678, y: 0.5963679, z: 0.3799282, w: -0.3799282}
+  m_LocalPosition: {x: -0.19, y: 0, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 73740912}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &655868131
 GameObject:
   m_ObjectHideFlags: 0
@@ -9273,6 +9658,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1367241916}
+  - {fileID: 531412986}
+  - {fileID: 1043730391}
   m_Father: {fileID: 326010400}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &683422681
@@ -9292,9 +9679,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.2, z: 0.2}
-  holdEulerOffset: {x: 0, y: 200, z: 0}
+  holdPositionOffset: {x: -0.27999997, y: -0.20000082, z: -0.2549999}
+  holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 531412986}
+  gripB: {fileID: 1043730391}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 1
 --- !u!54 &683422682
@@ -10003,6 +10392,37 @@ Transform:
   - {fileID: 951897458}
   m_Father: {fileID: 388571602}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &715301801
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 715301802}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &715301802
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 715301801}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
+  m_LocalPosition: {x: 0.17, y: 0.2, z: 0.045}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1282363900}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &716260396
 GameObject:
   m_ObjectHideFlags: 0
@@ -10089,6 +10509,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &718406984
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 718406985}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &718406985
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 718406984}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
+  m_LocalPosition: {x: -0.26, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 549134208}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &720033748
 GameObject:
   m_ObjectHideFlags: 0
@@ -10459,6 +10910,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 62451e3ca24a866479eda70a8b67951a, type: 3}
   m_PrefabInstance: {fileID: 745009230}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &746477331
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 746477332}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &746477332
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 746477331}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.59636784, y: 0.59636784, z: 0.37992817, w: 0.37992823}
+  m_LocalPosition: {x: 0.19, y: 0, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1054199275}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &746491695
 GameObject:
   m_ObjectHideFlags: 0
@@ -12157,6 +12639,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1057478294}
+  - {fileID: 2001388300}
   m_Father: {fileID: 2035548054}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &860316361
@@ -12176,9 +12659,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.1, z: 0.05}
+  holdPositionOffset: {x: -0.07999999, y: -0.1799998, z: -0.2999998}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
+  gripA: {fileID: 2001388300}
+  gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 3
 --- !u!54 &860316362
@@ -12738,6 +13223,37 @@ Transform:
   - {fileID: 344615634}
   m_Father: {fileID: 101198562}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &886802549
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 886802550}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &886802550
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886802549}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5963678, y: 0.5963679, z: 0.3799282, w: -0.3799282}
+  m_LocalPosition: {x: -0.19, y: 0, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1454547646}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &887202143
 GameObject:
   m_ObjectHideFlags: 0
@@ -12824,6 +13340,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 6.000003, y: 1.8939308, z: 0.44671106}
   m_Center: {x: 0, y: 0.9469654, z: 0.22335482}
+--- !u!1 &902380305
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 902380306}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &902380306
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902380305}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
+  m_LocalPosition: {x: -0.17, y: 0.2, z: 0.045}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 976642875}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &912710491
 GameObject:
   m_ObjectHideFlags: 0
@@ -13340,6 +13887,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1802650588}
+  - {fileID: 1668599969}
   m_Father: {fileID: 1613362067}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &955810338
@@ -13359,9 +13907,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.05, y: 0.08, z: -0.15}
+  holdPositionOffset: {x: -0.11, y: 0.039999932, z: -0.29999983}
   holdEulerOffset: {x: 10, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 1668599969}
+  gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 4
 --- !u!54 &955810339
@@ -13778,6 +14328,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1648282572}
+  - {fileID: 172583403}
+  - {fileID: 902380306}
   m_Father: {fileID: 326010400}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &976642876
@@ -13797,9 +14349,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.2, z: 0.2}
-  holdEulerOffset: {x: 0, y: 200, z: 0}
+  holdPositionOffset: {x: -0.27999997, y: -0.20000082, z: -0.2549999}
+  holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 172583403}
+  gripB: {fileID: 902380306}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 1
 --- !u!54 &976642877
@@ -14280,6 +14834,37 @@ MonoBehaviour:
   - {fileID: 1750794644}
   duration: {x: 6, y: 16}
   approachDistance: 0
+--- !u!1 &994432861
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 994432862}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &994432862
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994432861}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
+  m_LocalPosition: {x: -0.26, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 116337820}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1001822190
 GameObject:
   m_ObjectHideFlags: 0
@@ -14813,6 +15398,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1043730390
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1043730391}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1043730391
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1043730390}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
+  m_LocalPosition: {x: -0.17, y: 0.2, z: 0.045}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 683422680}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1045845408
 GameObject:
   m_ObjectHideFlags: 0
@@ -14923,6 +15539,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2060469058}
+  - {fileID: 746477332}
+  - {fileID: 1139271749}
   m_Father: {fileID: 388571602}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1054199276
@@ -14942,9 +15560,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.02, z: 0}
-  holdEulerOffset: {x: 25, y: 200, z: 0}
+  holdPositionOffset: {x: -0.28, y: 0.042261958, z: -0.2093687}
+  holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 746477332}
+  gripB: {fileID: 1139271749}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 2
 --- !u!54 &1054199277
@@ -16106,6 +16726,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1115378483}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1121742061
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1121742062}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1121742062
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1121742061}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
+  m_LocalPosition: {x: 0.17, y: 0.2, z: 0.045}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2138858724}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1122585617
 GameObject:
   m_ObjectHideFlags: 0
@@ -16614,6 +17265,68 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 62451e3ca24a866479eda70a8b67951a, type: 3}
   m_PrefabInstance: {fileID: 1136729311}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1137471777
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1137471778}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1137471778
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1137471777}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
+  m_LocalPosition: {x: 0.26, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 374838181}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1139271748
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1139271749}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1139271749
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1139271748}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5963678, y: 0.5963679, z: 0.3799282, w: -0.3799282}
+  m_LocalPosition: {x: -0.19, y: 0, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1054199275}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1141791896
 GameObject:
   m_ObjectHideFlags: 0
@@ -17483,6 +18196,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1216539881
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1216539882}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1216539882
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1216539881}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.59636784, y: 0.59636784, z: 0.37992817, w: 0.37992823}
+  m_LocalPosition: {x: 0.19, y: 0, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1272332974}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1217821753
 GameObject:
   m_ObjectHideFlags: 0
@@ -18506,6 +19250,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2043590700}
+  - {fileID: 1216539882}
+  - {fileID: 437620475}
   m_Father: {fileID: 388571602}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1272332975
@@ -18525,9 +19271,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.02, z: 0}
-  holdEulerOffset: {x: 25, y: 200, z: 0}
+  holdPositionOffset: {x: -0.28, y: 0.042261958, z: -0.2093687}
+  holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 1216539882}
+  gripB: {fileID: 437620475}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 2
 --- !u!54 &1272332976
@@ -18893,6 +19641,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1568510176}
+  - {fileID: 715301802}
+  - {fileID: 1661544670}
   m_Father: {fileID: 326010400}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1282363901
@@ -18912,9 +19662,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.2, z: 0.2}
-  holdEulerOffset: {x: 0, y: 200, z: 0}
+  holdPositionOffset: {x: -0.27999997, y: -0.20000082, z: -0.2549999}
+  holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 715301802}
+  gripB: {fileID: 1661544670}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 1
 --- !u!54 &1282363902
@@ -21562,6 +22314,37 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1430796546
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1430796547}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1430796547
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1430796546}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
+  m_LocalPosition: {x: -0.17, y: 0.2, z: 0.045}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2138858724}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1430899953
 GameObject:
   m_ObjectHideFlags: 0
@@ -21978,6 +22761,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 185011866}
+  - {fileID: 1782814515}
+  - {fileID: 886802550}
   m_Father: {fileID: 388571602}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1454547647
@@ -21997,9 +22782,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.02, z: 0}
-  holdEulerOffset: {x: 25, y: 200, z: 0}
+  holdPositionOffset: {x: -0.28, y: 0.042261958, z: -0.2093687}
+  holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 1782814515}
+  gripB: {fileID: 886802550}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 2
 --- !u!54 &1454547648
@@ -22508,6 +23295,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 741614621}
+  - {fileID: 466375145}
   m_Father: {fileID: 2035548054}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1478044925
@@ -22527,9 +23315,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.1, z: 0.05}
+  holdPositionOffset: {x: -0.07999999, y: -0.1799998, z: -0.2999998}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
+  gripA: {fileID: 466375145}
+  gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 3
 --- !u!54 &1478044926
@@ -23042,6 +23832,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 149899914}
+  - {fileID: 66945403}
   m_Father: {fileID: 1613362067}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1532769277
@@ -23061,9 +23852,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.05, y: 0.08, z: -0.15}
+  holdPositionOffset: {x: -0.11, y: 0.039999932, z: -0.29999983}
   holdEulerOffset: {x: 10, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 66945403}
+  gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 4
 --- !u!54 &1532769278
@@ -24742,6 +25535,37 @@ MonoBehaviour:
   - {fileID: 1124712280}
   duration: {x: 6, y: 16}
   approachDistance: 0
+--- !u!1 &1624796782
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1624796783}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1624796783
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1624796782}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.6963643, y: 0.1227878, z: 0.1227878, w: -0.6963643}
+  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 338176119}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1627026734
 GameObject:
   m_ObjectHideFlags: 0
@@ -25136,6 +25960,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 883262845}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1655053413
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1655053414}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1655053414
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1655053413}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.59636784, y: 0.59636784, z: 0.37992817, w: 0.37992823}
+  m_LocalPosition: {x: 0.19, y: 0, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 73740912}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1660079099
 GameObject:
   m_ObjectHideFlags: 0
@@ -25189,6 +26044,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1661544669
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1661544670}
+  m_Layer: 0
+  m_Name: Tutus_B
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1661544670
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1661544669}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
+  m_LocalPosition: {x: -0.17, y: 0.2, z: 0.045}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1282363900}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1662247518
 GameObject:
   m_ObjectHideFlags: 0
@@ -25250,6 +26136,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1383991267}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1668599968
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1668599969}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1668599969
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668599968}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.061628412, y: -0.7044161, z: 0.06162842, w: 0.70441604}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 955810337}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1676795630
 GameObject:
@@ -25689,6 +26606,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 6.000003, y: 1.8939308, z: 0.44671106}
   m_Center: {x: 0, y: 0.9469654, z: 0.22335559}
+--- !u!1 &1700502378
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1700502379}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1700502379
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1700502378}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.6963643, y: 0.1227878, z: 0.1227878, w: -0.6963643}
+  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1710651701}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1703495577
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25913,6 +26861,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 952160963}
+  - {fileID: 1700502379}
   m_Father: {fileID: 2035548054}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1710651702
@@ -25932,9 +26881,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.1, z: 0.05}
+  holdPositionOffset: {x: -0.07999999, y: -0.1799998, z: -0.2999998}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
+  gripA: {fileID: 1700502379}
+  gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 3
 --- !u!54 &1710651703
@@ -26231,6 +27182,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 974598474}
+  - {fileID: 442982654}
   m_Father: {fileID: 1613362067}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1736261737
@@ -26250,9 +27202,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.05, y: 0.08, z: -0.15}
+  holdPositionOffset: {x: -0.11, y: 0.039999932, z: -0.29999983}
   holdEulerOffset: {x: 10, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 442982654}
+  gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 4
 --- !u!54 &1736261738
@@ -26619,6 +27573,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1892618502}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1782814514
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1782814515}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1782814515
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1782814514}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.59636784, y: 0.59636784, z: 0.37992817, w: 0.37992823}
+  m_LocalPosition: {x: 0.19, y: 0, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1454547646}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1785665270
 GameObject:
@@ -28886,6 +29871,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1586715888}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1920213987
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1920213988}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1920213988
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920213987}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
+  m_LocalPosition: {x: 0.26, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 116337820}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1925212560
 GameObject:
   m_ObjectHideFlags: 0
@@ -30005,6 +31021,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1802138392}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2001388299
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2001388300}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2001388300
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2001388299}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.6963643, y: 0.1227878, z: 0.1227878, w: -0.6963643}
+  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 860316360}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2005920338
 GameObject:
@@ -31739,6 +32786,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1314760260}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2129060829
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2129060830}
+  m_Layer: 0
+  m_Name: Tutus_A
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2129060830
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2129060829}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
+  m_LocalPosition: {x: 0.26, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 84559877}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2138858723
 GameObject:
   m_ObjectHideFlags: 0
@@ -31772,6 +32850,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 634328429}
+  - {fileID: 1121742062}
+  - {fileID: 1430796547}
   m_Father: {fileID: 326010400}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2138858725
@@ -31791,9 +32871,11 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: 0, y: -0.2, z: 0.2}
-  holdEulerOffset: {x: 0, y: 200, z: 0}
+  holdPositionOffset: {x: -0.27999997, y: -0.20000082, z: -0.2549999}
+  holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  gripA: {fileID: 1121742062}
+  gripB: {fileID: 1430796547}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 1
 --- !u!54 &2138858726

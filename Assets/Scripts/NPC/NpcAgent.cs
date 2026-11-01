@@ -35,6 +35,12 @@ public class NpcAgent : MonoBehaviour
     public int GoalsDone { get; private set; }
     public int GoalLimit { get; set; }
 
+    // Kalabalık yeni bir düzene geçti (final): o anki yürüyüş ya da noktada bekleme yarıda bırakılır.
+    private bool interrupted;
+
+    /// <summary>O anki hedefi bırakıp kalabalıktan yenisini ister (noktadaysa kalkar).</summary>
+    public void Interrupt() => interrupted = true;
+
     public void Init(NpcCrowd owner, NpcProfile npcProfile, float speed)
     {
         crowd = owner;
@@ -107,6 +113,7 @@ public class NpcAgent : MonoBehaviour
 
         while (true)
         {
+            interrupted = false;
             NpcCrowd.Goal goal = crowd.NextGoal(this);
             switch (goal.kind)
             {
@@ -120,12 +127,15 @@ public class NpcAgent : MonoBehaviour
                     Status = "Gezinme " + goal.point;
                     yield return WalkTo(goal.point);
                     Status = "Bekleme";
-                    yield return new WaitForSeconds(Random.Range(0f, 3f));
+                    for (float wait = Random.Range(0f, 3f); wait > 0f && !interrupted; wait -= Time.deltaTime)
+                        yield return null;
                     break;
 
                 case NpcCrowd.GoalKind.Leave:
                     Status = "Çıkış " + goal.point;
                     yield return WalkTo(goal.point);
+                    if (interrupted)
+                        break;
                     // Oyuncunun gözü önünde kaybolmasın: biraz bekler, hâlâ görülüyorsa başka bir çıkışa yürür.
                     for (float wait = 0f; wait < 5f && crowd.IsSeen(transform.position); wait += 0.5f)
                         yield return new WaitForSeconds(0.5f);
@@ -152,7 +162,7 @@ public class NpcAgent : MonoBehaviour
         Vector3 lastPos = transform.position;
         float stuckTimer = 0f;
 
-        while (timeout > 0f)
+        while (timeout > 0f && !interrupted)
         {
             if (!agent.pathPending)
             {
@@ -230,7 +240,7 @@ public class NpcAgent : MonoBehaviour
         float remaining = target.RandomDuration;
         if (teleport)
             remaining *= Random.value;
-        while (remaining > 0f)
+        while (remaining > 0f && !interrupted)
         {
             if (target.Activity == NpcActivity.Talk)
                 Play(target.HasCompany(this) ? profile.talkState : profile.idleState);
