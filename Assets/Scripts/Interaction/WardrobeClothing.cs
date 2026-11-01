@@ -17,8 +17,12 @@ public class WardrobeClothing : Interactable
     [SerializeField] private InputActionAsset inputActions;
 
     [Header("İnceleme")]
-    [Tooltip("İncelerken kıyafetin kameradan uzaklığı (m).")]
+    [Tooltip("İncelerken kıyafetin kameradan uzaklığı (m). Önünde engel (dolap, duvar) varsa kıyafet daha yakına gelir ve gerekirse küçülür, hiçbir şeyin içine girmez.")]
     [SerializeField] private float inspectDistance = 1.2f;
+    [Tooltip("Kıyafet ile önündeki engel arasında bırakılan boşluk (m).")]
+    [SerializeField] private float obstacleMargin = 0.05f;
+    [Tooltip("Modelin altında bu adda çocuk varsa (askı) incelerken gizlenir: sadece kıyafet görünsün.")]
+    [SerializeField] private string hangerName = "Askilik";
     [SerializeField] private float moveDuration = 0.4f;
     [Tooltip("Fareyle döndürme hızı (derece/piksel).")]
     [SerializeField] private float rotateSpeed = 0.4f;
@@ -44,8 +48,15 @@ public class WardrobeClothing : Interactable
     private Vector3 homePosition;
     private Quaternion homeRotation;
     private Vector3 modelCenter;
+    private Vector3 homeScale;
+    private Vector3 homeLossyScale;
+    private Transform[] hangers;
+    private float inspectScale = 1f;
+    private float inspectDist;
     private float yaw;
     private bool busy;
+
+    public ProductType Product => product;
 
     /// <summary>Alındı ve henüz giyilmedi: dolapta asılı.</summary>
     private bool Available => PlayerPurchases.Owns(product) && !PlayerOutfit.IsWorn(product);
@@ -59,6 +70,13 @@ public class WardrobeClothing : Interactable
         dropAction = playerMap.FindAction("Drop", true);
         homePosition = model.localPosition;
         homeRotation = model.localRotation;
+        homeScale = model.localScale;
+        homeLossyScale = model.lossyScale;
+        System.Collections.Generic.List<Transform> found = new System.Collections.Generic.List<Transform>();
+        foreach (Transform t in model.GetComponentsInChildren<Transform>(true))
+            if (t != model && t.name == hangerName)
+                found.Add(t);
+        hangers = found.ToArray();
         MeshFilter filter = model.GetComponentInChildren<MeshFilter>(true);
         modelCenter = filter != null ? filter.sharedMesh.bounds.center : Vector3.zero;
         model.gameObject.SetActive(Available);
@@ -128,6 +146,8 @@ public class WardrobeClothing : Interactable
         interactor.Hint = putBackHint;
         GameAudio.PlayAt(handleSound, model.position);
 
+        SetHangersVisible(false);
+        FitToFreeSpace();
         yield return Move(model.position, model.rotation, () => InspectRotation(), true);
         busy = false;
     }
@@ -139,6 +159,7 @@ public class WardrobeClothing : Interactable
         Transform parent = model.parent;
         yield return Move(model.position, model.rotation, () => parent.rotation * homeRotation, false);
         model.SetLocalPositionAndRotation(homePosition, homeRotation);
+        model.localScale = homeScale;
         EndInspection();
     }
 
@@ -147,6 +168,7 @@ public class WardrobeClothing : Interactable
         GameAudio.PlayAt(handleSound, model.position);
         PlayerOutfit.Wear(product);
         model.SetLocalPositionAndRotation(homePosition, homeRotation);
+        model.localScale = homeScale;
         model.gameObject.SetActive(false);
         EndInspection();
         // Günün ürünü giyildiyse uyku gelmeye başlar (esneme).
@@ -158,6 +180,7 @@ public class WardrobeClothing : Interactable
         PlayerInteractor interactor = inspector;
         inspector = null;
         busy = false;
+        SetHangersVisible(true);
         if (interactor == null)
             return;
 
@@ -172,14 +195,59 @@ public class WardrobeClothing : Interactable
     // Hedef sürekli yeniden hesaplanır (inceleme hedefi kameraya, geri asma hedefi askıya bağlı).
     private IEnumerator Move(Vector3 fromPos, Quaternion fromRot, System.Func<Quaternion> targetRotation, bool toInspect)
     {
+        Vector3 fromScale = model.localScale;
+        Vector3 toScale = toInspect ? homeScale * inspectScale : homeScale;
         for (float t = 0f; t < 1f; t += Time.deltaTime / moveDuration)
         {
             float k = Mathf.SmoothStep(0f, 1f, t);
             Quaternion rot = targetRotation();
             Vector3 pos = toInspect ? InspectPosition(rot) : model.parent.TransformPoint(homePosition);
             model.SetPositionAndRotation(Vector3.Lerp(fromPos, pos, k), Quaternion.Slerp(fromRot, rot, k));
+            model.localScale = Vector3.Lerp(fromScale, toScale, k);
             yield return null;
         }
+        model.localScale = toScale;
+    }
+
+    private void SetHangersVisible(bool visible)
+    {
+        foreach (Transform hanger in hangers)
+            if (hanger != null)
+                hanger.gameObject.SetActive(visible);
+    }
+
+    // Kameranın önündeki ilk engele (dolap gövdesi, duvar, mobilya) kadar boşluğu ölçer. Kıyafet bu boşluğa sığacak
+    // uzaklıkta durur; boşluk darsa küçülür (kameradan 1.9 yarıçap uzaklıkta görüntüye sığar, arkası 1 yarıçap).
+    private void FitToFreeSpace()
+    {
+        Bounds bounds = default;
+        bool any = false;
+        foreach (Renderer r in model.GetComponentsInChildren<Renderer>(false))
+        {
+            if (System.Array.IndexOf(hangers, r.transform) >= 0)
+                continue;
+            if (!any)
+                bounds = r.bounds;
+            else
+                bounds.Encapsulate(r.bounds);
+            any = true;
+        }
+        float radius = any ? bounds.extents.magnitude : 0.3f;
+
+        const float lookAhead = 5f;
+        float free = lookAhead;
+        RaycastHit[] hits = Physics.SphereCastAll(view.position, Mathf.Min(radius * 0.5f, 0.3f), view.forward, lookAhead,
+            ~0, QueryTriggerInteraction.Ignore);
+        foreach (RaycastHit hit in hits)
+        {
+            Transform t = hit.collider.transform;
+            if (hit.distance <= 0f || t.IsChildOf(inspector.transform) || t.IsChildOf(model))
+                continue;
+            free = Mathf.Min(free, hit.distance);
+        }
+
+        inspectScale = Mathf.Clamp(free / (radius * 2.9f), 0.35f, 1f);
+        inspectDist = Mathf.Clamp(Mathf.Min(inspectDistance, free - radius * inspectScale - obstacleMargin), 0.3f, inspectDistance);
     }
 
     // Kıyafetin önü (+z) kameraya bakar; fareyle kendi dikey ekseni etrafında döner.
@@ -188,5 +256,5 @@ public class WardrobeClothing : Interactable
 
     // Modelin pivotu askıda (üst orta); görüntünün ortasına modelin merkezi gelir.
     private Vector3 InspectPosition(Quaternion rotation) =>
-        view.position + view.forward * inspectDistance - rotation * Vector3.Scale(modelCenter, model.lossyScale);
+        view.position + view.forward * inspectDist - rotation * Vector3.Scale(modelCenter, homeLossyScale * inspectScale);
 }

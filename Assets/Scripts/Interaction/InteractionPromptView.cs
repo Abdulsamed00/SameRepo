@@ -20,6 +20,8 @@ public class InteractionPromptView : MonoBehaviour
     private KeyLine prompt;
     private KeyLine hint;
     private CanvasGroup hintGroup;
+    private KeyLine seatedPrompt;
+    private CanvasGroup seatedPromptGroup;
     private string lastTitle;
 
     /// <summary>Tuş kutusu + yazı, yatayda ortalı.</summary>
@@ -86,6 +88,12 @@ public class InteractionPromptView : MonoBehaviour
         hintGroup = bottom.gameObject.AddComponent<CanvasGroup>();
         hintGroup.alpha = 0f;
         hint = CreateKeyLine("Ipucu", bottom, UiKit.FontKind.Regular, UiKit.Unselected);
+
+        // Otururken etkileşim bildirimi (TV'yi aç/kapat) ekranın ortasında değil, ipucunun üstünde çıkar.
+        seatedPrompt = CreateKeyLine("Oturma_Bildirimi", bottom, UiKit.FontKind.Medium, UiKit.White);
+        seatedPrompt.Root.anchoredPosition = new Vector2(0f, 46f);
+        seatedPromptGroup = seatedPrompt.Root.gameObject.AddComponent<CanvasGroup>();
+        seatedPromptGroup.alpha = 0f;
     }
 
     private static KeyLine CreateKeyLine(string name, Transform parent, UiKit.FontKind kind, Color color)
@@ -112,8 +120,13 @@ public class InteractionPromptView : MonoBehaviour
         bool active = interactor.enabled && !PauseMenu.IsPaused;
         dot.enabled = active;
 
+        bool seated = sitter != null && sitter.IsSeated;
         Interactable focused = active ? interactor.Focused : null;
-        if (focused != null)
+        if (focused != null && seated)
+            seatedPrompt.Set(interactor.KeyLabelFor(focused.Key), focused.Prompt);
+        seatedPromptGroup.alpha = Mathf.MoveTowards(seatedPromptGroup.alpha, focused != null && seated ? 1f : 0f,
+            Time.unscaledDeltaTime / fadeDuration);
+        if (focused != null && !seated)
         {
             string newTitle = focused.Title;
             if (newTitle != lastTitle)
@@ -126,9 +139,8 @@ public class InteractionPromptView : MonoBehaviour
             prompt.Root.anchoredPosition = new Vector2(0f, hasTitle ? -88f : -61f);
             prompt.Set(interactor.KeyLabelFor(focused.Key), focused.Prompt);
         }
-        focusGroup.alpha = Mathf.MoveTowards(focusGroup.alpha, focused != null ? 1f : 0f, Time.unscaledDeltaTime / fadeDuration);
+        focusGroup.alpha = Mathf.MoveTowards(focusGroup.alpha, focused != null && !seated ? 1f : 0f, Time.unscaledDeltaTime / fadeDuration);
 
-        bool seated = sitter != null && sitter.IsSeated;
         bool showHint = active && (!string.IsNullOrEmpty(interactor.Hint) || seated || interactor.IsHolding);
         if (showHint)
         {

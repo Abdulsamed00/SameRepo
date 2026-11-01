@@ -90,7 +90,7 @@ MonoBehaviour:
   xSensitivity: 2
   ySensitivity: 2
   minPitch: -90
-  maxPitch: 90
+  maxPitch: 75
   smooth: 0
   smoothTime: 5
   lockCursor: 1
@@ -221,11 +221,11 @@ MonoBehaviour:
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   cameraRoot: {fileID: 5027564025543594378}
   body: {fileID: 7533646907768059652}
-  seatedCameraHeight: 1.2
-  seatedCameraForward: -0.35
+  seatedCameraHeight: 1.18
+  seatedCameraForward: -0.09
   seatedYawLimit: 70
   seatedMinPitch: -60
-  seatedMaxPitch: 60
+  seatedMaxPitch: 45
   lookSensitivity: 2
   fallbackDuration: 1.2
 --- !u!82 &2884809385407684505

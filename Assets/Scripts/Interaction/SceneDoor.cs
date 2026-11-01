@@ -22,6 +22,9 @@ public class SceneDoor : Openable
 
     public override bool CanInteract(PlayerInteractor interactor) => !triggered && base.CanInteract(interactor);
 
+    // Sahne geçişi sadece F ile tetiklenir, kapıya yürümek yetmez.
+    protected override bool CanAutoPush => false;
+
     public override void Interact(PlayerInteractor interactor)
     {
         if (triggered || Locked)

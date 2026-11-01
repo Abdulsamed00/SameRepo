@@ -86,12 +86,28 @@ public class PlayerBody : MonoBehaviour
     [SerializeField] private float palmDepth = 0.03f;
     [Tooltip("Eşyayı tuttuktan sonra elin IK'dan animasyona dönüş süresi (sn).")]
     [SerializeField] private float pickupReleaseTime = 0.5f;
+    [Tooltip("Eşyaya yetişmek için gövdenin alma klibinin üstüne en fazla ne kadar öne eğileceği (derece). 0 = kapalı: " +
+             "alçak sehpada (37 cm) omuz eşyadan 1.2 m uzakta, bel ekseni omuza 0.3 m yakın olduğundan eğilmek açığı kapatmıyor, " +
+             "klibin eğilmesinin üstüne binince gövde ikiye katlanıyor. Orada gerçek çözüm çömelme.")]
+    [SerializeField] private float pickupMaxLean = 0f;
 
     [Header("Bırakma (alma tersten)")]
     [Tooltip("Tersten oynayan alma klibinde elin eşyayı yerine koyduğu an (sn).")]
     [SerializeField] private float putDownReachTime = 1.0f;
     [Tooltip("Tersten oynayan alma klibinin süresi (sn): klip uzunluğu / state hızı.")]
     [SerializeField] private float putDownDuration = 1.75f;
+
+    [Header("Kapı / Dolap (el IK)")]
+    [Tooltip("Elin kapağa uzanma süresi (sn).")]
+    [SerializeField] private float touchReachTime = 0.25f;
+    [Tooltip("Kapak durduktan sonra elin animasyona dönüş süresi (sn).")]
+    [SerializeField] private float touchReleaseTime = 0.3f;
+    [Tooltip("Kapağa yetişmek için gövdenin en fazla öne eğilebileceği açı (derece).")]
+    [SerializeField] private float touchMaxLean = 20f;
+    [Tooltip("Omuzdan kapak noktasına bu mesafeye kadar el tam uzanır (m). Kol yetişmiyorsa kapağa doğru tam uzanır.")]
+    [SerializeField] private float touchFullReach = 1.5f;
+    [Tooltip("Bu mesafeden uzaktaki kapaklar için el hiç uzanmaz (m); arası yumuşak azalır.")]
+    [SerializeField] private float touchMaxReach = 2.1f;
 
     private Animator animator;
     private int upperBodyLayer;
@@ -103,6 +119,11 @@ public class PlayerBody : MonoBehaviour
     private float reachStartTime;
     private float reachDuration;
     private float putDownEndTime = -1f;
+    private float pendingLean;
+    private Transform touchAnchor;
+    private Vector3 touchLocalPoint;
+    private float touchStartTime;
+    private float touchHoldTime;
     private float headLookBlend;
     private float lastRootYaw;
     private bool turning;
@@ -112,6 +133,7 @@ public class PlayerBody : MonoBehaviour
     // Kafasız kopyada çöktürülen kemik (boyun) ve onun yerine geçen vekil.
     private Transform head;
     private Transform headProxy;
+    private SkinnedMeshRenderer headlessBody;
 
     public bool IsPosing { get; private set; }
 
@@ -128,6 +150,7 @@ public class PlayerBody : MonoBehaviour
 
     /// <summary>Sağ avuç içindeki tutma noktası. İleri ekseni avuç boyunca (işaret parmağından serçeye ters), yukarısı avuçtan dışarı.</summary>
     public Transform RightHandHold { get; private set; }
+
 
     private void Awake()
     {
@@ -194,7 +217,8 @@ public class PlayerBody : MonoBehaviour
 
         GameObject copy = Instantiate(source.gameObject, source.transform.parent);
         copy.name = source.name + "_Kafasiz";
-        copy.GetComponent<SkinnedMeshRenderer>().bones = bones;
+        headlessBody = copy.GetComponent<SkinnedMeshRenderer>();
+        headlessBody.bones = bones;
         source.gameObject.layer = headLayer;
     }
 
@@ -346,6 +370,75 @@ public class PlayerBody : MonoBehaviour
         return hold;
     }
 
+    /// <summary>
+    /// Kapı/dolap açıp kapatırken sağ el kapağa uzanır ve kapak hareket ederken üstünde kalır (IK), sonra bırakır.
+    /// Nokta <paramref name="anchor"/>'a göre saklanır: kapak dönerken el onunla gelir.
+    /// </summary>
+    /// <param name="worldPoint">Kapakta bakılan nokta (yüzeyin biraz önünde olmalı).</param>
+    /// <param name="holdTime">Elin ulaştıktan sonra kapakta kalacağı süre (sn): kapak bu sürede hareket eder.</param>
+    /// <returns>Elin kapağa ulaştığı an (sn); kapak bundan sonra hareket etmeli.</returns>
+    public float BeginTouch(Transform anchor, Vector3 worldPoint, float holdTime)
+    {
+        if (anchor == null || RightHandHold == null)
+            return 0f;
+
+        touchAnchor = anchor;
+        touchLocalPoint = anchor.InverseTransformPoint(worldPoint);
+        touchStartTime = Time.time;
+        touchHoldTime = holdTime;
+        return touchReachTime;
+    }
+
+    private void ApplyTouch()
+    {
+        if (touchAnchor == null)
+            return;
+
+        float t = Time.time - touchStartTime;
+        float weight;
+        if (t < touchReachTime)
+            weight = Mathf.SmoothStep(0f, 1f, t / touchReachTime);
+        else if (t < touchReachTime + touchHoldTime)
+            weight = 1f;
+        else
+        {
+            float release = (t - touchReachTime - touchHoldTime) / touchReleaseTime;
+            if (release >= 1f)
+            {
+                touchAnchor = null;
+                return;
+            }
+            weight = 1f - Mathf.SmoothStep(0f, 1f, release);
+        }
+
+        Vector3 point = touchAnchor.TransformPoint(touchLocalPoint);
+        Transform hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+        Transform shoulder = animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
+        Transform palm = RightHandHold;
+
+        // Kol yetişmeyen kapakta önce gövde öne eğilir; hâlâ yetmiyorsa el, kapağa doğru kolun tam uzandığı noktaya
+        // gider (kısmi ağırlıkla çekilirse el göğüs hizasında, ekranın dışında kalıyordu). Çok uzak kapaklarda el
+        // hiç uzanmaz.
+        if (shoulder != null)
+        {
+            float armLength = ArmLength();
+            float distance = (point - shoulder.position).magnitude;
+            weight *= Mathf.SmoothStep(1f, 0f, Mathf.InverseLerp(touchFullReach, touchMaxReach, distance));
+            float lean = LeanAngle(point, shoulder, armLength, touchMaxLean);
+            pendingLean = Mathf.Max(pendingLean, lean * weight);
+            Vector3 leanedShoulder = LeanedPosition(shoulder.position, lean * weight);
+            Vector3 toPoint = point - leanedShoulder;
+            float leanedDistance = toPoint.magnitude;
+            if (leanedDistance > armLength * 0.97f)
+                point = leanedShoulder + toPoint / leanedDistance * armLength * 0.97f;
+        }
+        if (weight <= 0f)
+            return;
+
+        animator.SetIKPositionWeight(AvatarIKGoal.RightHand, weight);
+        animator.SetIKPosition(AvatarIKGoal.RightHand, point + (hand.position - palm.position));
+    }
+
     /// <returns>Oturma süresi (sn).</returns>
     public float PlaySitDown()
     {
@@ -355,10 +448,35 @@ public class PlayerBody : MonoBehaviour
         return ClipLength;
     }
 
-    public void PlaySittingIdle()
+    /// <param name="instant">Geçişsiz: ilk karede doğrudan oturma pozunda (ana menü açılışı).</param>
+    public void PlaySittingIdle(bool instant = false)
     {
         overridden = true;
+        if (instant)
+        {
+            animator.Play(SittingIdleState, 0, 0f);
+            animator.Update(0f);
+            return;
+        }
         animator.CrossFadeInFixedTime(SittingIdleState, crossFade);
+    }
+
+    /// <summary>
+    /// Üçüncü şahıs görünüm (ana menü): kafa, saç ve gözlük oyuncu kamerasında da görünür, çöken boyunlu
+    /// kafasız kopya gizlenir (asıl gövdeyle üst üste binmesin). Kapatınca birinci şahıs görünümü döner.
+    /// </summary>
+    public void SetThirdPerson(bool on)
+    {
+        int layer = LayerMask.NameToLayer(HeadLayerName);
+        if (layer >= 0 && playerCamera != null)
+        {
+            if (on)
+                playerCamera.cullingMask |= 1 << layer;
+            else
+                playerCamera.cullingMask &= ~(1 << layer);
+        }
+        if (headlessBody != null)
+            headlessBody.enabled = !on;
     }
 
     /// <returns>Kalkma süresi (sn).</returns>
@@ -431,8 +549,50 @@ public class PlayerBody : MonoBehaviour
     {
         if (layerIndex != upperBodyLayer)
             return;
+        pendingLean = 0f;
         ApplyHeadLook();
         ApplyReach();
+        ApplyTouch();
+        ApplyLean();
+    }
+
+    private float ArmLength()
+    {
+        Transform shoulder = animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
+        Transform elbow = animator.GetBoneTransform(HumanBodyBones.RightLowerArm);
+        Transform hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+        if (shoulder == null || elbow == null || hand == null)
+            return 0.65f;
+        return Vector3.Distance(shoulder.position, elbow.position) + Vector3.Distance(elbow.position, hand.position);
+    }
+
+    // Omuzun, belden (Spine) öne eğilince varacağı yer.
+    private Vector3 LeanedPosition(Vector3 shoulderPosition, float angle)
+    {
+        Transform spine = animator.GetBoneTransform(HumanBodyBones.Spine);
+        if (spine == null || angle <= 0f)
+            return shoulderPosition;
+        return spine.position + Quaternion.AngleAxis(angle, animator.transform.right) * (shoulderPosition - spine.position);
+    }
+
+    // Kolun yetişmediği hedefe kadar gereken en küçük öne eğilme açısı (derece), en fazla maxLean.
+    private float LeanAngle(Vector3 target, Transform shoulder, float armLength, float maxLean)
+    {
+        for (float angle = 0f; angle < maxLean; angle += 2.5f)
+        {
+            if (Vector3.Distance(LeanedPosition(shoulder.position, angle), target) <= armLength * 0.93f)
+                return angle;
+        }
+        return maxLean;
+    }
+
+    private void ApplyLean()
+    {
+        Transform spine = animator.GetBoneTransform(HumanBodyBones.Spine);
+        if (spine == null || pendingLean <= 0.01f)
+            return;
+        Quaternion lean = Quaternion.AngleAxis(pendingLean, animator.transform.right);
+        animator.SetBoneLocalRotation(HumanBodyBones.Spine, Quaternion.Inverse(spine.parent.rotation) * lean * spine.rotation);
     }
 
     // Uzak bir hedef: kafanın klipteki küçük kaymaları bakış yönünü değiştirmez, sadece eğilme sönümlenir.
@@ -464,8 +624,13 @@ public class PlayerBody : MonoBehaviour
             return;
         }
 
-        // IK el kemiğini taşır; avuç (tutma noktası) hedefe gelsin diye aradaki fark düşülür.
+        // İsteğe bağlı: kol yetişmiyorsa gövde öne eğilerek eli eşyaya götürür (varsayılan kapalı, bkz. pickupMaxLean).
         Transform hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+        Transform shoulder = animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
+        if (shoulder != null && pickupMaxLean > 0f)
+            pendingLean = Mathf.Max(pendingLean, LeanAngle(reachPoint.Value, shoulder, ArmLength(), pickupMaxLean) * weight);
+
+        // IK el kemiğini taşır; avuç (tutma noktası) hedefe gelsin diye aradaki fark düşülür.
         Vector3 goal = reachPoint.Value + (hand.position - RightHandHold.position);
         animator.SetIKPositionWeight(AvatarIKGoal.RightHand, weight);
         animator.SetIKPosition(AvatarIKGoal.RightHand, goal);

@@ -7,6 +7,8 @@ using UnityEngine;
 /// Sahne başına bir tane: miktar = alınan ürün oranı x <see cref="sceneStrength"/>. Değişim sahne açılırken uygulanır,
 /// mağazada satın alınca değil (GDD: oyuncu soluklaşmayı eve döndüğünde fark eder).
 /// </summary>
+// Solma değeri, onu okuyan Awake/OnEnable'lardan (PlayerOutfitView) önce kurulsun.
+[DefaultExecutionOrder(-100)]
 public class SceneFade : MonoBehaviour
 {
     public const string ExemptLayerName = "Reklam";
@@ -30,22 +32,41 @@ public class SceneFade : MonoBehaviour
             if (go != null)
                 MarkExempt(go);
         foreach (ShopProduct product in FindObjectsByType<ShopProduct>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            MarkExempt(product.gameObject);
+            MarkExempt(product.gameObject, product.Product == ProductType.Ayakkabi);
         foreach (DailyPoster poster in FindObjectsByType<DailyPoster>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             MarkExempt(poster.gameObject);
         foreach (WardrobeClothing clothing in FindObjectsByType<WardrobeClothing>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            MarkExempt(clothing.gameObject);
+            MarkExempt(clothing.gameObject, clothing.Product == ProductType.Ayakkabi);
     }
 
     private void OnDestroy() => Shader.SetGlobalFloat(SolmaId, 0f);
 
-    /// <summary>Objeyi ve altındaki renderer'ları solmayan katmana alır.</summary>
-    public static void MarkExempt(GameObject root)
+    // Beyaz ayakkabı akşam ışığında (sıcak güneş + bake) sarı-kahve çıkıyor; çevre gri olunca solmayan ayakkabı
+    // "sapsarı" kalıyordu. Solma arttıkça albedo bu renge çekilip ışığın sıcaklığı dengelenir (HDR çarpan, B > 1).
+    private static readonly Color CoolTint = new Color(0.85f, 1.1f, 1.5f, 1f);
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+
+    /// <summary>
+    /// Objeyi ve altındaki renderer'ları solmayan katmana alır. <paramref name="neutralizeWarmth"/>: sıcak ışığın
+    /// sarıya boyadığı beyaz ürünler (ayakkabı) için solma oranında soğuk bir tonla dengelenir.
+    /// </summary>
+    public static void MarkExempt(GameObject root, bool neutralizeWarmth = false)
     {
         int layer = LayerMask.NameToLayer(ExemptLayerName);
         if (layer < 0)
             return;
+        float fade = Shader.GetGlobalFloat(SolmaId);
         foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
+        {
             r.gameObject.layer = layer;
+            if (!neutralizeWarmth || fade <= 0f || r.sharedMaterial == null || !r.sharedMaterial.HasProperty(BaseColorId))
+                continue;
+
+            Color tint = Color.Lerp(Color.white, CoolTint, fade);
+            Color baseColor = r.sharedMaterial.GetColor(BaseColorId);
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            block.SetColor(BaseColorId, new Color(baseColor.r * tint.r, baseColor.g * tint.g, baseColor.b * tint.b, baseColor.a));
+            r.SetPropertyBlock(block);
+        }
     }
 }

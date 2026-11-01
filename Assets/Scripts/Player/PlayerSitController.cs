@@ -17,12 +17,12 @@ public class PlayerSitController : MonoBehaviour
 
     [Header("Oturan Kamera")]
     [Tooltip("Otururken kameranın oyuncu köküne göre yüksekliği (m).")]
-    [SerializeField] private float seatedCameraHeight = 1.15f;
+    [SerializeField] private float seatedCameraHeight = 1.18f;
     [Tooltip("Otururken kameranın oyuncu köküne göre ileri kayması (m).")]
-    [SerializeField] private float seatedCameraForward = -0.15f;
+    [SerializeField] private float seatedCameraForward = -0.09f;
     [SerializeField] private float seatedYawLimit = 70f;
     [SerializeField] private float seatedMinPitch = -60f;
-    [SerializeField] private float seatedMaxPitch = 60f;
+    [SerializeField] private float seatedMaxPitch = 45f;
     [Tooltip("FirstPersonController hassasiyetiyle aynı ölçek (piksel delta x 0.1 x hassasiyet).")]
     [SerializeField] private float lookSensitivity = 2f;
 
@@ -43,7 +43,14 @@ public class PlayerSitController : MonoBehaviour
     private float seatedPitch;
 
     public bool IsSeated => state != State.Standing;
-    public bool CanSit => state == State.Standing && (interactor == null || !interactor.IsHolding);
+    // Elde eşya (kumanda) varken de oturulur: oturup TV açılabilsin. Eşya sağ avuçta kalır, G ile yerine bırakılır.
+    public bool CanSit => state == State.Standing;
+
+    /// <summary>True iken oturan oyuncu girdiyi dinlemez (E ile kalkmaz, fareyle bakmaz). Ana menü: karakter kanepede, kontrol oyuncuda değil.</summary>
+    public bool ControlsLocked { get; set; }
+
+    /// <summary>Kalkış sürerken 0'dan 1'e ilerler (kalkış bitince 1). Menüdeki kamera geçişi buna bağlı.</summary>
+    public float StandProgress { get; private set; }
 
     private void Awake()
     {
@@ -78,9 +85,41 @@ public class PlayerSitController : MonoBehaviour
         StartCoroutine(SitRoutine(target));
     }
 
+    /// <summary>
+    /// Animasyonsuz, doğrudan oturmuş hâlde başlatır (oyun ana menüde oyuncu kanepede otururken açılır).
+    /// <paramref name="near"/> en yakın oturma noktasını seçer.
+    /// </summary>
+    public void SitImmediately(Seat target, Vector3 near)
+    {
+        if (!CanSit || target == null || target.Occupied)
+            return;
+
+        seat = target;
+        seat.Occupied = true;
+        sitPoint = seat.ClosestSitPoint(near);
+
+        controller.Frozen = true;
+        characterController.enabled = false;
+        transform.SetPositionAndRotation(sitPoint.position, Quaternion.Euler(0f, sitPoint.eulerAngles.y, 0f));
+        cameraRoot.localPosition = new Vector3(0f, seatedCameraHeight, seatedCameraForward);
+        cameraRoot.localRotation = Quaternion.identity;
+        seatedYaw = seatedPitch = 0f;
+
+        if (body != null)
+            body.PlaySittingIdle(true);
+        state = State.Seated;
+    }
+
+    /// <summary>Oturuyorsa koddan ayağa kalkar (E tuşu gerekmez).</summary>
+    public void StandUp()
+    {
+        if (state == State.Seated)
+            StartCoroutine(StandRoutine());
+    }
+
     private void Update()
     {
-        if (state != State.Seated)
+        if (state != State.Seated || ControlsLocked)
             return;
 
         // Oturma tuşuyla aynı karede kalkmasın diye kalkış sadece Seated durumunda dinlenir.
@@ -156,15 +195,18 @@ public class PlayerSitController : MonoBehaviour
         Vector3 camStartPos = cameraRoot.localPosition;
         Quaternion camStartRot = cameraRoot.localRotation;
 
+        StandProgress = 0f;
         for (float t = 0f; t < 1f; t += Time.deltaTime / duration)
         {
             float k = Mathf.SmoothStep(0f, 1f, t);
+            StandProgress = t;
             transform.position = Vector3.Lerp(startPos, endPos, k);
             cameraRoot.localPosition = Vector3.Lerp(camStartPos, standingCameraPosition, k);
             cameraRoot.localRotation = Quaternion.Slerp(camStartRot, Quaternion.identity, k);
             yield return null;
         }
 
+        StandProgress = 1f;
         transform.position = endPos;
         cameraRoot.localPosition = standingCameraPosition;
         cameraRoot.localRotation = Quaternion.identity;

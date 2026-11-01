@@ -26,7 +26,7 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float xSensitivity = 2f;
     [SerializeField] private float ySensitivity = 2f;
     [SerializeField] private float minPitch = -90f;
-    [SerializeField] private float maxPitch = 90f;
+    [SerializeField] private float maxPitch = 75f;
     [SerializeField] private bool smooth;
     [SerializeField] private float smoothTime = 5f;
     [SerializeField] private bool lockCursor = true;
@@ -67,6 +67,13 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float walkingNearClip = 0.05f;
 
     public bool InputEnabled { get; set; } = true;
+
+    // Yürüme girdisi kilitleri (kapı açılırken/kapanırken oyuncu ilerlemesin). Bakış serbest kalır. Sayaç: aynı anda
+    // birden çok kapı hareket edebilir, biri bitince diğerinin kilidi kalkmasın.
+    private int movementLocks;
+    public bool MovementLocked => movementLocks > 0;
+    public void LockMovement() => movementLocks++;
+    public void UnlockMovement() => movementLocks = Mathf.Max(0, movementLocks - 1);
 
     /// <summary>Oyuncunun input action asset'i (duraklatma girdiyi buradan kapatır).</summary>
     public InputActionAsset InputActions => inputActions;
@@ -241,7 +248,7 @@ public class FirstPersonController : MonoBehaviour
     /// <returns>Koşuyor mu (sadece ileri giderken).</returns>
     private bool Move()
     {
-        Vector2 input = moveAction.ReadValue<Vector2>();
+        Vector2 input = movementLocks > 0 ? Vector2.zero : moveAction.ReadValue<Vector2>();
         bool sprinting = sprintAction.IsPressed() && input.y > 0f;
         float speed = sprinting ? runSpeed : walkSpeed;
         Vector3 wishDir = Vector3.ClampMagnitude(transform.right * input.x + transform.forward * input.y, 1f);

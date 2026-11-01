@@ -11,7 +11,22 @@ public static class SceneLoader
 {
     public const string LoadingSceneName = "Loading";
 
+    /// <summary>Ana menü. Ayrı bir sahne değil: evde (<see cref="HouseSceneName"/>) oyuncu kanepede otururken açılır (<see cref="IntroMenu"/>).</summary>
+    public const string MenuSceneName = "MainMenu";
+    public const string HouseSceneName = "HouseScene";
+
     public static string TargetScene { get; private set; }
+
+    /// <summary>Hedef ev sahnesi ana menü olarak açılacak (<see cref="IntroMenu"/> bunu tüketir).</summary>
+    public static bool MenuPending { get; private set; }
+
+    /// <summary>Menü bekleniyorsa true döner ve bayrağı temizler.</summary>
+    public static bool ConsumeMenuPending()
+    {
+        bool pending = MenuPending;
+        MenuPending = false;
+        return pending;
+    }
 
     /// <summary>Hedef sahnede oyuncunun doğacağı <see cref="SpawnOverride"/> kimliği; boşsa sahnenin varsayılan noktası.</summary>
     public static string SpawnId { get; private set; }
@@ -27,7 +42,11 @@ public static class SceneLoader
             return;
 
         transitioning = true;
-        TargetScene = targetScene;
+        // Evden çıkış: dönünce hava kararmıştır.
+        if (SceneManager.GetActiveScene().name == HouseSceneName && targetScene != MenuSceneName)
+            DayRoutine.NotifyLeftHouse();
+        MenuPending = targetScene == MenuSceneName;
+        TargetScene = MenuPending ? HouseSceneName : targetScene;
         SpawnId = spawnId;
 
         FreezePlayer();
@@ -48,6 +67,12 @@ public static class SceneLoader
     private static IEnumerator FadeAndLoad()
     {
         yield return ScreenFader.FadeOut();
+        // Menüye dönüş yeni oyundur: ekran kararmışken gün, alışveriş ve kıyafet durumu sıfırlanır (ev sahnesi açılmadan önce).
+        if (MenuPending)
+        {
+            DayRoutine.ResetAll();
+            Shader.SetGlobalFloat("_Solma", 0f);
+        }
         SceneManager.LoadScene(LoadingSceneName);
     }
 

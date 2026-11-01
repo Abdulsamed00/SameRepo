@@ -63,7 +63,7 @@ public class LoadingScreen : MonoBehaviour
         Canvas canvas = UiKit.CreateCanvas("Yukleme_UI", 10);
         Transform root = canvas.transform;
 
-        Texture background = Resources.Load<Texture>("UI/Arkaplan/" + target);
+        Texture background = Resources.Load<Texture>("UI/Arkaplan/" + (SceneLoader.MenuPending ? "AnaMenu" : target));
         RawImage bg = UiKit.CreateRect("Arkaplan", root).gameObject.AddComponent<RawImage>();
         bg.texture = background;
         bg.color = background != null ? Color.white : UiKit.Dim;
@@ -75,9 +75,13 @@ public class LoadingScreen : MonoBehaviour
             TextAlignmentOptions.BottomLeft);
         UiKit.Place(logo.rectTransform, Vector2.zero, new Vector2(144f, 108f), new Vector2(600f, 50f));
 
-        TextMeshProUGUI day = UiKit.CreateText("Gun", root, $"{GameDay.Index + 1}. GÜN", UiKit.FontKind.Medium, 16.5f, 40f,
-            UiKit.Unselected, TextAlignmentOptions.BottomLeft);
-        UiKit.Place(day.rectTransform, Vector2.zero, new Vector2(144f, 170f), new Vector2(600f, 24f));
+        // Menüye giderken (açılış, menüye dönüş) gün yazmaz, sadece oyunun adı görünür.
+        if (!SceneLoader.MenuPending)
+        {
+            TextMeshProUGUI day = UiKit.CreateText("Gun", root, $"{GameDay.Index + 1}. GÜN", UiKit.FontKind.Medium, 16.5f, 40f,
+                UiKit.Unselected, TextAlignmentOptions.BottomLeft);
+            UiKit.Place(day.rectTransform, Vector2.zero, new Vector2(144f, 170f), new Vector2(600f, 24f));
+        }
 
         Image track = UiKit.CreateImage("Cubuk_Yol", root, Color.white, UiKit.Sprite("Yukleme_Yol"));
         UiKit.Place(track.rectTransform, new Vector2(1f, 0f), new Vector2(-144f, 120f), new Vector2(300f, 2f));

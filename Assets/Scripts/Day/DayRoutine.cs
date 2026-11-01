@@ -9,7 +9,7 @@ using System;
 /// </summary>
 public static class DayRoutine
 {
-    /// <summary>Uykunun geldiği anlar (giyince, pozdan sonra): yatak esneme sesini çalar.</summary>
+    /// <summary>Uykunun geldiği an (aynada poz bitince; giyilecek kıyafet yoksa eve girince): yatak esneme sesini çalar.</summary>
     public static event Action Sleepy;
 
     /// <summary>Bugünün ürünü aldıktan ve giydikten sonra aynada poz verildi.</summary>
@@ -42,10 +42,14 @@ public static class DayRoutine
             AdWatchedToday = true;
     }
 
+    /// <summary>Ev dışına çıkıldı: eve dönünce hava kararmıştır (<see cref="HouseNightfall"/>). Ertesi güne kadar sürer.</summary>
+    public static bool NightFell { get; private set; }
+
+    public static void NotifyLeftHouse() => NightFell = true;
+
+    // Esneme giyince değil, aynada poz verince gelir (NotifyPoseEnded).
     public static void NotifyWorn(ProductType product)
     {
-        if (product == GameDay.Product && BoughtToday && !GameDay.IsLastDay)
-            Sleepy?.Invoke();
     }
 
     public static void NotifyPoseEnded()
@@ -68,6 +72,7 @@ public static class DayRoutine
     {
         PosedToday = false;
         AdWatchedToday = false;
+        NightFell = false;
         GameDay.Advance();
     }
 
@@ -76,6 +81,7 @@ public static class DayRoutine
     {
         PosedToday = false;
         AdWatchedToday = false;
+        NightFell = false;
         PlayerPurchases.Reset();
         PlayerOutfit.Reset();
         GameDay.Reset();

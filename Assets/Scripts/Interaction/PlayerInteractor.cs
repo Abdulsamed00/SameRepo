@@ -41,6 +41,18 @@ public class PlayerInteractor : MonoBehaviour
     public PickupItem HeldItem { get; private set; }
     public bool IsHolding => HeldItem != null;
 
+    /// <summary>Oyuncunun görünür gövdesi (el IK'sı için: kapı/dolap açarken el kapağa uzanır).</summary>
+    public PlayerBody Body => body;
+
+    /// <summary>
+    /// Işının değdiği nokta, yüzey normali ve collider'ı (<see cref="Focused"/> bir ışın vuruşundan geldiyse). Bölgeden
+    /// (<see cref="Zone"/>) gelen etkileşimde collider boştur.
+    /// </summary>
+    public Vector3 EyePosition => viewCamera.position;
+    public Collider FocusCollider { get; private set; }
+    public Vector3 FocusPoint { get; private set; }
+    public Vector3 FocusNormal { get; private set; }
+
     public string InteractKeyLabel => KeyLabel(interactAction);
     public string DropKeyLabel => KeyLabel(dropAction);
     public string SitKeyLabel => KeyLabel(sitAction);
@@ -126,13 +138,17 @@ public class PlayerInteractor : MonoBehaviour
 
     private Interactable FindFocused()
     {
+        FocusCollider = null;
         Ray ray = new Ray(viewCamera.position, viewCamera.forward);
         bool hitSomething = RaycastIgnoringSelf(ray, interactDistance, out RaycastHit hit);
         if (hitSomething)
         {
             Interactable direct = hit.collider.GetComponentInParent<Interactable>();
             if (direct != null && direct.CanInteract(this))
+            {
+                SetFocusHit(hit);
                 return direct;
+            }
         }
 
         // Hedef yardımı: kumanda gibi küçük eşyalar tam ortalanmasa da (özellikle otururken uzaktan)
@@ -140,6 +156,7 @@ public class PlayerInteractor : MonoBehaviour
         float limit = hitSomething ? hit.distance + aimAssistDepth : interactDistance;
         int count = Physics.SphereCastNonAlloc(ray, aimAssistRadius, hits, limit, interactMask, QueryTriggerInteraction.Ignore);
         Interactable best = null;
+        RaycastHit bestHit = default;
         float bestDistance = float.MaxValue;
         for (int i = 0; i < count; i++)
         {
@@ -150,9 +167,19 @@ public class PlayerInteractor : MonoBehaviour
             if (candidate == null || !candidate.CanInteract(this) || !InSight(candidate, hits[i].point))
                 continue;
             best = candidate;
+            bestHit = hits[i];
             bestDistance = hits[i].distance;
         }
+        if (best != null)
+            SetFocusHit(bestHit);
         return best;
+    }
+
+    private void SetFocusHit(RaycastHit hit)
+    {
+        FocusCollider = hit.collider;
+        FocusPoint = hit.point;
+        FocusNormal = hit.normal;
     }
 
     // Hedef yardımı bakılan yüzeyin arkasına da uzandığı için 20 cm'lik duvarın öbür yüzündeki eşyayı (yan odadaki ayna,
