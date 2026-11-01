@@ -5196,6 +5196,7 @@ MonoBehaviour:
   enoughPrompt: "Bug\xFCnl\xFCk d\u0131\u015Far\u0131s\u0131 yeter"
   wearFirstPrompt: "\xD6nce yeni k\u0131yafetimi giyeyim"
   poseFirstPrompt: "\xD6nce aynada kendime bakay\u0131m"
+  sleepFirstPrompt: "\xD6nce bir uyuyay\u0131m"
 --- !u!1 &633230162
 GameObject:
   m_ObjectHideFlags: 0

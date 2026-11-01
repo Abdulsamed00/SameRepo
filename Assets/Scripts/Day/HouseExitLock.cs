@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Evin dış kapısının kilidi, günlük döngünün sırasına göre:
 /// reklam izlenmeden çıkılamaz; günün ürünü alındıktan sonra o gün tekrar çıkılamaz (uyumak gerekir);
-/// son günde giyip poz verince kapı açılır (final).
+/// son günde giyip poz verip uyuyunca, sabah kapı açılır (final).
 /// </summary>
 public class HouseExitLock : MonoBehaviour
 {
@@ -12,6 +12,7 @@ public class HouseExitLock : MonoBehaviour
     [SerializeField] private string enoughPrompt = "Bugünlük dışarısı yeter";
     [SerializeField] private string wearFirstPrompt = "Önce yeni kıyafetimi giyeyim";
     [SerializeField] private string poseFirstPrompt = "Önce aynada kendime bakayım";
+    [SerializeField] private string sleepFirstPrompt = "Önce bir uyuyayım";
 
     private void Update()
     {
@@ -29,6 +30,8 @@ public class HouseExitLock : MonoBehaviour
         else if (!GameDay.IsLastDay)
             door.LockedPrompt = enoughPrompt;
         else
-            door.LockedPrompt = DayRoutine.WornToday ? poseFirstPrompt : wearFirstPrompt;
+            door.LockedPrompt = !DayRoutine.WornToday ? wearFirstPrompt
+                : !DayRoutine.PosedToday ? poseFirstPrompt
+                : sleepFirstPrompt;
     }
 }

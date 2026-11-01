@@ -26,7 +26,7 @@ public static class GameDay
 
     public static event Action Changed;
 
-    /// <summary>Son gün (gözlük): uyku yok, giyip poz verince evden çıkılınca final başlar.</summary>
+    /// <summary>Son gün (gözlük): uyuyunca gün ilerlemez, sabah evden çıkılınca final başlar (<see cref="DayRoutine.FinalMorning"/>).</summary>
     public static bool IsLastDay => Index >= ProductCount - 1;
 
     /// <summary>Yeni oyun: ilk güne döner.</summary>

@@ -769,7 +769,10 @@ public class PlayerBody : MonoBehaviour
         Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
         // Dönüşün bir kısmını gövdenin üstü alır, boyun tek başına bükülmesin.
         animator.SetLookAtWeight(weight, 0.2f, 1f, 0f, headLookClamp);
-        animator.SetLookAtPosition(head.position + playerCamera.transform.forward * 10f);
+        // Üçüncü şahısta (final) kamera karakterin gözü değil, karaktere bakıyor: kafa onu izlerse öne eğiliyordu.
+        // O zaman gövdenin baktığı yöne, ufka bakar.
+        Vector3 direction = thirdPerson ? animator.transform.forward : playerCamera.transform.forward;
+        animator.SetLookAtPosition(head.position + direction * 10f);
     }
 
     private void ApplyReach()
