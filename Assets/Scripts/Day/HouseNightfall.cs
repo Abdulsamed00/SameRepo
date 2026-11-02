@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Evden çıkıp dönünce (<see cref="DayRoutine.NightFell"/>) hava kararmıştır: pencerelerden görünen gökyüzü gece olur,
 /// güneşin direkt ışığı kapanır (içerideki ışıklar ve bake edilmiş aydınlatma yerinde kalır). Ertesi sabah
-/// (<see cref="GameDay.Changed"/>, ekran kararmışken) akşamüstü geri gelir. Güneş (Directional Light) objesine eklenir.
+/// (<see cref="DayRoutine.Morning"/>, ekran kararmışken; son günün sabahı da) akşamüstü geri gelir. Güneş (Directional Light) objesine eklenir.
 /// </summary>
 [RequireComponent(typeof(Light))]
 public class HouseNightfall : MonoBehaviour
@@ -39,9 +39,17 @@ public class HouseNightfall : MonoBehaviour
         probes = FindObjectsByType<ReflectionProbe>(FindObjectsSortMode.None);
     }
 
-    private void OnEnable() => GameDay.Changed += Apply;
+    private void OnEnable()
+    {
+        GameDay.Changed += Apply;
+        DayRoutine.Morning += Apply;
+    }
 
-    private void OnDisable() => GameDay.Changed -= Apply;
+    private void OnDisable()
+    {
+        GameDay.Changed -= Apply;
+        DayRoutine.Morning -= Apply;
+    }
 
     private void Start() => Apply();
 

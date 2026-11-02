@@ -4,7 +4,9 @@ using System;
 /// Günlük döngü: TV'de günün reklamını izle, mağazaya git, günün ürününü al, eve dön, giy, aynada poz ver, uyu.
 /// Reklam izlenmeden mağazada ürün alınamaz ve evden çıkılamaz (<see cref="HouseExitLock"/>); ürün alınınca da
 /// o gün evden çıkılamaz; yatak ancak giyip poz verdikten sonra uyutur (<see cref="Bed"/>).
-/// Son günde (gözlük) uyku yok: giyip poz verince <see cref="FinalReady"/> olur, kapı açılır ve sokakta final başlar.
+/// Son günde (gözlük) de uyunur ama gün ilerlemez: sabah olur (<see cref="FinalMorning"/>), <see cref="FinalReady"/> olur,
+/// kapı açılır ve sokakta final başlar. Eskiden son gün uyku yoktu; eve dönünce ev gece oluyordu ama poz verip
+/// çıkınca sokak akşamüstüydü (01.11).
 /// Statik: sahne geçişlerinde korunur.
 /// </summary>
 public static class DayRoutine
@@ -30,11 +32,20 @@ public static class DayRoutine
     public static bool WornToday =>
         PlayerOutfit.IsWorn(GameDay.Product) || !WardrobeClothing.ExistsFor(GameDay.Product);
 
-    /// <summary>Uyunabilir: son gün hariç (orada uyku yerine final var).</summary>
-    public static bool CanSleep => !GameDay.IsLastDay && BoughtToday && WornToday && PosedToday;
+    /// <summary>Uyunabilir: günün ürünü alındı, giyildi, poz verildi (son günde bir kez, finalden önce).</summary>
+    public static bool CanSleep => BoughtToday && WornToday && PosedToday && !FinalMorning;
 
-    /// <summary>Son günün ürünü alındı, giyildi, poz verildi: evden çıkınca final başlar.</summary>
-    public static bool FinalReady => GameDay.IsLastDay && BoughtToday && WornToday && PosedToday;
+    /// <summary>Son günün gecesi uyunup sabah olduğu (gün sayısı ilerlemez, ürün gözlükte kalır).</summary>
+    public static bool FinalMorning { get; private set; }
+
+    /// <summary>Son günün ürünü alındı, giyildi, poz verildi ve uyunup sabah oldu: evden çıkınca final başlar.</summary>
+    public static bool FinalReady => GameDay.IsLastDay && BoughtToday && WornToday && PosedToday && FinalMorning;
+
+    /// <summary>Ekranda görünen gün numarası (1'den). Final sabahı son günün ertesidir.</summary>
+    public static int DayNumber => GameDay.Index + 1 + (FinalMorning ? 1 : 0);
+
+    /// <summary>Uyuyup sabah olunca (ekran karanlıkken): ev gecesi biter (<see cref="HouseNightfall"/>).</summary>
+    public static event Action Morning;
 
     public static void NotifyAdWatched(ProductType product)
     {
@@ -57,23 +68,31 @@ public static class DayRoutine
         if (!BoughtToday || !WornToday)
             return;
         PosedToday = true;
-        if (!GameDay.IsLastDay)
-            Sleepy?.Invoke();
+        Sleepy?.Invoke();
     }
 
     /// <summary>Eve dönüldüğünde giyilecek bir şey yoksa uyku hemen gelir.</summary>
     public static void NotifyArrivedHome()
     {
-        if (BoughtToday && !WardrobeClothing.ExistsFor(GameDay.Product) && !PosedToday && !GameDay.IsLastDay)
+        if (BoughtToday && !WardrobeClothing.ExistsFor(GameDay.Product) && !PosedToday)
             Sleepy?.Invoke();
     }
 
     public static void StartNextDay()
     {
-        PosedToday = false;
-        AdWatchedToday = false;
         NightFell = false;
-        GameDay.Advance();
+        if (GameDay.IsLastDay)
+        {
+            // Son günün sabahı: ürün ve bayraklar yerinde kalır, kapı finale açılır.
+            FinalMorning = true;
+        }
+        else
+        {
+            PosedToday = false;
+            AdWatchedToday = false;
+            GameDay.Advance();
+        }
+        Morning?.Invoke();
     }
 
     /// <summary>Yeni oyun: tüm ilerleme sıfırlanır (ana menüde, finalden sonra).</summary>
@@ -82,6 +101,7 @@ public static class DayRoutine
         PosedToday = false;
         AdWatchedToday = false;
         NightFell = false;
+        FinalMorning = false;
         PlayerPurchases.Reset();
         PlayerOutfit.Reset();
         GameDay.Reset();

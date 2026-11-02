@@ -599,6 +599,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WardrobeClothing
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   product: 4
   model: {fileID: 383741621}
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -1397,6 +1398,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Openable
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   openPrompt: "Kap\u0131y\u0131 a\xE7"
   closePrompt: "Kap\u0131y\u0131 kapat"
   startsOpen: 1
@@ -3773,6 +3775,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WardrobeClothing
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   product: 2
   model: {fileID: 2005652727}
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -3901,6 +3904,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WardrobeClothing
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   product: 3
   model: {fileID: 1319546218}
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -4162,6 +4166,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WardrobeClothing
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   product: 1
   model: {fileID: 1647313908}
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -4583,6 +4588,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickupItem
   prompt: "Kumanday\u0131 al"
+  maxDistance: 1.5
   returnToStartOnDrop: 1
   staysKinematic: 0
   homeArea: {fileID: 1941695351}
@@ -5147,6 +5153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneDoor
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   openPrompt: "Kap\u0131y\u0131 a\xE7"
   closePrompt: Kapat
   startsOpen: 0
@@ -5189,6 +5196,7 @@ MonoBehaviour:
   enoughPrompt: "Bug\xFCnl\xFCk d\u0131\u015Far\u0131s\u0131 yeter"
   wearFirstPrompt: "\xD6nce yeni k\u0131yafetimi giyeyim"
   poseFirstPrompt: "\xD6nce aynada kendime bakay\u0131m"
+  sleepFirstPrompt: "\xD6nce bir uyuyay\u0131m"
 --- !u!1 &633230162
 GameObject:
   m_ObjectHideFlags: 0
@@ -7685,6 +7693,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Openable
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   openPrompt: "Dolab\u0131 a\xE7"
   closePrompt: "Dolab\u0131 kapat"
   startsOpen: 0
@@ -9524,6 +9533,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Seat
   prompt: Otur
+  maxDistance: 0
   sitPoints:
   - {fileID: 1962761517}
   standDistance: 0.3
@@ -10924,7 +10934,7 @@ Transform:
   m_GameObject: {fileID: 1410202591}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 1.6749997, z: -1.2000003}
+  m_LocalPosition: {x: -0.5, y: 1.675, z: -1.2000003}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10945,7 +10955,7 @@ MonoBehaviour:
   version: 2
   globalVolume: 0
   mode: 1
-  size: {x: 14.299999, y: 4.2500005, z: 11.699999}
+  size: {x: 14.299999, y: 4.25, z: 11.699999}
   overrideRendererFilters: 0
   minRendererVolumeSize: 0.1
   objectLayerMask:
@@ -11270,6 +11280,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Seat
   prompt: Otur
+  maxDistance: 0
   sitPoints:
   - {fileID: 2122620256}
   - {fileID: 453575933}
@@ -12158,6 +12169,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bed
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   sitPoint: {fileID: 1842243111}
   seatedHeight: 0.35
   lyingStartHeight: 0.12
@@ -14469,7 +14481,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55d028cf88e4dcb45b2b8a49be508e39, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.48
+      value: 0.94
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55d028cf88e4dcb45b2b8a49be508e39, type: 3}
       propertyPath: m_LocalRotation.w
@@ -14817,6 +14829,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MirrorPose
   prompt: Poz ver
+  maxDistance: 0
   stopPrompt: "Poz vermeyi b\u0131rak"
   surface: {fileID: 1074086899}
   standDistance: 1.6
@@ -16102,6 +16115,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WardrobeClothing
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   product: 0
   model: {fileID: 15948115}
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -16956,6 +16970,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Openable
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   openPrompt: "Kap\u0131y\u0131 a\xE7"
   closePrompt: "Kap\u0131y\u0131 kapat"
   startsOpen: 1
@@ -17207,6 +17222,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Television
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   ads:
   - product: 0
     clip: {fileID: 32900000, guid: 03f647747b6a6d540b38dc708620f004, type: 3}

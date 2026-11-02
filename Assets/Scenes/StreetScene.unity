@@ -4753,6 +4753,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneZone
   prompt: "Ma\u011Fazaya gir"
+  maxDistance: 0
   targetScene: ShopScene
   spawnId: 
   requireLeaveFirst: 0
@@ -41707,7 +41708,7 @@ MonoBehaviour:
       options:
       - Glasses
       emptyChance: 0.8
-  population: 36
+  population: 60
   wanderRoots:
   - {fileID: 1064652262}
   - {fileID: 326125718}
@@ -41733,6 +41734,12 @@ MonoBehaviour:
   speedRange: {x: 1.05, y: 1.45}
   respawnDelay: {x: 2, y: 6}
   hiddenDistance: 35
+  finaleExtra: 40
+  finaleRadius: 9
+  finaleClearance: 1.6
+  finaleSpawnBand: {x: 9, y: 24}
+  finaleLaneX: {x: -4.5, y: 4.5}
+  finaleLaneZ: {x: 3, y: 236}
 --- !u!1 &466555560
 GameObject:
   m_ObjectHideFlags: 0
@@ -51079,6 +51086,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneZone
   prompt: "Eve d\xF6n"
+  maxDistance: 0
   targetScene: HouseScene
   spawnId: Ev_Koridor_Kapi
   requireLeaveFirst: 1
@@ -62113,6 +62121,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcShadowDistance
   shadowDistance: 20
+  hideDistance: 80
+  hideHysteresis: 5
   interval: 0.25
   refreshInterval: 1
 --- !u!1 &706315346
@@ -98545,11 +98555,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69e07bb2bc7c5424f9fc1ff6eb25c4a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FinalSequence
-  triggerDistance: 14
+  triggerDistance: 8
+  streetCenterX: 0
+  finalFacing: {x: 0, y: 0, z: 1}
+  walkSpeed: 1.4
+  turnDuration: 1.2
+  maxWalkDuration: 15
   stopDelay: 1.2
-  pullBackDuration: 4.5
-  finalHeight: 2.2
-  finalBack: 4.5
+  pullBackDuration: 5
+  finalHeight: 3.5
+  finalFront: 4
+  lookHeight: 1.2
   finalFieldOfView: 50
   holdDuration: 3
   fadeToBlackDuration: 2.5

@@ -198,10 +198,15 @@ public class PlayerBody : MonoBehaviour
             return;
         }
 
+        // Oyuncu solmaz (aynada kendini soluk görmesin): gövde solmadan sonra çizilen Reklam katmanında,
+        // kafa parçaları PlayerHead'de (PC_Renderer o katmanı da solmadan sonra çizer).
+        int exemptLayer = LayerMask.NameToLayer(SceneFade.ExemptLayerName);
         foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
         {
             if (System.Array.IndexOf(hiddenRendererNames, r.name) >= 0)
                 r.gameObject.layer = layer;
+            else if (exemptLayer >= 0)
+                r.gameObject.layer = exemptLayer;
         }
 
         CreateHeadlessBody(layer);
@@ -764,7 +769,10 @@ public class PlayerBody : MonoBehaviour
         Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
         // Dönüşün bir kısmını gövdenin üstü alır, boyun tek başına bükülmesin.
         animator.SetLookAtWeight(weight, 0.2f, 1f, 0f, headLookClamp);
-        animator.SetLookAtPosition(head.position + playerCamera.transform.forward * 10f);
+        // Üçüncü şahısta (final) kamera karakterin gözü değil, karaktere bakıyor: kafa onu izlerse öne eğiliyordu.
+        // O zaman gövdenin baktığı yöne, ufka bakar.
+        Vector3 direction = thirdPerson ? animator.transform.forward : playerCamera.transform.forward;
+        animator.SetLookAtPosition(head.position + direction * 10f);
     }
 
     private void ApplyReach()

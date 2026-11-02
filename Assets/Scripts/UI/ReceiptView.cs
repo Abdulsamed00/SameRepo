@@ -33,7 +33,7 @@ public static class ReceiptView
         Line(rect, "SATIŞ FİŞİ", ref y, 22.5f, 6f, UiKit.PaperText, TextAlignmentOptions.Center, 30f, bold: true);
         Line(rect, "Mağaza · Kasa 02", ref y, 17f, 0f, UiKit.PaperSecondary, TextAlignmentOptions.Center, 34f);
         Dashes(rect, ref y);
-        Pair(rect, $"GÜN {GameDay.Index + 1}", $"NO {bought.Count:0000}", ref y, UiKit.PaperSecondary, 17f, 44f);
+        Pair(rect, $"GÜN {DayRoutine.DayNumber}", $"NO {bought.Count:0000}", ref y, UiKit.PaperSecondary, 17f, 44f);
         foreach (ProductType type in bought)
             Pair(rect, type.DisplayName().ToUpper(Turkish), "1 AD", ref y, UiKit.PaperText, 19.5f, LineHeight);
         y = Mathf.Max(y + 40f, 300f);

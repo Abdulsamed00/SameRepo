@@ -163,7 +163,7 @@ public class PlayerInteractor : MonoBehaviour
         if (hitSomething)
         {
             Interactable direct = hit.collider.GetComponentInParent<Interactable>();
-            if (direct != null && direct.CanInteract(this))
+            if (direct != null && InReach(direct, hit.distance) && direct.CanInteract(this))
             {
                 SetFocusHit(hit);
                 return direct;
@@ -183,7 +183,8 @@ public class PlayerInteractor : MonoBehaviour
             if (hits[i].collider.transform.IsChildOf(transform) || hits[i].distance <= 0f || hits[i].distance >= bestDistance)
                 continue;
             Interactable candidate = hits[i].collider.GetComponentInParent<Interactable>();
-            if (candidate == null || !candidate.CanInteract(this) || !InSight(candidate, hits[i].point))
+            if (candidate == null || !InReach(candidate, hits[i].distance) || !candidate.CanInteract(this)
+                || !InSight(candidate, hits[i].point))
                 continue;
             best = candidate;
             bestHit = hits[i];
@@ -193,6 +194,10 @@ public class PlayerInteractor : MonoBehaviour
             SetFocusHit(bestHit);
         return best;
     }
+
+    // Küçük eşyalar (kumanda) ortak 2.5 m'den algılanınca odanın ortasından alınabiliyordu; kendi sınırları var.
+    private static bool InReach(Interactable target, float distance)
+        => target.MaxDistance <= 0f || distance <= target.MaxDistance;
 
     private void SetFocusHit(RaycastHit hit)
     {

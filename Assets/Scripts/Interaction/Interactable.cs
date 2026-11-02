@@ -17,6 +17,11 @@ public enum InteractionKey
 public abstract class Interactable : MonoBehaviour
 {
     [SerializeField] private string prompt = "Etkileşime gir";
+    [Tooltip("Kameradan en fazla bu uzaklıkta (m) algılanır. 0: PlayerInteractor'ın ortak mesafesi (2.5 m).")]
+    [SerializeField] private float maxDistance = 0f;
+
+    /// <summary>Bu objeye özel erişim mesafesi; 0 ise ortak mesafe kullanılır.</summary>
+    public float MaxDistance => maxDistance;
 
     /// <summary>Ekranda tuş etiketinin yanında görünen metin.</summary>
     public virtual string Prompt => prompt;
