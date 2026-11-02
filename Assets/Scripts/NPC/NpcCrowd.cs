@@ -117,7 +117,7 @@ public class NpcCrowd : MonoBehaviour
                 new NpcOutfitSlot("Saç", 0f, "BlondeHair", "CurlyHairBlack", "CurlyHairBrown", "TopuzSac"),
                 new NpcOutfitSlot("Üst", 0f, "Coat", "Tshırt", "Tshırt_Blue", "Tshırt_Pink"),
                 new NpcOutfitSlot("Alt", 0f, "BlueJean", "EsofmanAltı", "EsofmanAltı_Yesil", "Siyah_Tayt"),
-                new NpcOutfitSlot("Ayakkabı", 0f, "LeftBoot+RightBoot", "ShoeLeft+ShoeRight", "BlackShoeLeft+BlackShoeRight", "BrownShoeLeft+BrownShoeRight"),
+                new NpcOutfitSlot("Ayakkabı", 0f, "ShoeLeft+ShoeRight", "BlackShoeLeft+BlackShoeRight", "BrownShoeLeft+BrownShoeRight"),
                 new NpcOutfitSlot("Çanta", 0.7f, "Bag"),
                 new NpcOutfitSlot("Gözlük", 0.8f, "Glasses"),
             }

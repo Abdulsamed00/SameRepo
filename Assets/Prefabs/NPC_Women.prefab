@@ -70,9 +70,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5492777529534913946, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -5484086988388651146, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -1748919207373996690, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
+    - target: {fileID: -3902303745937728094, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -3902303745937728094, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
+    - target: {fileID: -3657848172509719134, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -126,7 +134,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2063619084582709640, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2314505919143015208, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       propertyPath: m_IsActive
@@ -137,6 +145,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4295497418156938459, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4458451675064982230, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -234,7 +246,6 @@ MonoBehaviour:
   - product: 2
     wear: GoldenShoeLeft+GoldenShoeRight
     alternatives:
-    - LeftBoot+RightBoot
     - ShoeLeft+ShoeRight
     - BlackShoeLeft+BlackShoeRight
     - BrownShoeLeft+BrownShoeRight

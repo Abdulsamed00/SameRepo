@@ -1193,6 +1193,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -1386,6 +1387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -1983,6 +1985,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -2092,6 +2095,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -5243,6 +5247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneZone
   prompt: "Soka\u011Fa \xE7\u0131k"
+  maxDistance: 0
   targetScene: StreetScene
   spawnId: Magaza_Onu
   requireLeaveFirst: 0
@@ -5994,6 +5999,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -6237,6 +6243,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -7986,63 +7993,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 445f72e02b2781e4ba016fef9963c424, type: 3}
   m_PrefabInstance: {fileID: 502246225}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &504000908
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 8.471
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.85026306
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 4.121
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
-      propertyPath: m_Name
-      value: "k\u0131z_cal\u0131san"
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 562af3bcbcd2d3f45b46daf386bf7529, type: 3}
 --- !u!1 &506099299
 GameObject:
   m_ObjectHideFlags: 0
@@ -8666,6 +8616,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -9732,6 +9683,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -11314,7 +11266,6 @@ MonoBehaviour:
       emptyChance: 0
     - name: "Ayakkab\u0131"
       options:
-      - LeftBoot+RightBoot
       - ShoeLeft+ShoeRight
       - BlackShoeLeft+BlackShoeRight
       - BrownShoeLeft+BrownShoeRight
@@ -11339,8 +11290,23 @@ MonoBehaviour:
   startAtSpotChance: 0.6
   goalsBeforeLeave: {x: 2, y: 6}
   speedRange: {x: 1.05, y: 1.45}
+  streetFlow: 0
+  flowSpotChance: 0.25
+  flowSpotAhead: 18
   respawnDelay: {x: 2, y: 6}
   hiddenDistance: 35
+  finaleExtra: 40
+  finaleRadius: 9
+  finaleClearance: 1.6
+  finaleSpawnBand: {x: 9, y: 24}
+  finaleLaneX: {x: -4.5, y: 4.5}
+  finaleLaneZ: {x: 3, y: 118}
+  ringCount: 18
+  ringRadius: 2.6
+  ringSpawnBand: {x: 7, y: 16}
+  ringWalkSpeed: 1.5
+  ringProfile: 1
+  ringLook: TopuzSac
 --- !u!1 &767819408
 GameObject:
   m_ObjectHideFlags: 0
@@ -12712,6 +12678,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -13701,63 +13668,6 @@ MonoBehaviour:
   - {fileID: 157584492}
   duration: {x: 6, y: 16}
   approachDistance: 0
---- !u!1001 &949984558
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 4.733
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.981
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 4.102
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
-      propertyPath: m_Name
-      value: "erkek_cal\u0131san"
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 09a4a7db2428c464abffb3fdf08e60d1, type: 3}
 --- !u!1 &950041259
 GameObject:
   m_ObjectHideFlags: 0
@@ -14017,6 +13927,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -14459,6 +14370,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -15670,6 +15582,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -19381,6 +19294,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -19772,6 +19686,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -22522,6 +22437,11 @@ Transform:
   - {fileID: 1136729312}
   m_Father: {fileID: 1628704467}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1437076368 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+  m_PrefabInstance: {fileID: 6408547993793599695}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1444163500
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22892,6 +22812,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -23425,6 +23346,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -23962,6 +23884,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -26991,6 +26914,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -27312,6 +27236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -27927,6 +27852,8 @@ Transform:
   - {fileID: 1149019052}
   - {fileID: 1287163708}
   - {fileID: 201338672}
+  - {fileID: 1908961366}
+  - {fileID: 1437076368}
   m_Father: {fileID: 297503110}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1802138393
@@ -27942,6 +27869,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Checkout
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   purchaseSound: {fileID: 8300000, guid: 2efd83ddd9957e048a02e4afb7d2aa7f, type: 3}
 --- !u!1 &1802650587
 GameObject:
@@ -29884,6 +29812,11 @@ Transform:
   - {fileID: 1795542954}
   m_Father: {fileID: 1383950441}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1908961366 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+  m_PrefabInstance: {fileID: 860605075942827721}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1913760845
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -32981,6 +32914,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopProduct
   prompt: "Etkile\u015Fime gir"
+  maxDistance: 0
   returnToStartOnDrop: 1
   staysKinematic: 1
   homeArea: {fileID: 0}
@@ -33071,6 +33005,120 @@ Transform:
   m_Children: []
   m_Father: {fileID: 325127872}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &860605075942827721
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1802138392}
+    m_Modifications:
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4.733
+      objectReference: {fileID: 0}
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 4.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6393446783836777993, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6412895600476766793, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+      propertyPath: m_Name
+      value: NPC_Kasiyer_Erkek
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e074a7adacb356c44a48d2f07baf85a8, type: 3}
+--- !u!1001 &6408547993793599695
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1802138392}
+    m_Modifications:
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 8.473
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 4.11
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1816796951870715578, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3296838118851717358, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
+      propertyPath: m_Name
+      value: NPC_Kasiyer_Kadin
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ae84c285700fe5541abfc05d48941cc8, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -33080,5 +33128,3 @@ SceneRoots:
   - {fileID: 297503110}
   - {fileID: 1177291069}
   - {fileID: 1962967820}
-  - {fileID: 949984558}
-  - {fileID: 504000908}
