@@ -10,6 +10,9 @@ using UnityEngine.InputSystem;
 /// </summary>
 public class WardrobeClothing : Interactable
 {
+    // Açık dolabın önünde: askıdakine ~0.6 m, tabandaki ayakkabıya en yakın 1.43 m (ölçüldü).
+    protected override float DefaultMaxDistance => 1.7f;
+
     [SerializeField] private ProductType product;
     [Tooltip("Askıdaki model (collider'ıyla). Ürün alınana ya da giyilene kadar kapalı tutulur.")]
     [SerializeField] private Transform model;

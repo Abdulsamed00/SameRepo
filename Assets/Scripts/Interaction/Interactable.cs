@@ -17,11 +17,17 @@ public enum InteractionKey
 public abstract class Interactable : MonoBehaviour
 {
     [SerializeField] private string prompt = "Etkileşime gir";
-    [Tooltip("Kameradan en fazla bu uzaklıkta (m) algılanır. 0: PlayerInteractor'ın ortak mesafesi (2.5 m).")]
+    [Tooltip("Kameradan en fazla bu uzaklıkta (m) algılanır. 0: türün varsayılanı (DefaultMaxDistance), o da 0 ise PlayerInteractor'ın ortak mesafesi.")]
     [SerializeField] private float maxDistance = 0f;
 
     /// <summary>Bu objeye özel erişim mesafesi; 0 ise ortak mesafe kullanılır.</summary>
-    public float MaxDistance => maxDistance;
+    public float MaxDistance => maxDistance > 0f ? maxDistance : DefaultMaxDistance;
+
+    /// <summary>
+    /// Türün erişim mesafesi (kameradan ışının değdiği noktaya, m). Ortak 2.5 m'de kıyafetler, kapılar, koltuklar
+    /// odanın ortasından alınıyordu; oyuncu eşyanın dibine gelmeli.
+    /// </summary>
+    protected virtual float DefaultMaxDistance => 0f;
 
     /// <summary>Ekranda tuş etiketinin yanında görünen metin.</summary>
     public virtual string Prompt => prompt;

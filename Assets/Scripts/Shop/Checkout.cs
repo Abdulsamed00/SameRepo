@@ -6,6 +6,9 @@ using UnityEngine;
 /// </summary>
 public class Checkout : Interactable
 {
+    // Kasa bankosunun önünde.
+    protected override float DefaultMaxDistance => 1.6f;
+
     [SerializeField] private AudioClip purchaseSound;
 
     public override string Prompt => "Satın al";

@@ -25673,6 +25673,9 @@ MonoBehaviour:
   startAtSpotChance: 0.35
   goalsBeforeLeave: {x: 2, y: 6}
   speedRange: {x: 1.05, y: 1.45}
+  streetFlow: 1
+  flowSpotChance: 0.25
+  flowSpotAhead: 18
   respawnDelay: {x: 2, y: 6}
   hiddenDistance: 35
   finaleExtra: 40
@@ -25680,7 +25683,13 @@ MonoBehaviour:
   finaleClearance: 1.6
   finaleSpawnBand: {x: 9, y: 24}
   finaleLaneX: {x: -4.5, y: 4.5}
-  finaleLaneZ: {x: 3, y: 236}
+  finaleLaneZ: {x: 3, y: 118}
+  ringCount: 18
+  ringRadius: 2.6
+  ringSpawnBand: {x: 7, y: 16}
+  ringWalkSpeed: 1.5
+  ringProfile: 1
+  ringLook: TopuzSac
 --- !u!1 &466555560
 GameObject:
   m_ObjectHideFlags: 0
@@ -61790,6 +61799,7 @@ MonoBehaviour:
   lookHeight: 1.2
   finalFieldOfView: 50
   holdDuration: 3
+  maxRingWait: 8
   fadeToBlackDuration: 2.5
   creditsDuration: 12
   quote: "Sahip oldu\u011Fun \u015Feyler, sonunda seni sahiplenir."

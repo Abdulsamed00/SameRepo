@@ -9,6 +9,9 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PickupItem : Interactable
 {
+    // Elle alınan eşya: dibine gelince (ayakta ~1 m, otururken sehpadaki kumanda 1.35 m).
+    protected override float DefaultMaxDistance => 1.5f;
+
     [Header("Bırakma")]
     [Tooltip("Açıksa bırakılan eşya ilk bulunduğu konuma döner; kapalıysa oyuncunun önüne düşer.")]
     [SerializeField] private bool returnToStartOnDrop = true;
