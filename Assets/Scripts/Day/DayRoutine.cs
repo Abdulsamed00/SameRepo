@@ -53,6 +53,15 @@ public static class DayRoutine
             AdWatchedToday = true;
     }
 
+    /// <summary>Klinik günü (4. gün) sabahı aynaya bakmadan evden çıkılmaz; aynada yenilgi animasyonu oynar.</summary>
+    public const int ClinicDay = 3;
+
+    public static bool MorningMirrorSeen { get; private set; }
+
+    public static bool MorningMirrorPending => GameDay.Index == ClinicDay && !MorningMirrorSeen && !BoughtToday;
+
+    public static void NotifyMorningMirrorSeen() => MorningMirrorSeen = true;
+
     /// <summary>Ev dışına çıkıldı: eve dönünce hava kararmıştır (<see cref="HouseNightfall"/>). Ertesi güne kadar sürer.</summary>
     public static bool NightFell { get; private set; }
 
@@ -102,6 +111,8 @@ public static class DayRoutine
         AdWatchedToday = false;
         NightFell = false;
         FinalMorning = false;
+        MorningMirrorSeen = false;
+        PlayerLook.Reset();
         PlayerPurchases.Reset();
         PlayerOutfit.Reset();
         GameDay.Reset();

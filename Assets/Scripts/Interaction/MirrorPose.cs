@@ -27,6 +27,7 @@ public class MirrorPose : Interactable
 
     private PlayerInteractor posingPlayer;
     private bool busy;
+    private bool playedDefeat;
 
     public override string Prompt => posingPlayer != null ? stopPrompt : base.Prompt;
 
@@ -95,7 +96,12 @@ public class MirrorPose : Interactable
         player.SetPositionAndRotation(standPos, standRot);
         cameraRoot.localRotation = cameraEndRot;
 
-        body.PlayPose();
+        // 4. gün sabahı aynadaki kendini beğenmez; günün sonundaki poz normaldir.
+        playedDefeat = DayRoutine.MorningMirrorPending;
+        if (playedDefeat)
+            body.PlayDefeat();
+        else
+            body.PlayPose();
         GameAudio.PlayAt(poseSound, surface.position);
         busy = false;
     }
@@ -122,6 +128,12 @@ public class MirrorPose : Interactable
             interactor.Zone = null;
         posingPlayer = null;
         busy = false;
+        if (playedDefeat)
+        {
+            playedDefeat = false;
+            DayRoutine.NotifyMorningMirrorSeen();
+            yield break;
+        }
         // Günün kıyafetiyle poz verildiyse uyku gelir (esneme), yatak açılır.
         DayRoutine.NotifyPoseEnded();
     }

@@ -27,6 +27,12 @@ public class SceneZone : Interactable
     /// <summary>Kilitliyken bölge bildirimi gösterir ama sahne geçişi yapmaz (ör. <see cref="ShopExitGate"/>).</summary>
     public bool Locked { get; set; }
 
+    public string LockedPrompt
+    {
+        get => lockedPrompt;
+        set => lockedPrompt = value;
+    }
+
     public override string Prompt => Locked ? lockedPrompt : base.Prompt;
 
     private void Awake()

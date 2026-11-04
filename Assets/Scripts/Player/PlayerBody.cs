@@ -30,6 +30,7 @@ public class PlayerBody : MonoBehaviour
     private const string SitToStandState = "SitToStand";
     private const string PoseState = "Pose";
     private const string LyingDownState = "LyingDown";
+    private const string DefeatState = "Defeat";
     private const string UpperBodyLayerName = "UpperBody";
     private const string PickupState = "Pickup";
     private const string PutDownState = "PutDown";
@@ -810,6 +811,14 @@ public class PlayerBody : MonoBehaviour
         overridden = true;
         IsPosing = true;
         animator.CrossFadeInFixedTime(PoseState, crossFade * 2f);
+    }
+
+    /// <summary>4. gün sabahı aynada yenilgi (tek sefer oynar, son karede kalır). <see cref="StopPose"/> ile biter.</summary>
+    public void PlayDefeat()
+    {
+        overridden = true;
+        IsPosing = true;
+        animator.CrossFadeInFixedTime(DefeatState, crossFade * 2f);
     }
 
     public void StopPose()
