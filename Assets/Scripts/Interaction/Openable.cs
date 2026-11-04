@@ -8,6 +8,9 @@ using UnityEngine;
 /// </summary>
 public class Openable : Interactable
 {
+    // Kapı/dolap kapağı: önünde durunca (kanat geniş, kenarı ~1.2 m).
+    protected override float DefaultMaxDistance => 1.6f;
+
     [Serializable]
     public class Part
     {

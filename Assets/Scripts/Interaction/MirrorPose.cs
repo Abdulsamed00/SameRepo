@@ -9,6 +9,9 @@ using UnityEngine;
 /// </summary>
 public class MirrorPose : Interactable
 {
+    // Ayna boy aynası, önünde durulur.
+    protected override float DefaultMaxDistance => 2f;
+
     [SerializeField] private string stopPrompt = "Poz vermeyi bırak";
 
     [Header("Konum")]

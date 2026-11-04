@@ -9,6 +9,9 @@ using UnityEngine;
 /// </summary>
 public class Bed : Interactable
 {
+    // Yatağın ayak ucuna gelince.
+    protected override float DefaultMaxDistance => 1.7f;
+
     [Header("Konum")]
     [Tooltip("Oturan oyuncunun kök noktası (zeminde), yüzü yataktan dışarı bakar; uzanınca kafa arkaya, yastığa gider.")]
     [SerializeField] private Transform sitPoint;

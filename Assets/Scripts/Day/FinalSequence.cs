@@ -38,6 +38,8 @@ public class FinalSequence : MonoBehaviour
     [SerializeField] private float lookHeight = 1.2f;
     [SerializeField] private float finalFieldOfView = 50f;
     [SerializeField] private float holdDuration = 3f;
+    [Tooltip("Son kareden önce kalabalığın halkası kapansın diye en fazla beklenen süre (sn).")]
+    [SerializeField] private float maxRingWait = 8f;
 
     [Header("Jenerik")]
     [Tooltip("Görüntünün solup jeneriğin belirdiği süre (sn).")]
@@ -80,6 +82,7 @@ public class FinalSequence : MonoBehaviour
 
     private IEnumerator Run()
     {
+        PlaytimeTimer.Stop();
         PlayerInteractor interactor = player.GetComponent<PlayerInteractor>();
         player.InputEnabled = false;
         if (interactor != null)
@@ -94,6 +97,9 @@ public class FinalSequence : MonoBehaviour
 
         Camera cam = player.GetComponentInChildren<Camera>();
         yield return PullBack(cam);
+        // Halka (oyuncuya benzeyen kadınlar) kapanmadan son kare tutulmaz.
+        for (float t = 0f; crowd != null && !crowd.RingFormed && t < maxRingWait; t += Time.deltaTime)
+            yield return null;
         yield return new WaitForSeconds(holdDuration);
         yield return Credits();
 

@@ -34,6 +34,9 @@ public class NpcAgent : MonoBehaviour
     public string Status { get; private set; }
     public int GoalsDone { get; private set; }
     public int GoalLimit { get; set; }
+    /// <summary>Cadde akışında yürüdüğü şerit (<see cref="NpcCrowd"/>'un gezinme köklerinden biri) ve yönü (+1: +z).</summary>
+    public int Route { get; set; }
+    public int Heading { get; set; } = 1;
 
     // Kalabalık yeni bir düzene geçti (final): o anki yürüyüş ya da noktada bekleme yarıda bırakılır.
     private bool interrupted;
@@ -85,6 +88,8 @@ public class NpcAgent : MonoBehaviour
         Play(profile.idleState, Random.value);
     }
 
+    public void SetSpeed(float speed) => agent.speed = speed;
+
     /// <summary>Doğduğu anda bir noktada (bankta, vitrin önünde) başlasın diye: oraya ışınlanır, sonra normal döngüye girer.</summary>
     public void StartAt(NpcSpot startSpot)
     {
@@ -125,11 +130,20 @@ public class NpcAgent : MonoBehaviour
 
                 case NpcCrowd.GoalKind.Wander:
                     Status = "Gezinme " + goal.point;
-                    yield return WalkTo(goal.point);
+                    // Cadde akışında gezinme noktası ara durak: varmadan bir sonrakine geçer, durup beklemez.
+                    bool flow = crowd.FlowMode;
+                    yield return WalkTo(goal.point, flow ? 1.2f : 0f);
+                    if (flow)
+                        break;
                     Status = "Bekleme";
                     for (float wait = Random.Range(0f, 3f); wait > 0f && !interrupted; wait -= Time.deltaTime)
                         yield return null;
                     break;
+
+                case NpcCrowd.GoalKind.Ring:
+                    Status = "Halka " + goal.point;
+                    yield return Ring(goal.point, goal.rotation);
+                    yield break;
 
                 case NpcCrowd.GoalKind.Leave:
                     Status = "Çıkış " + goal.point;
@@ -150,7 +164,7 @@ public class NpcAgent : MonoBehaviour
         }
     }
 
-    private IEnumerator WalkTo(Vector3 target)
+    private IEnumerator WalkTo(Vector3 target, float arriveDistance = 0f)
     {
         if (!agent.enabled || !agent.isOnNavMesh || !agent.SetDestination(target))
         {
@@ -168,7 +182,7 @@ public class NpcAgent : MonoBehaviour
             {
                 if (agent.pathStatus == NavMeshPathStatus.PathInvalid)
                     break;
-                if (agent.remainingDistance <= agent.stoppingDistance + 0.05f)
+                if (agent.remainingDistance <= Mathf.Max(agent.stoppingDistance + 0.05f, arriveDistance))
                     break;
             }
 
@@ -258,6 +272,24 @@ public class NpcAgent : MonoBehaviour
         agent.enabled = true;
         agent.Warp(approach);
         busy = false;
+    }
+
+    // Final: halkadaki yerine yürür (takılırsa birkaç kez yeniden dener), oyuncuya dönüp yerinde durur.
+    private IEnumerator Ring(Vector3 point, Quaternion rotation)
+    {
+        for (int i = 0; i < 4 && (transform.position - point).sqrMagnitude > 0.4f * 0.4f; i++)
+            yield return WalkTo(point);
+
+        busy = true;
+        walking = false;
+        animator.speed = 1f;
+        agent.enabled = false;
+        obstacle.enabled = true;
+        Play(profile.idleState);
+        crowd.NotifyRingArrived(this);
+        yield return Align(Grounded(point), rotation);
+        AtSpot = true;
+        Status = "Halkada";
     }
 
     private IEnumerator Align(Vector3 position, Quaternion rotation)

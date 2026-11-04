@@ -7,6 +7,9 @@ using UnityEngine;
 /// </summary>
 public class Seat : Interactable
 {
+    // Koltuğun önüne gelince.
+    protected override float DefaultMaxDistance => 1.6f;
+
     [Tooltip("Oturan oyuncunun kök noktaları: zeminde, yüzü oturma yönüne (+z) bakar. Boşsa bu obje.")]
     [SerializeField] private Transform[] sitPoints;
     [Tooltip("Kalkınca oyuncunun duracağı yer: oturma noktasının bu kadar önü (m).")]

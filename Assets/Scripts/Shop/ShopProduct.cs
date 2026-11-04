@@ -8,6 +8,9 @@ using UnityEngine;
 /// </summary>
 public class ShopProduct : PickupItem
 {
+    // Ürün standın/masanın kenarına gelince alınır (dipteyken masadakine 0.8-1.06 m, askıdakine ~0.3 m; ölçüldü).
+    protected override float DefaultMaxDistance => 1.35f;
+
     [SerializeField] private ProductType product;
 
     public ProductType Product => product;
