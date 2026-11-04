@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// Birinci şahıs oyuncunun görünür gövdesi (AnaKarakter). Animator'daki yürüme/durma geçişini hıza bağlar,
@@ -59,6 +61,8 @@ public class PlayerBody : MonoBehaviour
     [SerializeField] private float maxTurnAngle = 90f;
     [Tooltip("Dururken kafanın gövdeye göre en fazla dönebileceği açı; bakış bunu aşınca gövde döner.")]
     [SerializeField] private float headTurnLimit = 60f;
+    [Tooltip("Gövde bakıştan bu kadar fazla ayrılınca (hızlı arkaya dönüş) oyuncu kamerası gövdeyi çizmez: kamera yakanın önünden gövdenin içini görüyordu. Gölge kalır.")]
+    [SerializeField] private float hideBodyAngle = 100f;
 
     [Header("Dönme Animasyonu")]
     [Tooltip("Dururken ya da yürümeye yeni başlarken gövde en az bu kadar dönecekse (A/D) dönme klibi oynar.")]
@@ -97,6 +101,18 @@ public class PlayerBody : MonoBehaviour
     [Tooltip("Tersten oynayan alma klibinin süresi (sn): klip uzunluğu / state hızı.")]
     [SerializeField] private float putDownDuration = 1.75f;
 
+    [Header("Ürün Taşıma (tek/iki el IK)")]
+    [Tooltip("Ürün bırakılınca ellerin serbest kalma süresi (sn).")]
+    [SerializeField] private float carryReleaseTime = 0.3f;
+    [Tooltip("Avatarın IK el dönüşünde ölçülen sabit kayma (derece, el kemiğinin x ekseni). Model değişirse yeniden ölç: istenen ve gerçekleşen el dönüşü arasındaki fark.")]
+    [SerializeField] private float handIkTwist = 96f;
+    [Tooltip("Ellerin ürüne uzanma süresi (sn); ürün bundan sonra kameranın önüne gelir.")]
+    [SerializeField] private float carryReachTime = 0.45f;
+    [Tooltip("Kamera gövdenin önünde olduğu için kollar yetişmezse gövdenin öne eğilebileceği en büyük açı (derece).")]
+    [SerializeField] private float carryMaxLean = 35f;
+    [Tooltip("Dirsek ipucunun gücü (0-1): dirsekler yana ve aşağı bakar.")]
+    [SerializeField, Range(0f, 1f)] private float carryElbowWeight = 0.35f;
+
     [Header("Kapı / Dolap (el IK)")]
     [Tooltip("Elin kapağa uzanma süresi (sn).")]
     [SerializeField] private float touchReachTime = 0.25f;
@@ -120,6 +136,11 @@ public class PlayerBody : MonoBehaviour
     private float reachDuration;
     private float putDownEndTime = -1f;
     private float pendingLean;
+    private Transform carryRight;
+    private Transform carryLeft;
+    private float carryStart;
+    private float carryReach;
+    private float carryEndTime = -1f;
     private Transform touchAnchor;
     private Vector3 touchLocalPoint;
     private float touchStartTime;
@@ -134,6 +155,9 @@ public class PlayerBody : MonoBehaviour
     private Transform head;
     private Transform headProxy;
     private SkinnedMeshRenderer headlessBody;
+    private bool thirdPerson;
+    private bool bodyHidden;
+    private readonly List<SkinnedMeshRenderer> hiddenBody = new List<SkinnedMeshRenderer>();
 
     public bool IsPosing { get; private set; }
 
@@ -151,13 +175,17 @@ public class PlayerBody : MonoBehaviour
     /// <summary>Sağ avuç içindeki tutma noktası. İleri ekseni avuç boyunca (işaret parmağından serçeye ters), yukarısı avuçtan dışarı.</summary>
     public Transform RightHandHold { get; private set; }
 
+    /// <summary>Sol avuç içindeki tutma noktası (iki elle taşınan ürünler).</summary>
+    public Transform LeftHandHold { get; private set; }
+
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
         upperBodyLayer = animator.GetLayerIndex(UpperBodyLayerName);
         baseLocalPosition = transform.localPosition;
-        RightHandHold = CreateRightHandHold();
+        RightHandHold = CreateHandHold(true);
+        LeftHandHold = CreateHandHold(false);
         if (controller == null)
             controller = GetComponentInParent<FirstPersonController>();
         if (playerCamera == null && controller != null)
@@ -170,10 +198,15 @@ public class PlayerBody : MonoBehaviour
             return;
         }
 
+        // Oyuncu solmaz (aynada kendini soluk görmesin): gövde solmadan sonra çizilen Reklam katmanında,
+        // kafa parçaları PlayerHead'de (PC_Renderer o katmanı da solmadan sonra çizer).
+        int exemptLayer = LayerMask.NameToLayer(SceneFade.ExemptLayerName);
         foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
         {
             if (System.Array.IndexOf(hiddenRendererNames, r.name) >= 0)
                 r.gameObject.layer = layer;
+            else if (exemptLayer >= 0)
+                r.gameObject.layer = exemptLayer;
         }
 
         CreateHeadlessBody(layer);
@@ -287,6 +320,7 @@ public class PlayerBody : MonoBehaviour
         else
             bodyYaw = Mathf.MoveTowardsAngle(bodyYaw, targetYaw, turnSpeed * Time.deltaTime);
         ApplyBodyYaw();
+        UpdateBodyVisibility();
 
         animator.SetFloat(SpeedId, smoothedSpeed);
         animator.SetFloat(WalkAnimSpeedId, playback * Mathf.Max(1f, smoothedSpeed / walkClipSpeed));
@@ -299,6 +333,42 @@ public class PlayerBody : MonoBehaviour
             animator.CrossFadeInFixedTime(EmptyState, crossFade, upperBodyLayer);
         }
     }
+
+    // Hızlı arkaya dönünce gövde (headTurnLimit'ten sonra dönme klibiyle) peşinden gelir; o yarım saniyede kamera
+    // gövdenin önüne bakıyor ve boynu çöken yakadan gövdenin içi görünüyor. Gövde bakıştan çok ayrılmışken parçalar
+    // sadece gölge atar (ShadowsOnly), çizilmez; gövde dönünce geri gelir. Üçüncü şahısta (menü, final) dokunulmaz.
+    private void UpdateBodyVisibility()
+    {
+        bool hide = !thirdPerson && Mathf.Abs(Mathf.DeltaAngle(0f, bodyYaw)) > hideBodyAngle;
+        if (hide == bodyHidden)
+            return;
+        bodyHidden = hide;
+
+        if (hide)
+        {
+            int headLayer = LayerMask.NameToLayer(HeadLayerName);
+            foreach (SkinnedMeshRenderer r in GetComponentsInChildren<SkinnedMeshRenderer>(false))
+            {
+                if (r.gameObject.layer == headLayer || r.shadowCastingMode != ShadowCastingMode.On)
+                    continue;
+                r.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                hiddenBody.Add(r);
+            }
+            return;
+        }
+        RestoreBody();
+    }
+
+    private void RestoreBody()
+    {
+        foreach (SkinnedMeshRenderer r in hiddenBody)
+            if (r != null)
+                r.shadowCastingMode = ShadowCastingMode.On;
+        hiddenBody.Clear();
+        bodyHidden = false;
+    }
+
+    private void OnDisable() => RestoreBody();
 
     private void ApplyBodyYaw()
     {
@@ -347,26 +417,29 @@ public class PlayerBody : MonoBehaviour
     }
 
     // Avuç içi parmak köklerinden hesaplanır: model değişse de eşya avuca oturur.
-    private Transform CreateRightHandHold()
+    // Eksenler iki elde de aynı anlamda: ileri = başparmak tarafı, yukarı = avuçtan dışarı (eşyaya doğru).
+    // Sol el sağın aynası olduğundan çapraz çarpımın işareti ters çıkar, avuç yönü buna göre seçilir.
+    private Transform CreateHandHold(bool right)
     {
-        Transform hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+        Transform hand = animator.GetBoneTransform(right ? HumanBodyBones.RightHand : HumanBodyBones.LeftHand);
         if (hand == null)
             return null;
 
-        Transform hold = new GameObject("RightHandHold").transform;
+        Transform hold = new GameObject(right ? "RightHandHold" : "LeftHandHold").transform;
         hold.SetParent(hand, false);
 
-        Transform middle = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
-        Transform index = animator.GetBoneTransform(HumanBodyBones.RightIndexProximal);
-        Transform little = animator.GetBoneTransform(HumanBodyBones.RightLittleProximal);
+        Transform middle = animator.GetBoneTransform(right ? HumanBodyBones.RightMiddleProximal : HumanBodyBones.LeftMiddleProximal);
+        Transform index = animator.GetBoneTransform(right ? HumanBodyBones.RightIndexProximal : HumanBodyBones.LeftIndexProximal);
+        Transform little = animator.GetBoneTransform(right ? HumanBodyBones.RightLittleProximal : HumanBodyBones.LeftLittleProximal);
         if (middle == null || index == null || little == null)
             return hold;
 
         Vector3 fingers = middle.position - hand.position;
         Vector3 across = (index.position - little.position).normalized;
         Vector3 palm = Vector3.Cross(fingers.normalized, across).normalized;
-        hold.SetPositionAndRotation(hand.position + fingers * 0.6f + palm * palmDepth,
-            Quaternion.LookRotation(across, -palm));
+        Vector3 outOfPalm = right ? -palm : palm;
+        hold.SetPositionAndRotation(hand.position + fingers * 0.6f - outOfPalm * palmDepth,
+            Quaternion.LookRotation(across, outOfPalm));
         return hold;
     }
 
@@ -477,6 +550,9 @@ public class PlayerBody : MonoBehaviour
         }
         if (headlessBody != null)
             headlessBody.enabled = !on;
+        thirdPerson = on;
+        if (on)
+            RestoreBody();
     }
 
     /// <returns>Kalkma süresi (sn).</returns>
@@ -553,7 +629,96 @@ public class PlayerBody : MonoBehaviour
         ApplyHeadLook();
         ApplyReach();
         ApplyTouch();
+        ApplyCarry();
         ApplyLean();
+    }
+
+    /// <summary>
+    /// Ürünü tek ya da iki elle tutma: eller eşyanın tutuş noktalarına (<see cref="PickupItem"/> grip'leri) uzanır ve
+    /// eşya nereye giderse oraya eşlik eder (IK, kapıdaki gibi). Sadece sağ verilirse tek el.
+    /// </summary>
+    /// <returns>Ellerin tutuş noktalarına ulaşma süresi (sn); eşya bundan sonra kameranın önüne gelmeli.</returns>
+    public float BeginCarry(Transform right, Transform left)
+    {
+        carryRight = right;
+        carryLeft = left;
+        carryStart = Time.time;
+        carryReach = carryReachTime;
+        carryEndTime = -1f;
+        putDownEndTime = -1f;
+        return carryReach;
+    }
+
+    /// <summary>Eşya bırakılınca/satın alınınca: <paramref name="delay"/> sn sonra eller <see cref="carryReleaseTime"/> sürede serbest kalır.</summary>
+    public void EndCarry(float delay)
+    {
+        if (carryRight == null && carryLeft == null)
+            return;
+        carryEndTime = Time.time + delay;
+    }
+
+    private void ApplyCarry()
+    {
+        if (carryRight == null && carryLeft == null)
+            return;
+
+        float weight = Mathf.SmoothStep(0f, 1f, (Time.time - carryStart) / carryReach);
+        if (carryEndTime >= 0f && Time.time >= carryEndTime)
+        {
+            float release = (Time.time - carryEndTime) / carryReleaseTime;
+            if (release >= 1f)
+            {
+                carryRight = carryLeft = null;
+                carryEndTime = -1f;
+                return;
+            }
+            weight *= 1f - Mathf.SmoothStep(0f, 1f, release);
+        }
+
+        // Kamera gövdenin 0.28 önünde: kollar yetişmezse gövde öne eğilir (tutuş noktalarına en uzak el belirler).
+        Transform shoulderR = animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
+        if (shoulderR != null && carryMaxLean > 0f)
+        {
+            float lean = 0f;
+            float armLength = ArmLength();
+            if (carryRight != null)
+                lean = Mathf.Max(lean, LeanAngle(carryRight.position, shoulderR, armLength, carryMaxLean));
+            Transform shoulderL = animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+            if (carryLeft != null && shoulderL != null)
+                lean = Mathf.Max(lean, LeanAngle(carryLeft.position, shoulderL, armLength, carryMaxLean));
+            pendingLean = Mathf.Max(pendingLean, lean * weight);
+        }
+
+        ApplyHandGrip(AvatarIKGoal.RightHand, AvatarIKHint.RightElbow, carryRight, RightHandHold, weight, 1f);
+        ApplyHandGrip(AvatarIKGoal.LeftHand, AvatarIKHint.LeftElbow, carryLeft, LeftHandHold, weight, -1f);
+    }
+
+    // Avuç tutma noktası (eksenleri CreateHandHold'da) eşyanın tutuş noktasıyla çakışacak şekilde el kemiği taşınır ve
+    // döndürülür; dirsek yana/aşağı bakar, kol ters bükülmesin.
+    private void ApplyHandGrip(AvatarIKGoal goal, AvatarIKHint hint, Transform grip, Transform hold, float weight, float side)
+    {
+        if (grip == null || hold == null || weight <= 0f)
+            return;
+
+        bool right = goal == AvatarIKGoal.RightHand;
+        Transform hand = animator.GetBoneTransform(right ? HumanBodyBones.RightHand : HumanBodyBones.LeftHand);
+        Transform shoulder = animator.GetBoneTransform(right ? HumanBodyBones.RightUpperArm : HumanBodyBones.LeftUpperArm);
+        // Avuç noktasının "yukarısı" (CreateHandHold) elin sırtına bakar: eşyanın yüzeyini ve elin kapanacağı yönü
+        // vermeyi bozmadan (kumanda ofsetleri buna göre ayarlı), avuç yüzeyi tutuş noktasına dönsün diye başparmak
+        // ekseni etrafında 180° çevrilir.
+        Quaternion toGoal = grip.rotation * Quaternion.Inverse(hold.rotation * Quaternion.AngleAxis(180f, Vector3.forward));
+
+        animator.SetIKPositionWeight(goal, weight);
+        animator.SetIKPosition(goal, grip.position + toGoal * (hand.position - hold.position));
+        animator.SetIKRotationWeight(goal, weight);
+        // Bu avatarda IK dönüş hedefi el kemiğinin x ekseni (kol ekseni) etrafında handIkTwist kadar kayıyor (ölçüldü,
+        // iki elde de aynı, ürüne bağlı değil): istenen dönüş bu kadar ters çevrilerek verilir, yoksa bilekler kırık durur.
+        animator.SetIKRotation(goal, toGoal * hand.rotation * Quaternion.AngleAxis(-handIkTwist, Vector3.right));
+
+        Transform basis = controller != null ? controller.transform : animator.transform;
+        Vector3 hintPosition = shoulder.position + basis.right * side * 0.4f - basis.up * 0.3f - basis.forward * 0.1f;
+        animator.SetIKHintPositionWeight(hint, weight * carryElbowWeight);
+        animator.SetIKHintPosition(hint, hintPosition);
     }
 
     private float ArmLength()
@@ -604,7 +769,10 @@ public class PlayerBody : MonoBehaviour
         Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
         // Dönüşün bir kısmını gövdenin üstü alır, boyun tek başına bükülmesin.
         animator.SetLookAtWeight(weight, 0.2f, 1f, 0f, headLookClamp);
-        animator.SetLookAtPosition(head.position + playerCamera.transform.forward * 10f);
+        // Üçüncü şahısta (final) kamera karakterin gözü değil, karaktere bakıyor: kafa onu izlerse öne eğiliyordu.
+        // O zaman gövdenin baktığı yöne, ufka bakar.
+        Vector3 direction = thirdPerson ? animator.transform.forward : playerCamera.transform.forward;
+        animator.SetLookAtPosition(head.position + direction * 10f);
     }
 
     private void ApplyReach()

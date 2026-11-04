@@ -9,6 +9,9 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PickupItem : Interactable
 {
+    // Elle alınan eşya: dibine gelince (ayakta ~1 m, otururken sehpadaki kumanda 1.35 m).
+    protected override float DefaultMaxDistance => 1.5f;
+
     [Header("Bırakma")]
     [Tooltip("Açıksa bırakılan eşya ilk bulunduğu konuma döner; kapalıysa oyuncunun önüne düşer.")]
     [SerializeField] private bool returnToStartOnDrop = true;
@@ -25,6 +28,11 @@ public class PickupItem : Interactable
     [Tooltip("El noktasına göre dönüş farkı (derece).")]
     [SerializeField] private Vector3 holdEulerOffset;
     [SerializeField] private float followSharpness = 18f;
+
+    [Header("Tek el / iki el (IK)")]
+    [Tooltip("Eşyanın elle tutulan noktası. Tek verilirse sağ el, ikisi de verilirse iki el tutar (hangisinin sağ olduğu tutuş pozundaki yerine göre seçilir). Boşsa eski davranış: eşya kameradaki tutma noktasında elsiz durur. Dönüş: ileri = başparmak tarafı, yukarı = avuçtan eşyaya doğru.")]
+    [SerializeField] private Transform gripA;
+    [SerializeField] private Transform gripB;
 
     [Header("Ses")]
     [Tooltip("Ele alınınca ve bırakılınca çalar (ör. mağazada kıyafet hışırtısı). Boşsa ses yok.")]
@@ -49,6 +57,31 @@ public class PickupItem : Interactable
     public bool IsHeld => holdPoint != null;
 
     public virtual bool HoldInHand => holdInHand;
+
+    /// <summary>Eşyanın IK ile tutulan noktaları var (<see cref="PlayerBody.BeginCarry"/>).</summary>
+    public bool HasGrips => gripA != null;
+
+    /// <summary>
+    /// Tutuş noktalarını eller arasında dağıtır. İki nokta varsa tutma noktasındaki (<paramref name="holdPoint"/>) pozda
+    /// sağda kalan sağ el olur; nokta tek ise sağ el, sol boş kalır.
+    /// </summary>
+    public void GetGrips(Transform holdPoint, out Transform right, out Transform left)
+    {
+        right = gripA;
+        left = gripB;
+        if (gripA == null || gripB == null || holdPoint == null)
+            return;
+
+        Quaternion held = holdPoint.rotation * Quaternion.Euler(holdEulerOffset);
+        Quaternion shelf = transform.rotation;
+        Vector3 a = held * Quaternion.Inverse(shelf) * (gripA.position - transform.position);
+        Vector3 b = held * Quaternion.Inverse(shelf) * (gripB.position - transform.position);
+        if (Vector3.Dot(a - b, holdPoint.right) < 0f)
+        {
+            right = gripB;
+            left = gripA;
+        }
+    }
 
     /// <summary>Bırakılırken duvar/zemin payı için yaklaşık yarıçap.</summary>
     public float Radius => radius;

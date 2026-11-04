@@ -78,7 +78,7 @@ public class LoadingScreen : MonoBehaviour
         // Menüye giderken (açılış, menüye dönüş) gün yazmaz, sadece oyunun adı görünür.
         if (!SceneLoader.MenuPending)
         {
-            TextMeshProUGUI day = UiKit.CreateText("Gun", root, $"{GameDay.Index + 1}. GÜN", UiKit.FontKind.Medium, 16.5f, 40f,
+            TextMeshProUGUI day = UiKit.CreateText("Gun", root, $"{DayRoutine.DayNumber}. GÜN", UiKit.FontKind.Medium, 16.5f, 40f,
                 UiKit.Unselected, TextAlignmentOptions.BottomLeft);
             UiKit.Place(day.rectTransform, Vector2.zero, new Vector2(144f, 170f), new Vector2(600f, 24f));
         }

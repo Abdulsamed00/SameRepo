@@ -54,7 +54,7 @@ public class PlayerOutfitView : MonoBehaviour
             {
                 t.gameObject.SetActive(true);
                 // Yeni ürün solmaz (GDD: reklam dünyası parlak kalır). Gözlük PlayerHead'de kalır, yoksa kameraya girer.
-                if (t.gameObject.layer == 0)
+                if (t.gameObject.layer != LayerMask.NameToLayer("PlayerHead"))
                     SceneFade.MarkExempt(t.gameObject, item.product == ProductType.Ayakkabi);
             }
             else if (Array.IndexOf(item.hide, t.name) >= 0)

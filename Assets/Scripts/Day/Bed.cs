@@ -9,6 +9,9 @@ using UnityEngine;
 /// </summary>
 public class Bed : Interactable
 {
+    // Yatağın ayak ucuna gelince.
+    protected override float DefaultMaxDistance => 1.7f;
+
     [Header("Konum")]
     [Tooltip("Oturan oyuncunun kök noktası (zeminde), yüzü yataktan dışarı bakar; uzanınca kafa arkaya, yastığa gider.")]
     [SerializeField] private Transform sitPoint;
@@ -78,8 +81,8 @@ public class Bed : Interactable
 
     public override bool CanInteract(PlayerInteractor interactor)
     {
-        // Son günde yatakla işimiz yok: giyip poz verince evden çıkılır (final).
-        if (busy || interactor.IsHolding || DayRoutine.FinalReady)
+        // Final sabahı yatakla işimiz yok: evden çıkılır (final).
+        if (busy || interactor.IsHolding || DayRoutine.FinalMorning)
             return false;
         PlayerSitController sitter = interactor.GetComponent<PlayerSitController>();
         return sitter == null || !sitter.IsSeated;
@@ -168,7 +171,7 @@ public class Bed : Interactable
         foreach (Renderer r in bodyRenderers)
             r.forceRenderingOff = false;
         // Gün geçişi yazısı karanlıkta belirir, ekran açılmadan söner.
-        StartCoroutine(ScreenFader.Caption("ERTESİ SABAH", $"{GameDay.Index + 1}. GÜN", Mathf.Max(1f, sleepDuration - 0.5f)));
+        StartCoroutine(ScreenFader.Caption("ERTESİ SABAH", $"{DayRoutine.DayNumber}. GÜN", Mathf.Max(1f, sleepDuration - 0.5f)));
         yield return new WaitForSeconds(sleepDuration);
 
         // 4) Ekran açılır, oyuncu kalkar.

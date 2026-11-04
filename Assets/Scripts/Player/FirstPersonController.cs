@@ -68,6 +68,12 @@ public class FirstPersonController : MonoBehaviour
 
     public bool InputEnabled { get; set; } = true;
 
+    /// <summary>
+    /// <see cref="InputEnabled"/> kapalıyken oyuncuyu yürüten yatay hız (dünya, m/sn). Sıfır: durur.
+    /// Gövde animasyonu ve yöne dönme normal yürüyüşteki gibi çalışır; bakışı script verir.
+    /// </summary>
+    public Vector3 ScriptedVelocity { get; set; }
+
     // Yürüme girdisi kilitleri (kapı açılırken/kapanırken oyuncu ilerlemesin). Bakış serbest kalır. Sayaç: aynı anda
     // birden çok kapı hareket edebilir, biri bitince diğerinin kilidi kalkmasın.
     private int movementLocks;
@@ -191,9 +197,11 @@ public class FirstPersonController : MonoBehaviour
         }
         else
         {
-            horizontalVelocity = Vector3.zero;
+            // Girdi kapalıyken bir script yürütebilir (final: caddenin ortasına yürüme); yoksa durur.
+            horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, ScriptedVelocity,
+                acceleration * Time.deltaTime * Mathf.Max(walkSpeed, ScriptedVelocity.magnitude));
             ApplyVertical();
-            controller.Move(Vector3.up * verticalVelocity * Time.deltaTime);
+            controller.Move((horizontalVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
         }
 
         HandleLanding();

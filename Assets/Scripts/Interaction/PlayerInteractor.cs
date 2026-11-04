@@ -103,6 +103,15 @@ public class PlayerInteractor : MonoBehaviour
             return;
 
         HeldItem = item;
+        if (body != null && item.HasGrips)
+        {
+            // Tek/iki el IK: eller önce eşyanın durduğu yere uzanır, sonra eşya kameranın önüne gelir, eller tutuşta kalır.
+            item.GetGrips(holdPoint, out Transform right, out Transform left);
+            float reach = body.BeginCarry(right, left);
+            item.OnPickedUp(this, holdPoint, reach);
+            return;
+        }
+
         bool inHand = body != null && item.HoldInHand;
         float reachTime = body != null ? body.PlayPickup(inHand ? item.transform.position : (Vector3?)null) : 0f;
         if (inHand)
@@ -118,6 +127,8 @@ public class PlayerInteractor : MonoBehaviour
     {
         PickupItem item = HeldItem;
         HeldItem = null;
+        if (item != null && item.HasGrips && body != null)
+            body.EndCarry(0.2f);
         return item;
     }
 
@@ -130,6 +141,14 @@ public class PlayerInteractor : MonoBehaviour
         PickupItem item = HeldItem;
         HeldItem = null;
         Vector3 fallback = FindDropPosition(item.Radius);
+        if (body != null && item.HasGrips)
+        {
+            // Eşya elde tutuluyormuş gibi yerine kayar, eller onunla gider, sonra bırakır.
+            item.OnDropped(fallback, animate ? 0.05f : 0f);
+            body.EndCarry(animate ? 0.45f : 0f);
+            return;
+        }
+
         float releaseTime = animate && body != null && item.HoldInHand
             ? body.PlayPutDown(item.DropPosition(fallback))
             : 0f;
@@ -144,7 +163,7 @@ public class PlayerInteractor : MonoBehaviour
         if (hitSomething)
         {
             Interactable direct = hit.collider.GetComponentInParent<Interactable>();
-            if (direct != null && direct.CanInteract(this))
+            if (direct != null && InReach(direct, hit.distance) && direct.CanInteract(this))
             {
                 SetFocusHit(hit);
                 return direct;
@@ -164,7 +183,8 @@ public class PlayerInteractor : MonoBehaviour
             if (hits[i].collider.transform.IsChildOf(transform) || hits[i].distance <= 0f || hits[i].distance >= bestDistance)
                 continue;
             Interactable candidate = hits[i].collider.GetComponentInParent<Interactable>();
-            if (candidate == null || !candidate.CanInteract(this) || !InSight(candidate, hits[i].point))
+            if (candidate == null || !InReach(candidate, hits[i].distance) || !candidate.CanInteract(this)
+                || !InSight(candidate, hits[i].point))
                 continue;
             best = candidate;
             bestHit = hits[i];
@@ -174,6 +194,10 @@ public class PlayerInteractor : MonoBehaviour
             SetFocusHit(bestHit);
         return best;
     }
+
+    // Küçük eşyalar (kumanda) ortak 2.5 m'den algılanınca odanın ortasından alınabiliyordu; kendi sınırları var.
+    private static bool InReach(Interactable target, float distance)
+        => target.MaxDistance <= 0f || distance <= target.MaxDistance;
 
     private void SetFocusHit(RaycastHit hit)
     {
