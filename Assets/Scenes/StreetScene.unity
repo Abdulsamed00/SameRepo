@@ -55129,8 +55129,8 @@ MonoBehaviour:
   maxRingWait: 8
   fadeToBlackDuration: 2.5
   creditsDuration: 12
-  quote: "Sahip oldu\u011Fun \u015Feyler, sonunda seni sahiplenir."
-  quoteAuthor: Fight Club
+  quote: "Sen e\u015Fsizsin. T\u0131pk\u0131 di\u011Fer herkes gibi."
+  quoteAuthor: 
   menuScene: MainMenu
   clickSound: {fileID: 0}
 --- !u!4 &1145704861
