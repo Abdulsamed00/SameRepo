@@ -29,15 +29,53 @@ public class PlayerOutfitView : MonoBehaviour
         new Item { product = ProductType.Gozluk, show = new[] { "Glasses" }, hide = new string[0] },
     };
 
+    [Header("Görünüm (kuaför, klinik)")]
+    [SerializeField] private string originalHair = "TopuzSac";
+    [SerializeField] private string dyedHair = "BlondeHair";
+    [Tooltip("Klinikte değişen blendshape'ler (burun, dudak).")]
+    [SerializeField] private string[] blendShapeNames = { "burun", "dudak" };
+    [SerializeField] private float surgeryWeight = 100f;
+
     private void OnEnable()
     {
         PlayerOutfit.Changed += OnChanged;
+        PlayerLook.Changed += ApplyLook;
+        ApplyLook();
         foreach (Item item in items)
             if (PlayerOutfit.IsWorn(item.product))
                 Apply(item);
     }
 
-    private void OnDisable() => PlayerOutfit.Changed -= OnChanged;
+    private void OnDisable()
+    {
+        PlayerOutfit.Changed -= OnChanged;
+        PlayerLook.Changed -= ApplyLook;
+    }
+
+    private void ApplyLook()
+    {
+        if (PlayerLook.HairDyed)
+        {
+            Transform before = transform.Find(originalHair);
+            Transform after = transform.Find(dyedHair);
+            if (before != null)
+                before.gameObject.SetActive(false);
+            if (after != null)
+                after.gameObject.SetActive(true);
+        }
+
+        // 0: doğal yüz (iri burun, ince dudak), 100: estetikli yüz.
+        float weight = PlayerLook.SurgeryDone ? surgeryWeight : 0f;
+        foreach (SkinnedMeshRenderer r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            foreach (string shape in blendShapeNames)
+            {
+                int index = r.sharedMesh != null ? r.sharedMesh.GetBlendShapeIndex(shape) : -1;
+                if (index >= 0)
+                    r.SetBlendShapeWeight(index, weight);
+            }
+        }
+    }
 
     private void OnChanged(ProductType type)
     {

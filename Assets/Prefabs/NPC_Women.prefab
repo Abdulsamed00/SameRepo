@@ -255,3 +255,8 @@ MonoBehaviour:
   - product: 4
     wear: Glasses
     alternatives: []
+  blondeHair: BlondeHair
+  otherHair:
+  - CurlyHairBlack
+  - CurlyHairBrown
+  - TopuzSac
