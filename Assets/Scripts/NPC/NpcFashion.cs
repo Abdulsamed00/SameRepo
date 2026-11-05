@@ -31,6 +31,17 @@ public static class NpcFashion
         return FirstDayShare + (1f - FirstDayShare) * (day - first) / (last - first);
     }
 
+    // Sarışın kadın oranı, güne göre: 2. günde sokakta göze batar (oyuncu kuaföre gider), sonra çoğalır.
+    private static readonly float[] BlondeShares = { 0.1f, 0.5f, 0.6f, 0.75f, 0.9f };
+
+    /// <summary>Bu kadın NPC bugün sarışın mı. Son ürün de alınınca herkes.</summary>
+    public static bool IsBlonde(NpcDailyOutfit npc)
+    {
+        if (PlayerPurchases.OwnsAll)
+            return true;
+        return InShare(npc, ProductCount, BlondeShares[Mathf.Clamp(GameDay.Index, 0, BlondeShares.Length - 1)]);
+    }
+
     public static void Register(NpcDailyOutfit npc)
     {
         if (!groups.TryGetValue(npc.Group, out List<NpcDailyOutfit> list))
@@ -51,23 +62,27 @@ public static class NpcFashion
     /// </summary>
     public static bool Wears(NpcDailyOutfit npc, ProductType product)
     {
-        float share = Share(product);
+        return InShare(npc, (int)product, Share(product));
+    }
+
+    private static bool InShare(NpcDailyOutfit npc, int salt, float share)
+    {
         if (share <= 0f)
             return false;
         if (share >= 1f || !groups.TryGetValue(npc.Group, out List<NpcDailyOutfit> list) || list.Count == 0)
             return share >= 1f;
 
         int wearers = Mathf.Max(1, Mathf.RoundToInt(share * list.Count));
-        double score = Score(npc, product);
+        double score = Score(npc, salt);
         int rank = 0;
         foreach (NpcDailyOutfit other in list)
         {
-            if (other != npc && Score(other, product) < score)
+            if (other != npc && Score(other, salt) < score)
                 rank++;
         }
         return rank < wearers;
     }
 
-    private static double Score(NpcDailyOutfit npc, ProductType product) =>
-        new System.Random(unchecked(npc.Key.GetHashCode() * 31 + (int)product * 7919 + seed)).NextDouble();
+    private static double Score(NpcDailyOutfit npc, int salt) =>
+        new System.Random(unchecked(npc.Key.GetHashCode() * 31 + salt * 7919 + seed)).NextDouble();
 }

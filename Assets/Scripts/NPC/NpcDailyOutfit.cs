@@ -23,6 +23,9 @@ public class NpcDailyOutfit : MonoBehaviour
     [Tooltip("Oranın ayrı tutturulduğu grup (erkek/kadın).")]
     [SerializeField] private string group = "Kadin";
     [SerializeField] private ProductLook[] looks;
+    [Tooltip("Sarışın saç parçası (boşsa saç güne göre değişmez: erkekler).")]
+    [SerializeField] private string blondeHair;
+    [SerializeField] private string[] otherHair;
 
     public string Group => group;
     /// <summary>NPC'nin kimliği (ad + ilk konum): sahnedeki NPC her açılışta aynı kimlikle gelir, giyip giymediği günden güne korunur.</summary>
@@ -45,6 +48,9 @@ public class NpcDailyOutfit : MonoBehaviour
 
         foreach (ProductLook look in looks)
             Apply(look, NpcFashion.Wears(this, look.product));
+
+        if (!string.IsNullOrEmpty(blondeHair))
+            Apply(new ProductLook { wear = blondeHair, alternatives = otherHair }, NpcFashion.IsBlonde(this));
     }
 
     private void Apply(ProductLook look, bool wears)

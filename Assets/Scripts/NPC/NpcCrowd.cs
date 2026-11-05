@@ -184,7 +184,7 @@ public class NpcCrowd : MonoBehaviour
     [Tooltip("Halka için kullanılan profil (kadın).")]
     [SerializeField] private int ringProfile = 1;
     [Tooltip("Halkadakilerin hepsine giydirilen parça (oyuncunun saçı); aynı yuvadaki diğer seçenekler kapanır.")]
-    [SerializeField] private string ringLook = "TopuzSac";
+    [SerializeField] private string ringLook = "BlondeHair";
 
     private bool finale;
     private Vector3 finaleCenter;
