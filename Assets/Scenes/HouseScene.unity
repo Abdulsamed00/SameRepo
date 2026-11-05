@@ -5521,6 +5521,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HouseExitLock
   door: {fileID: 618223757}
   watchAdPrompt: "\xD6nce televizyona bakay\u0131m"
+  morningMirrorPrompt: "\xD6nce aynaya bir bakay\u0131m"
   enoughPrompt: "Bug\xFCnl\xFCk d\u0131\u015Far\u0131s\u0131 yeter"
   wearFirstPrompt: "\xD6nce yeni k\u0131yafetimi giyeyim"
   poseFirstPrompt: "\xD6nce aynada kendime bakay\u0131m"
