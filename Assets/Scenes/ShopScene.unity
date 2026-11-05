@@ -771,7 +771,7 @@ Transform:
   m_GameObject: {fileID: 42688163}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
-  m_LocalPosition: {x: -0.26, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: -0.2, y: 0.33, z: 0.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1201,10 +1201,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.33900002, y: 0.042261954, z: -0.2093687}
   holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 1655053414}
   gripB: {fileID: 655501816}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 2
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &73740914
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1278,7 +1283,7 @@ Transform:
   m_GameObject: {fileID: 76521418}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
-  m_LocalPosition: {x: -0.26, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: -0.2, y: 0.33, z: 0.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1392,13 +1397,18 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.28, y: -0.15, z: -0.14999972}
+  holdPositionOffset: {x: -0.28, y: -0.28, z: -0.09}
   holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 2129060830}
   gripB: {fileID: 76521419}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
+  holdLowering: 0
+  dropRange: 1.9
 --- !u!54 &84559879
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1993,10 +2003,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.11, y: 0.039999932, z: -0.29999983}
   holdEulerOffset: {x: 10, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 521632642}
   gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 4
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &115822260
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2100,13 +2115,18 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.28, y: -0.15, z: -0.1500002}
+  holdPositionOffset: {x: -0.28, y: -0.28, z: -0.09}
   holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 1920213988}
   gripB: {fileID: 994432862}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
+  holdLowering: 0
+  dropRange: 1.9
 --- !u!54 &116337822
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3175,7 +3195,7 @@ Transform:
   m_GameObject: {fileID: 171392074}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
-  m_LocalPosition: {x: 0.26, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: 0.2, y: 0.33, z: 0.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6007,10 +6027,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.108392276, y: -0.2621651, z: -0.35982817}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 1624796783}
   gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 3
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &338176121
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6248,13 +6273,18 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.28, y: -0.15, z: -0.1500002}
+  holdPositionOffset: {x: -0.28, y: -0.28, z: -0.09}
   holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 1137471778}
   gripB: {fileID: 42688164}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
+  holdLowering: 0
+  dropRange: 1.9
 --- !u!54 &374838183
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -8621,13 +8651,18 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.28, y: -0.15, z: -0.1500002}
+  holdPositionOffset: {x: -0.28, y: -0.28, z: -0.09}
   holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 171392075}
   gripB: {fileID: 718406985}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
+  holdLowering: 0
+  dropRange: 1.9
 --- !u!54 &549134210
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9691,10 +9726,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.27999997, y: -0.20000082, z: -0.2549999}
   holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 531412986}
   gripB: {fileID: 1043730391}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 1
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &683422682
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -10543,7 +10583,7 @@ Transform:
   m_GameObject: {fileID: 718406984}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
-  m_LocalPosition: {x: -0.26, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: -0.2, y: 0.33, z: 0.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12686,10 +12726,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.108392276, y: -0.2621651, z: -0.35982817}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 2001388300}
   gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 3
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &860316362
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -13935,10 +13980,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.11, y: 0.039999932, z: -0.29999983}
   holdEulerOffset: {x: 10, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 1668599969}
   gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 4
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &955810339
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -14378,10 +14428,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.27999997, y: -0.20000082, z: -0.2549999}
   holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 172583403}
   gripB: {fileID: 902380306}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 1
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &976642877
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -14885,7 +14940,7 @@ Transform:
   m_GameObject: {fileID: 994432861}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.50000006, z: 0.50000006, w: -0.5}
-  m_LocalPosition: {x: -0.26, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: -0.2, y: 0.33, z: 0.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15590,10 +15645,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.2749999, y: 0.042261958, z: -0.2093687}
   holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 746477332}
   gripB: {fileID: 1139271749}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 2
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &1054199277
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -17317,7 +17377,7 @@ Transform:
   m_GameObject: {fileID: 1137471777}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
-  m_LocalPosition: {x: 0.26, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: 0.2, y: 0.33, z: 0.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -19302,10 +19362,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.23900011, y: 0.042261958, z: -0.2093687}
   holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 1216539882}
   gripB: {fileID: 437620475}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 2
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &1272332976
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -19694,10 +19759,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.27999997, y: -0.20000082, z: -0.2549999}
   holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 715301802}
   gripB: {fileID: 1661544670}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 1
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &1282363902
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -22820,10 +22890,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.19700006, y: 0.04226196, z: -0.2093687}
   holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 1782814515}
   gripB: {fileID: 886802550}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 2
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &1454547648
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -23354,10 +23429,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.108392276, y: -0.2621651, z: -0.35982817}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 466375145}
   gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 3
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &1478044926
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -23892,10 +23972,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.11, y: 0.039999932, z: -0.29999983}
   holdEulerOffset: {x: 10, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 66945403}
   gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 4
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &1532769278
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -26922,10 +27007,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.108392276, y: -0.2621651, z: -0.35982817}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 1700502379}
   gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 3
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &1710651703
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -27244,10 +27334,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.11, y: 0.039999932, z: -0.29999983}
   holdEulerOffset: {x: 10, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 442982654}
   gripB: {fileID: 0}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 4
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &1736261738
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -29943,7 +30038,7 @@ Transform:
   m_GameObject: {fileID: 1920213987}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
-  m_LocalPosition: {x: 0.26, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: 0.2, y: 0.33, z: 0.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -32858,7 +32953,7 @@ Transform:
   m_GameObject: {fileID: 2129060829}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50000006, y: 0.5, z: 0.5, w: 0.50000006}
-  m_LocalPosition: {x: 0.26, y: 0.15, z: 0.15}
+  m_LocalPosition: {x: 0.2, y: 0.33, z: 0.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -32922,10 +33017,15 @@ MonoBehaviour:
   holdPositionOffset: {x: -0.27999997, y: -0.20000082, z: -0.2549999}
   holdEulerOffset: {x: 0, y: 180, z: 0}
   followSharpness: 18
+  walkSwayPosition: 0.3
+  walkSwayRoll: 25
+  walkSwayPitch: 18
   gripA: {fileID: 1121742062}
   gripB: {fileID: 1430796547}
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 1
+  holdLowering: 0.16
+  dropRange: 1.9
 --- !u!54 &2138858726
 Rigidbody:
   m_ObjectHideFlags: 0

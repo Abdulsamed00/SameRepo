@@ -86,6 +86,9 @@ public static class DayRoutine
             Sleepy?.Invoke();
     }
 
+    /// <summary>Kuaför günü (2. gün).</summary>
+    public const int SalonDay = 1;
+
     /// <summary>Klinik günü (4. gün) sabahı aynaya bakmadan evden çıkılmaz; aynada yenilgi animasyonu oynar.</summary>
     public const int ClinicDay = 3;
 

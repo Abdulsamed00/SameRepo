@@ -20,6 +20,10 @@ public class ShopProduct : PickupItem
     // Ürünlerin tutma ofsetleri kameradaki tutma noktasına göre ayarlı; ele bağlanmazlar.
     public override bool HoldInHand => false;
 
+    [Tooltip("Taşırken ürünü kameranın önünde bu kadar aşağı indirir (m): yukarıda tutulunca önü görmek zorlaşıyordu (06.11).")]
+    [SerializeField] private float holdLowering = 0.16f;
+    protected override float HoldLowering => holdLowering;
+
     public override string Prompt => "Al";
 
     public override string Title => product.DisplayName().ToUpper(new System.Globalization.CultureInfo("tr-TR"));

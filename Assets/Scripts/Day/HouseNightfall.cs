@@ -38,6 +38,24 @@ public class HouseNightfall : MonoBehaviour
     [SerializeField] private float dayExposure = 0.9f;
     [Tooltip("(Kullanılmıyor, 05.11) Lamba parlaması artık RoomLights'ta; ışıklar Realtime ve oda düğmeleriyle açılıp kapanır.")]
     [SerializeField] private Renderer[] lampsOffAtNight;
+    [Tooltip("Pencerelerden giren ay ışığı süzmeleri (görsel ışın); sadece gece açık.")]
+    [SerializeField] private GameObject moonBeams;
+    [Tooltip("Pencerelerden giren güneş ışığı süzmeleri; sadece gündüz açık.")]
+    [SerializeField] private GameObject sunBeams;
+
+    [Header("Oda ışığı açıkken ay (06.11)")]
+    [Tooltip("Lambası açık odanın pencerelerinden ay girmez: pencerenin gölge perdesi (moonBeams altında Engel_N, ShadowsOnly) açılır, süzmesi (Suzme_N) söner.")]
+    [SerializeField] private float moonDimSpeed = 3f;
+    [Tooltip("Oda ışıkları ve dünya uzayında oda sınırları (x/z min-max). Pencere hangi odadaysa o odanın ışığına bakar.")]
+    [SerializeField] private RoomArea[] rooms;
+
+    [System.Serializable]
+    private struct RoomArea
+    {
+        public RoomLights lights;
+        public Vector2 min;
+        public Vector2 max;
+    }
     [Tooltip("Duvar/zemin/tavan lightmap'li: gece lambalar kapalı bake edilmiş lightmap'ler (sıra gündüzdekiyle aynı).")]
     [SerializeField] private Texture2D[] nightLightmapColor;
     [SerializeField] private Texture2D[] nightLightmapDir;
@@ -94,7 +112,84 @@ public class HouseNightfall : MonoBehaviour
 
     private void Start() => Apply();
 
-    private void Update() => UpdateScenario();
+    private void Update()
+    {
+        UpdateScenario();
+        UpdateMoonDimming();
+    }
+
+    private class MoonWindow
+    {
+        public Renderer beam;
+        public Renderer blocker;
+        public RoomLights room;
+        public float factor = 1f;
+    }
+
+    private MoonWindow[] moonWindows;
+    private Color moonBeamColor;
+    private float nightSunIntensity;
+    private MaterialPropertyBlock beamBlock;
+
+    // Lambası açık odanın pencerelerinden ay girmez (06.11: lamba yanarken zeminde mavi ay lekesi saçma duruyordu,
+    // ilk sürüm kameranın odasına bakıyordu, koridordan bakınca leke görünüyordu). Ay tek yönlü ışık olduğu için oda
+    // başına söndürülemez; onun yerine o odanın pencerelerine görünmez gölge perdesi (Engel_N) açılır, ışık içeri
+    // giremez. Süzme (Suzme_N) yumuşakça söner. Bake'li yansıyan ay ışığı kalır (lamba bastırır).
+    private void UpdateMoonDimming()
+    {
+        if (!DayRoutine.NightFell || moonBeams == null)
+            return;
+        if (moonWindows == null)
+            CollectMoonWindows();
+
+        foreach (MoonWindow w in moonWindows)
+        {
+            bool lit = w.room != null && w.room.IsOn;
+            w.factor = Mathf.MoveTowards(w.factor, lit ? 0f : 1f, moonDimSpeed * Time.deltaTime);
+            if (w.blocker != null)
+                w.blocker.enabled = lit;
+            if (w.beam != null)
+            {
+                beamBlock.SetColor(BaseColorId, moonBeamColor * w.factor);
+                w.beam.SetPropertyBlock(beamBlock);
+            }
+        }
+    }
+
+    private void CollectMoonWindows()
+    {
+        beamBlock = new MaterialPropertyBlock();
+        var list = new System.Collections.Generic.List<MoonWindow>();
+        foreach (Transform child in moonBeams.transform)
+        {
+            if (!child.name.StartsWith("Engel_"))
+                continue;
+            string id = child.name.Substring("Engel_".Length);
+            Transform beam = moonBeams.transform.Find("Suzme_" + id);
+            var w = new MoonWindow
+            {
+                blocker = child.GetComponent<Renderer>(),
+                beam = beam != null ? beam.GetComponent<Renderer>() : null,
+                room = RoomAt(child.position)
+            };
+            if (w.blocker != null)
+                w.blocker.enabled = false;
+            list.Add(w);
+        }
+        moonWindows = list.ToArray();
+        Renderer first = moonWindows.Select(w => w.beam).FirstOrDefault(r => r != null);
+        moonBeamColor = first != null ? first.sharedMaterial.GetColor(BaseColorId) : Color.white;
+    }
+
+    private RoomLights RoomAt(Vector3 p)
+    {
+        if (rooms == null)
+            return null;
+        foreach (RoomArea room in rooms)
+            if (p.x >= room.min.x && p.x <= room.max.x && p.z >= room.min.y && p.z <= room.max.y)
+                return room.lights;
+        return null;
+    }
 
     private void UpdateScenario()
     {
@@ -116,11 +211,16 @@ public class HouseNightfall : MonoBehaviour
     private void Apply()
     {
         bool night = DayRoutine.NightFell;
-        sun.intensity = night ? Mathf.Max(dayIntensity * sunMultiplier, moonIntensity) : dayIntensity;
+        nightSunIntensity = Mathf.Max(dayIntensity * sunMultiplier, moonIntensity);
+        sun.intensity = night ? nightSunIntensity : dayIntensity;
         sun.color = night ? moonColor : dayColor;
         sun.transform.rotation = night ? Quaternion.Euler(moonEuler) : dayRotation;        // Gündüz ev sadece güneşle aydınlanıyor, iç kısımlar karanlık kalıyordu: gündüz pozlama artar (gece realtime
         // lambalar zaten yeterli, gece 0).
         GameSettings.SetSceneExposure(night ? 0f : dayExposure);
+        if (moonBeams != null)
+            moonBeams.SetActive(night);
+        if (sunBeams != null)
+            sunBeams.SetActive(!night);
         if (night && daySky != null)
         {
             if (nightSky == null)

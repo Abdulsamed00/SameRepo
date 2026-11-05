@@ -29,6 +29,17 @@ public class PickupItem : Interactable
     [SerializeField] private Vector3 holdEulerOffset;
     [SerializeField] private float followSharpness = 18f;
 
+    /// <summary>Eşyanın tutma noktasına göre ek aşağı kayması (m).</summary>
+    protected virtual float HoldLowering => 0f;
+
+    [Header("Yürürken sallanma")]
+    [Tooltip("Eşya kameraya bağlı olduğu için kamerayla birlikte salındığında ekranda sabit duruyordu. Kameranın sallanmasına ters yönde ek salınır (çarpan).")]
+    [SerializeField] private float walkSwayPosition = 0.3f;
+    [Tooltip("Yatay sallanmayla gelen yan yatma (derece / m).")]
+    [SerializeField] private float walkSwayRoll = 25f;
+    [Tooltip("Dikey sallanmayla gelen öne arkaya eğilme (derece / m).")]
+    [SerializeField] private float walkSwayPitch = 18f;
+
     [Header("Tek el / iki el (IK)")]
     [Tooltip("Eşyanın elle tutulan noktası. Tek verilirse sağ el, ikisi de verilirse iki el tutar (hangisinin sağ olduğu tutuş pozundaki yerine göre seçilir). Boşsa eski davranış: eşya kameradaki tutma noktasında elsiz durur. Dönüş: ileri = başparmak tarafı, yukarı = avuçtan eşyaya doğru.")]
     [SerializeField] private Transform gripA;
@@ -225,8 +236,9 @@ public class PickupItem : Interactable
         if (!IsHeld || Time.time < attachTime || settling)
             return;
 
-        Vector3 targetPosition = holdPoint.TransformPoint(holdPositionOffset);
+        Vector3 targetPosition = holdPoint.TransformPoint(holdPositionOffset) + holdPoint.up * -HoldLowering;
         Quaternion targetRotation = holdPoint.rotation * Quaternion.Euler(holdEulerOffset);
+        ApplyWalkSway(ref targetPosition, ref targetRotation);
 
         // Ele ulaştıktan sonra yumuşatma olmadan takip eder, yoksa hızlı el hareketinde geride kalıyor.
         if (attached || (transform.position - targetPosition).sqrMagnitude < 0.0004f)
@@ -244,6 +256,30 @@ public class PickupItem : Interactable
         transform.SetPositionAndRotation(
             Vector3.Lerp(transform.position, targetPosition, t),
             Quaternion.Slerp(transform.rotation, targetRotation, t));
+    }
+
+    private FirstPersonController walker;
+
+    // Yürürken eşya kamerayla aynı sallandığı için ekranda sabit görünüyordu: kameranın sallanmasına ters yönde
+    // (daha geç/ağır bir nesne gibi) ek konum ve eğilme verilir. Kamera eksenlerinde uygulanır.
+    private void ApplyWalkSway(ref Vector3 position, ref Quaternion rotation)
+    {
+        if (holder == null)
+            return;
+        if (walker == null)
+            walker = holder.GetComponentInParent<FirstPersonController>();
+        if (walker == null)
+            return;
+
+        Vector2 bob = walker.BobOffset;
+        if (bob.sqrMagnitude < 1e-8f)
+            return;
+
+        Vector3 local = new Vector3(-bob.x * walkSwayPosition, -bob.y * walkSwayPosition, 0f);
+        position += holdPoint.TransformVector(local);
+        Quaternion sway = Quaternion.AngleAxis(bob.x * walkSwayRoll, holdPoint.forward)
+                          * Quaternion.AngleAxis(-bob.y * walkSwayPitch, holdPoint.right);
+        rotation = sway * rotation;
     }
 
     private int approachFrame = -1;

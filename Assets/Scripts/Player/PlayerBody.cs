@@ -255,6 +255,12 @@ public class PlayerBody : MonoBehaviour
 
         CreateHeadlessBody(layer);
 
+        // Skinned parçaların sınır kutusu bağlanma pozundan sabit kalıyordu: kollar öne uzanınca (eşya taşıma, kapı)
+        // eller kutunun dışına, kamera da gövdenin önünde olduğu için kutu kameranın arkasına düşüyor, gövde (eller
+        // dahil) hiç çizilmiyordu (06.11, "eşyayı tutarken eller görünmüyor"). Tek karakter, her kare sınır hesabı ucuz.
+        foreach (SkinnedMeshRenderer r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            r.updateWhenOffscreen = true;
+
         if (playerCamera != null)
             playerCamera.cullingMask &= ~(1 << layer);
     }

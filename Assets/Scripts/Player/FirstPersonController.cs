@@ -96,6 +96,9 @@ public class FirstPersonController : MonoBehaviour
     /// <summary>Yatay hız (m/sn). Karakter animasyonu bunu okur.</summary>
     public float HorizontalSpeed => horizontalVelocity.magnitude;
 
+    /// <summary>Kameranın o anki sallanma ofseti (yatay, dikey; m). Elde taşınan eşya buna ters yönde ek sallanır.</summary>
+    public Vector2 BobOffset => bobOffset;
+
     /// <summary>Yatay hız vektörü (dünya). Gövde bununla hareket yönüne döner.</summary>
     public Vector3 HorizontalVelocity => horizontalVelocity;
 

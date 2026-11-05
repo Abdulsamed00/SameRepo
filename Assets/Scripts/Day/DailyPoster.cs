@@ -11,6 +11,11 @@ public class DailyPoster : MonoBehaviour
     private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
 
     [SerializeField] private PosterSet posters;
+    [Header("Kuaför ve klinik günleri")]
+    [Tooltip("Kuaför gününde (GameDay.Index 1) dikey panolarda gösterilen afiş.")]
+    [SerializeField] private Texture2D salonPoster;
+    [Tooltip("Klinik gününde (GameDay.Index 3) dikey panolarda gösterilen afiş.")]
+    [SerializeField] private Texture2D clinicPoster;
     [Tooltip("Aynı yöndeki afişlerden hangisi (komşu panolar farklı afiş göstersin diye sırayla verilir).")]
     [SerializeField] private int index;
 
@@ -41,7 +46,17 @@ public class DailyPoster : MonoBehaviour
             return;
 
         float boardAspect = maxSize.x / maxSize.y;
-        Texture2D image = posters.Pick(GameDay.Product, boardAspect, index);
+        Texture2D image = null;
+        // O günün mekânı (kuaför/klinik) dikey panolarda, ikiden birinde kendi afişiyle tanıtılır.
+        if (boardAspect < 1f && index % 2 == 0)
+        {
+            if (GameDay.Index == DayRoutine.SalonDay)
+                image = salonPoster;
+            else if (GameDay.Index == DayRoutine.ClinicDay)
+                image = clinicPoster;
+        }
+        if (image == null)
+            image = posters.Pick(GameDay.Product, boardAspect, index);
         if (image == null)
             return;
 

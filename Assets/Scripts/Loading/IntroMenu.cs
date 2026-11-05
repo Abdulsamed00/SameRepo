@@ -21,6 +21,9 @@ public class IntroMenu : MonoBehaviour
     [SerializeField] private Transform cameraPoint;
     [SerializeField] private float cameraFov = 40f;
     [SerializeField] private AudioClip clickSound;
+    [Tooltip("Menü açıkken çalan müzik (OYNA'ya basınca söner).")]
+    [SerializeField] private AudioClip menuMusic;
+    [SerializeField, Range(0f, 1f)] private float menuMusicVolume = 0.5f;
     [Tooltip("Boşsa Resources/UI/Arkaplan/AnaMenu kullanılır (ayarlar ekranının bulanık arka planı).")]
     [SerializeField] private Texture background;
 
@@ -49,6 +52,7 @@ public class IntroMenu : MonoBehaviour
     private Vector3 camLocalPosition;
     private Quaternion camLocalRotation;
     private bool cameraOverridden;
+    private AudioSource musicSource;
     private float blend;
     private float side = 1f;
 
@@ -91,10 +95,32 @@ public class IntroMenu : MonoBehaviour
         cameraOverridden = true;
 
         Build();
+        StartMusic();
+    }
+
+    private void StartMusic()
+    {
+        if (menuMusic == null)
+            return;
+        musicSource = gameObject.AddComponent<AudioSource>();
+        musicSource.clip = menuMusic;
+        musicSource.loop = true;
+        musicSource.spatialBlend = 0f;
+        musicSource.ignoreListenerPause = true;
+        musicSource.volume = menuMusicVolume * GameSettings.Volume(AudioCategory.Music);
+        musicSource.Play();
+        GameSettings.Changed += ApplyMusicVolume;
+    }
+
+    private void ApplyMusicVolume()
+    {
+        if (musicSource != null)
+            musicSource.volume = menuMusicVolume * GameSettings.Volume(AudioCategory.Music);
     }
 
     private void OnDestroy()
     {
+        GameSettings.Changed -= ApplyMusicVolume;
         if (blurred != null)
             blurred.Release();
     }
@@ -183,6 +209,21 @@ public class IntroMenu : MonoBehaviour
         StartCoroutine(PlayRoutine());
     }
 
+    private IEnumerator FadeOutMusic(float duration)
+    {
+        if (musicSource == null)
+            yield break;
+        GameSettings.Changed -= ApplyMusicVolume;
+        float start = musicSource.volume;
+        for (float t = 0f; t < duration && musicSource != null; t += Time.unscaledDeltaTime)
+        {
+            musicSource.volume = start * (1f - t / duration);
+            yield return null;
+        }
+        if (musicSource != null)
+            musicSource.Stop();
+    }
+
     private IEnumerator PlayRoutine()
     {
         // İmleç tıklama anında kilitlenir: kilitlenirken gelen ilk fare hareketi kalkış bitmeden, kontrolcü
@@ -196,6 +237,7 @@ public class IntroMenu : MonoBehaviour
             yield return null;
         }
         Destroy(canvas.gameObject);
+        StartCoroutine(FadeOutMusic(1.5f));
 
         // Karakter kalkar, kamera üçüncü şahıstan gözüne uçar; ikisi de kalkış ilerlemesine bağlı.
         sitter.StandUp();
