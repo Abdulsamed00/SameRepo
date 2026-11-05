@@ -83,6 +83,12 @@ public class PickupItem : Interactable
         }
     }
 
+    /// <summary>Yerinin dünya konumu (ilk konum).</summary>
+    public Vector3 HomePosition => StartPosition;
+
+    /// <summary>Şu an bırakılabilir mi (<paramref name="eye"/>: oyuncunun göz konumu). Varsayılan: her yerde.</summary>
+    public virtual bool CanDropAt(Vector3 eye) => true;
+
     /// <summary>Bırakılırken duvar/zemin payı için yaklaşık yarıçap.</summary>
     public float Radius => radius;
 
@@ -206,7 +212,17 @@ public class PickupItem : Interactable
             return;
         }
 
-        if (!IsHeld || Time.time < attachTime)
+        UpdateHeldPose();
+    }
+
+    /// <summary>
+    /// Eşyayı o karedeki el/kamera noktasına taşır. Eller (IK) animasyon aşamasında, <see cref="LateUpdate"/>'ten ÖNCE
+    /// eşyanın tutuş noktalarına uzanır: eşya hâlâ bir önceki karenin konumundaysa kamera hareket ederken eller eşyanın
+    /// ~2 cm gerisinde kalıp titriyordu (05.11). <see cref="PlayerBody"/> IK'dan önce bunu çağırır.
+    /// </summary>
+    public void UpdateHeldPose()
+    {
+        if (!IsHeld || Time.time < attachTime || settling)
             return;
 
         Vector3 targetPosition = holdPoint.TransformPoint(holdPositionOffset);
@@ -220,11 +236,17 @@ public class PickupItem : Interactable
             return;
         }
 
+        // Aynı karede iki kez çağrılırsa (IK + LateUpdate) yaklaşma hızı ikiye katlanmasın.
+        if (approachFrame == Time.frameCount)
+            return;
+        approachFrame = Time.frameCount;
         float t = 1f - Mathf.Exp(-followSharpness * Time.deltaTime);
         transform.SetPositionAndRotation(
             Vector3.Lerp(transform.position, targetPosition, t),
             Quaternion.Slerp(transform.rotation, targetRotation, t));
     }
+
+    private int approachFrame = -1;
 
     private void SetCollidersEnabled(bool value)
     {

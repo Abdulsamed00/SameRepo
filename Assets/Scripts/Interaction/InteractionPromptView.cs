@@ -141,7 +141,7 @@ public class InteractionPromptView : MonoBehaviour
         }
         focusGroup.alpha = Mathf.MoveTowards(focusGroup.alpha, focused != null && !seated ? 1f : 0f, Time.unscaledDeltaTime / fadeDuration);
 
-        bool showHint = active && (!string.IsNullOrEmpty(interactor.Hint) || seated || interactor.IsHolding);
+        bool showHint = active && (!string.IsNullOrEmpty(interactor.Hint) || seated || interactor.CanDropHeld);
         if (showHint)
         {
             if (!string.IsNullOrEmpty(interactor.Hint))

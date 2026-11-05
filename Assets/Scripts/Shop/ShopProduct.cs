@@ -24,6 +24,11 @@ public class ShopProduct : PickupItem
 
     public override string Title => product.DisplayName().ToUpper(new System.Globalization.CultureInfo("tr-TR"));
 
+    [Tooltip("Ürün sadece yerinin bu kadar yakınında (göz hizasından) bırakılabilir: standdan alınan ürün mağazanın ortasına bırakılamaz.")]
+    [SerializeField] private float dropRange = 1.9f;
+
+    public override bool CanDropAt(Vector3 eye) => Vector3.Distance(eye, HomePosition) <= dropRange;
+
     public override bool CanInteract(PlayerInteractor interactor) =>
         base.CanInteract(interactor) && GameDay.IsAvailable(product) && DayRoutine.AdRequirementMet
         && !PlayerPurchases.Owns(product);

@@ -90,6 +90,9 @@ public class FirstPersonController : MonoBehaviour
     /// </summary>
     public bool Frozen { get; set; }
 
+    /// <summary>Fare ile bakış kilitli (yürüme serbest). Sarışına kilitlenirken kullanılır (<see cref="BlondeGlance"/>).</summary>
+    public bool LookLocked { get; set; }
+
     /// <summary>Yatay hız (m/sn). Karakter animasyonu bunu okur.</summary>
     public float HorizontalSpeed => horizontalVelocity.magnitude;
 
@@ -212,6 +215,8 @@ public class FirstPersonController : MonoBehaviour
     private void Look()
     {
         Vector2 rawDelta = lookAction.ReadValue<Vector2>();
+        if (LookLocked)
+            return;
         if (framesToSkip > 0)
         {
             framesToSkip--;

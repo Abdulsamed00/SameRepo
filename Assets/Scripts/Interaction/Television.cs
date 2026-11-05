@@ -1,15 +1,18 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Video;
 
 /// <summary>
-/// Televizyon: kumanda eldeyken oturma bölgesinde F ile açılır, o günün ürününün (<see cref="GameDay.Product"/>)
-/// reklamını ekranda oynatır, oyuncu F'ye tekrar basana ya da kumandayı elinden bırakana kadar döngüde oynar.
-/// Bölge mantığı <see cref="SceneZone"/> ile aynıdır (ışın gerekmez), ama trigger olayı yerine konum kontrolüyle:
-/// otururken CharacterController kapandığı için trigger çıkışı tetiklenip bölgeyi sıfırlıyordu.
+/// Televizyon (05.11): hiç kapanmaz, reklamı döngüde oynatır. Oynayan reklam <see cref="DayRoutine.TvProduct"/>:
+/// gündüz günün ürünü, gece (ürün alındıktan sonra) ertesi günün ürünü. Oyuncu oturma bölgesindeyken reklam bir kez
+/// sonuna kadar oynayınca izlenmiş sayılır (<see cref="DayRoutine.NotifyAdWatched"/>).
+/// Gece evin tek ışığı TV'dir: <see cref="tvLight"/> ekrandaki görüntünün ortalama rengini alır (RenderTexture'ın en
+/// küçük mip'i, AsyncGPUReadback) ve sadece gece yanar.
+/// Eskiden kumanda eldeyken F ile açılıp kapanıyordu (01.11).
 /// </summary>
 [RequireComponent(typeof(Collider))]
-public class Television : Interactable
+public class Television : MonoBehaviour
 {
     [Serializable]
     private struct Ad
@@ -21,19 +24,21 @@ public class Television : Interactable
     [Header("Reklamlar")]
     [SerializeField] private Ad[] ads;
 
-    [Header("Etkileşim")]
-    [Tooltip("TV'yi açmak için eldeki olması gereken kumanda.")]
-    [SerializeField] private PickupItem remote;
-    [SerializeField] private string turnOnPrompt = "TV'yi aç";
-    [SerializeField] private string turnOffPrompt = "TV'yi kapat";
-
     [Header("Ekran")]
     [SerializeField] private Renderer screen;
-    [Tooltip("Kapalıyken ekranın malzemesi (siyah).")]
+    [Tooltip("Kapalıyken (hazırlanırken) ekranın malzemesi (siyah).")]
     [SerializeField] private Material offMaterial;
     [Tooltip("Açıkken ekranın malzemesi (Unlit). Reklam bu malzemenin dokusuna çizilir.")]
     [SerializeField] private Material onMaterial;
     [Range(0f, 1f)] [SerializeField] private float volume = 0.8f;
+
+    [Header("Gece ışığı")]
+    [Tooltip("Ekranın önündeki ışık: gece evin tek ışığı, rengi görüntüden gelir.")]
+    [SerializeField] private Light tvLight;
+    [SerializeField] private float lightIntensity = 4f;
+    [Tooltip("Görüntü kararınca ışık bu kadardan aşağı inmez.")]
+    [SerializeField] private float minBrightness = 0.25f;
+    [SerializeField] private float colorSmoothing = 8f;
 
     private PlayerInteractor interactor;
     private VideoPlayer videoPlayer;
@@ -42,27 +47,56 @@ public class Television : Interactable
     private Material screenInstance;
     private Collider area;
     private Ad current;
-    private bool adWatchedRaised;
+    private bool hasCurrent;
+    private bool watchedThisLoop;
     private bool preparing;
     private bool restartPending;
     private bool pausedByMenu;
+    private AudioLowPassFilter lowPass;
+    private Transform listener;
+    private float occlusion;
+    private readonly RaycastHit[] occlusionHits = new RaycastHit[24];
+    private Color sampled = Color.black;
+    private Color lightColor = Color.black;
+    private bool readbackPending;
+    private float nextSample;
 
-    /// <summary>Reklam sonuna kadar izlenince tetiklenir (günlük görev/yönlendirme sistemi buna bağlanır).</summary>
+    /// <summary>Reklam oyuncu bölgedeyken sonuna kadar oynadı.</summary>
     public static event Action<ProductType> AdWatched;
 
-    public bool IsOn { get; private set; }
+    private const float OpenCutoff = 22000f;
+    private const float MuffledCutoff = 700f;
+    private const float MuffledVolume = 0.25f;
 
-    public override string Prompt => IsOn ? turnOffPrompt : turnOnPrompt;
+    /// <summary>
+    /// Uyku çarpanı (0-1): <see cref="Bed"/> uyurken TV sesini yavaşça kısar (<see cref="FadeSleepFactor"/>),
+    /// uyanırken geri açar.
+    /// </summary>
+    public static float SleepFactor { get; private set; } = 1f;
 
-    public override bool CanInteract(PlayerInteractor who) =>
-        who.HeldItem == remote && (IsOn || TryGetTodaysAd(out _));
+    /// <summary>TV sesinin uyku çarpanını verilen süre içinde hedefe taşır (Bed başlatır).</summary>
+    public static System.Collections.IEnumerator FadeSleepFactor(float target, float duration)
+    {
+        float start = SleepFactor;
+        for (float t = 0f; t < duration; t += Time.deltaTime)
+        {
+            SleepFactor = Mathf.Lerp(start, target, Mathf.SmoothStep(0f, 1f, t / duration));
+            yield return null;
+        }
+        SleepFactor = target;
+    }
 
     private void Awake()
     {
         area = GetComponent<Collider>();
         area.isTrigger = true;
 
-        audioSource = gameObject.AddComponent<AudioSource>();
+        // Ses TV_Alani'nın (oturma alanı kutusu) merkezinden değil ekranın bulunduğu yerden gelir: duvar/kapı arkasından
+        // duyma (engel hesabı) ekran konumuna göre yapılır.
+        GameObject soundObject = new GameObject("TV_Ses");
+        soundObject.transform.SetParent(transform, false);
+        soundObject.transform.position = screen != null ? screen.bounds.center : transform.position;
+        audioSource = soundObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         // Tam 3D ve noktasal ses, oyuncu başını çevirince tek kulağa kayıp diğerinde kopuyordu: biraz 2D karışır,
         // spread ile ses iki kulağa yayılır, yön hissi kalır.
@@ -71,7 +105,9 @@ public class Television : Interactable
         audioSource.volume = volume;
         audioSource.minDistance = 3f;
         audioSource.maxDistance = 12f;
-        gameObject.AddComponent<CategoryVolume>();
+        // Arada duvar/kapı varsa ses kısılır ve boğuklaşır (düşük geçiren filtre).
+        lowPass = soundObject.AddComponent<AudioLowPassFilter>();
+        lowPass.cutoffFrequency = OpenCutoff;
 
         videoPlayer = gameObject.AddComponent<VideoPlayer>();
         videoPlayer.playOnAwake = false;
@@ -84,6 +120,8 @@ public class Television : Interactable
         videoPlayer.loopPointReached += OnFinished;
 
         SetScreen(false);
+        if (tvLight != null)
+            tvLight.enabled = false;
     }
 
     private void OnDestroy()
@@ -110,50 +148,78 @@ public class Television : Interactable
         if (pausedByMenu)
         {
             pausedByMenu = false;
-            if (IsOn)
-                videoPlayer.Play();
+            videoPlayer.Play();
         }
+
+        // Gün/ürün değişince (satın alma, uyku) reklam değişir.
+        if ((!hasCurrent || current.product != DayRoutine.TvProduct) && TryGetAd(DayRoutine.TvProduct, out Ad ad))
+            Play(ad);
 
         if (restartPending)
         {
             restartPending = false;
-            if (IsOn)
-            {
-                videoPlayer.Stop();
-                preparing = true;
-                videoPlayer.Prepare();
-            }
+            videoPlayer.Stop();
+            preparing = true;
+            videoPlayer.Prepare();
         }
 
         if (interactor == null)
             interactor = FindFirstObjectByType<PlayerInteractor>();
-        if (interactor == null || !interactor.isActiveAndEnabled)
-            return;
+        // Oyuncu döngünün bir anında bölgede bulunduysa o döngü izlenmiş sayılır (otururken CC kapalı, konuma bakılır).
+        if (interactor != null && area.bounds.Contains(interactor.transform.position))
+            watchedThisLoop = true;
 
-        // Kumanda elden çıkınca (G ile bırakma, odadan çıkınca kendiliğinden yerine dönme) TV kapanır.
-        if (IsOn && interactor.HeldItem != remote)
-            TurnOff();
-
-        bool inside = area.bounds.Contains(interactor.transform.position);
-        if (inside && interactor.Zone == null)
-            interactor.Zone = this;
-        else if (!inside && interactor.Zone == this)
-            interactor.Zone = null;
+        UpdateLight();
+        UpdateSound();
     }
 
-    public override void Interact(PlayerInteractor who)
+    /// <summary>
+    /// Ses: dinleyici ile ekran arasındaki engeller (duvar, kapı, uzun mobilya; alçak mobilya sayılmaz, kanepeden
+    /// sehpa yüzünden boğuklaşmasın) sesi kısar ve boğuklaştırır; uyku çarpanı da burada uygulanır.
+    /// </summary>
+    private void UpdateSound()
     {
-        if (IsOn)
-            TurnOff();
-        else if (TryGetTodaysAd(out Ad ad))
-            TurnOn(ad);
+        if (listener == null)
+        {
+            AudioListener al = FindFirstObjectByType<AudioListener>();
+            listener = al != null ? al.transform : null;
+        }
+
+        float target = 0f;
+        if (listener != null)
+        {
+            Vector3 from = listener.position;
+            Vector3 to = audioSource.transform.position;
+            Vector3 delta = to - from;
+            float distance = delta.magnitude;
+            if (distance > 0.5f)
+            {
+                int count = Physics.RaycastNonAlloc(from, delta / distance, occlusionHits, distance,
+                    ~(1 << 2), QueryTriggerInteraction.Ignore);
+                float blocking = 0f;
+                for (int i = 0; i < count; i++)
+                {
+                    Collider c = occlusionHits[i].collider;
+                    if (c.transform.root == listener.root || occlusionHits[i].distance > distance - 0.9f)
+                        continue;
+                    // Yükseklik ağırlığı: 0.8 m ve altı (sehpa, kanepe) hiç, 2 m ve üstü (duvar, kapı, dolap) tam.
+                    blocking += Mathf.Clamp01((c.bounds.size.y - 0.8f) / 1.2f);
+                }
+                target = Mathf.Clamp01(blocking);
+            }
+        }
+
+        occlusion = Mathf.MoveTowards(occlusion, target, 3f * Time.unscaledDeltaTime);
+        float category = GameSettings.Volume(AudioCategory.Effects);
+        audioSource.volume = volume * category * Mathf.Lerp(1f, MuffledVolume, occlusion) * SleepFactor;
+        lowPass.cutoffFrequency = OpenCutoff * Mathf.Pow(MuffledCutoff / OpenCutoff, occlusion);
     }
 
-    private bool TryGetTodaysAd(out Ad ad)
+    private bool TryGetAd(ProductType product, out Ad ad)
     {
         foreach (Ad candidate in ads)
         {
-            if (candidate.clip != null && candidate.product == GameDay.Product)
+            if (candidate.clip != null && candidate.product == product)
             {
                 ad = candidate;
                 return true;
@@ -163,16 +229,21 @@ public class Television : Interactable
         return false;
     }
 
-    private void TurnOn(Ad ad)
+    private void Play(Ad ad)
     {
         current = ad;
-        IsOn = true;
-        adWatchedRaised = false;
+        hasCurrent = true;
+        watchedThisLoop = false;
 
         if (target == null)
         {
-            target = new RenderTexture((int)ad.clip.width, (int)ad.clip.height, 0);
-            target.name = "TV_Ekran_RT";
+            // Mip'ler ışığın rengi için: en küçük mip tüm görüntünün ortalaması.
+            target = new RenderTexture((int)ad.clip.width, (int)ad.clip.height, 0)
+            {
+                name = "TV_Ekran_RT",
+                useMipMap = true,
+                autoGenerateMips = true
+            };
             videoPlayer.targetTexture = target;
         }
 
@@ -180,7 +251,8 @@ public class Television : Interactable
         // oynatıcıyı hazır ama duraklı bırakıyordu; hazırlık sürerken Stop çağırmak da aynı sonucu veriyordu.
         if (videoPlayer.clip != ad.clip)
         {
-            videoPlayer.Stop();
+            if (videoPlayer.isPrepared)
+                videoPlayer.Stop();
             videoPlayer.clip = ad.clip;
             preparing = false;
         }
@@ -197,8 +269,7 @@ public class Television : Interactable
     private void OnPrepared(VideoPlayer source)
     {
         preparing = false;
-        if (IsOn)
-            StartPlayback();
+        StartPlayback();
     }
 
     private void StartPlayback()
@@ -207,28 +278,55 @@ public class Television : Interactable
         videoPlayer.Play();
     }
 
-    // Reklam döngüde oynar, oyuncu kapatana kadar sürer: bitince Update'te baştan hazırlanıp oynatılır.
-    // Olay her açılışta sadece ilk bitişte tetiklenir.
+    // Reklam döngüde oynar: bitince Update'te baştan hazırlanıp oynatılır.
     private void OnFinished(VideoPlayer source)
     {
-        if (!IsOn)
-            return;
         restartPending = true;
-        if (adWatchedRaised)
-            return;
-        adWatchedRaised = true;
-        DayRoutine.NotifyAdWatched(current.product);
-        AdWatched?.Invoke(current.product);
+        if (watchedThisLoop && hasCurrent)
+        {
+            DayRoutine.NotifyAdWatched(current.product);
+            AdWatched?.Invoke(current.product);
+        }
+        watchedThisLoop = false;
     }
 
-    private void TurnOff()
+    private void UpdateLight()
     {
-        IsOn = false;
-        // Sadece hazır oynatıcı durdurulur (başa sarar); hazırlık sürerken Stop çağrılırsa oynatıcı takılıyor,
-        // o durumda hazır olunca OnPrepared kapalı olduğunu görür.
-        if (videoPlayer.isPrepared)
-            videoPlayer.Stop();
-        SetScreen(false);
+        if (tvLight == null)
+            return;
+        bool on = DayRoutine.NightFell && target != null && videoPlayer.isPlaying;
+        tvLight.enabled = on;
+        if (!on)
+            return;
+
+        if (!readbackPending && Time.time >= nextSample && SystemInfo.supportsAsyncGPUReadback)
+        {
+            readbackPending = true;
+            nextSample = Time.time + 0.08f;
+            AsyncGPUReadback.Request(target, target.mipmapCount - 1, TextureFormat.RGBA32, OnReadback);
+        }
+
+        lightColor = Color.Lerp(lightColor, sampled, 1f - Mathf.Exp(-colorSmoothing * Time.deltaTime));
+        float brightness = Mathf.Max(lightColor.maxColorComponent, 0.001f);
+        // Renk normalize edilir, parlaklık şiddete gider (karanlık sahnede ışık söner gibi olur ama hiç bitmez).
+        Color normalized = lightColor / brightness;
+        normalized.a = 1f;
+        tvLight.color = normalized;
+        tvLight.intensity = lightIntensity * Mathf.Lerp(minBrightness, 1f, brightness);
+    }
+
+    private void OnReadback(AsyncGPUReadbackRequest request)
+    {
+        readbackPending = false;
+        if (request.hasError || this == null)
+            return;
+        var data = request.GetData<Color32>();
+        if (data.Length == 0)
+            return;
+        Color sum = Color.black;
+        foreach (Color32 c in data)
+            sum += (Color)c;
+        sampled = sum / data.Length;
     }
 
     private void SetScreen(bool on)

@@ -1198,7 +1198,7 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.28, y: 0.042261958, z: -0.2093687}
+  holdPositionOffset: {x: -0.33900002, y: 0.042261954, z: -0.2093687}
   holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
   gripA: {fileID: 1655053414}
@@ -5251,7 +5251,7 @@ MonoBehaviour:
   targetScene: StreetScene
   spawnId: Magaza_Onu
   requireLeaveFirst: 0
-  lockedPrompt: "\xD6nce kasada \xF6deme yap"
+  lockedPrompt: 
 --- !u!1 &305466687
 GameObject:
   m_ObjectHideFlags: 0
@@ -6004,7 +6004,7 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.07999999, y: -0.1799998, z: -0.2999998}
+  holdPositionOffset: {x: -0.108392276, y: -0.2621651, z: -0.35982817}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
   gripA: {fileID: 1624796783}
@@ -7100,7 +7100,7 @@ Transform:
   m_GameObject: {fileID: 437620474}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5963678, y: 0.5963679, z: 0.3799282, w: -0.3799282}
-  m_LocalPosition: {x: -0.19, y: 0, z: 0.1}
+  m_LocalPosition: {x: -0.14900018, y: 0, z: 0.10000037}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7445,7 +7445,7 @@ Transform:
   m_GameObject: {fileID: 466375144}
   serializedVersion: 2
   m_LocalRotation: {x: 0.6963643, y: 0.1227878, z: 0.1227878, w: -0.6963643}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalPosition: {x: -0.06593098, y: 0.28216505, z: 0.0062175095}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9374,7 +9374,7 @@ Transform:
   m_GameObject: {fileID: 655501815}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5963678, y: 0.5963679, z: 0.3799282, w: -0.3799282}
-  m_LocalPosition: {x: -0.19, y: 0, z: 0.1}
+  m_LocalPosition: {x: -0.24900009, y: 0, z: 0.10000036}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10944,7 +10944,7 @@ Transform:
   m_GameObject: {fileID: 746477331}
   serializedVersion: 2
   m_LocalRotation: {x: -0.59636784, y: 0.59636784, z: 0.37992817, w: 0.37992823}
-  m_LocalPosition: {x: 0.19, y: 0, z: 0.1}
+  m_LocalPosition: {x: 0.19500016, y: 0, z: 0.1000004}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12683,7 +12683,7 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.07999999, y: -0.1799998, z: -0.2999998}
+  holdPositionOffset: {x: -0.108392276, y: -0.2621651, z: -0.35982817}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
   gripA: {fileID: 2001388300}
@@ -13272,7 +13272,7 @@ Transform:
   m_GameObject: {fileID: 886802549}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5963678, y: 0.5963679, z: 0.3799282, w: -0.3799282}
-  m_LocalPosition: {x: -0.19, y: 0, z: 0.1}
+  m_LocalPosition: {x: -0.10700012, y: 0, z: 0.100000374}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15587,7 +15587,7 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.28, y: 0.042261958, z: -0.2093687}
+  holdPositionOffset: {x: -0.2749999, y: 0.042261958, z: -0.2093687}
   holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
   gripA: {fileID: 746477332}
@@ -17348,7 +17348,7 @@ Transform:
   m_GameObject: {fileID: 1139271748}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5963678, y: 0.5963679, z: 0.3799282, w: -0.3799282}
-  m_LocalPosition: {x: -0.19, y: 0, z: 0.1}
+  m_LocalPosition: {x: -0.18499996, y: 0, z: 0.10000037}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -18248,7 +18248,7 @@ Transform:
   m_GameObject: {fileID: 1216539881}
   serializedVersion: 2
   m_LocalRotation: {x: -0.59636784, y: 0.59636784, z: 0.37992817, w: 0.37992823}
-  m_LocalPosition: {x: 0.19, y: 0, z: 0.1}
+  m_LocalPosition: {x: 0.23099993, y: 0, z: 0.100000404}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -19299,7 +19299,7 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.28, y: 0.042261958, z: -0.2093687}
+  holdPositionOffset: {x: -0.23900011, y: 0.042261958, z: -0.2093687}
   holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
   gripA: {fileID: 1216539882}
@@ -22817,7 +22817,7 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.28, y: 0.042261958, z: -0.2093687}
+  holdPositionOffset: {x: -0.19700006, y: 0.04226196, z: -0.2093687}
   holdEulerOffset: {x: 25, y: 180, z: 0}
   followSharpness: 18
   gripA: {fileID: 1782814515}
@@ -23351,7 +23351,7 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.07999999, y: -0.1799998, z: -0.2999998}
+  holdPositionOffset: {x: -0.108392276, y: -0.2621651, z: -0.35982817}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
   gripA: {fileID: 466375145}
@@ -25597,7 +25597,7 @@ Transform:
   m_GameObject: {fileID: 1624796782}
   serializedVersion: 2
   m_LocalRotation: {x: 0.6963643, y: 0.1227878, z: 0.1227878, w: -0.6963643}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalPosition: {x: -0.06593098, y: 0.28216505, z: 0.0062175095}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -26022,7 +26022,7 @@ Transform:
   m_GameObject: {fileID: 1655053413}
   serializedVersion: 2
   m_LocalRotation: {x: -0.59636784, y: 0.59636784, z: 0.37992817, w: 0.37992823}
-  m_LocalPosition: {x: 0.19, y: 0, z: 0.1}
+  m_LocalPosition: {x: 0.13100003, y: 0, z: 0.1000004}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -26668,7 +26668,7 @@ Transform:
   m_GameObject: {fileID: 1700502378}
   serializedVersion: 2
   m_LocalRotation: {x: 0.6963643, y: 0.1227878, z: 0.1227878, w: -0.6963643}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalPosition: {x: -0.06593098, y: 0.28216505, z: 0.0062175095}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -26919,7 +26919,7 @@ MonoBehaviour:
   staysKinematic: 1
   homeArea: {fileID: 0}
   holdInHand: 1
-  holdPositionOffset: {x: -0.07999999, y: -0.1799998, z: -0.2999998}
+  holdPositionOffset: {x: -0.108392276, y: -0.2621651, z: -0.35982817}
   holdEulerOffset: {x: 0, y: 110, z: 0}
   followSharpness: 18
   gripA: {fileID: 1700502379}
@@ -27638,7 +27638,7 @@ Transform:
   m_GameObject: {fileID: 1782814514}
   serializedVersion: 2
   m_LocalRotation: {x: -0.59636784, y: 0.59636784, z: 0.37992817, w: 0.37992823}
-  m_LocalPosition: {x: 0.19, y: 0, z: 0.1}
+  m_LocalPosition: {x: 0.273, y: 0, z: 0.100000404}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -31094,7 +31094,7 @@ Transform:
   m_GameObject: {fileID: 2001388299}
   serializedVersion: 2
   m_LocalRotation: {x: 0.6963643, y: 0.1227878, z: 0.1227878, w: -0.6963643}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalPosition: {x: -0.06593098, y: 0.28216505, z: 0.0062175095}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

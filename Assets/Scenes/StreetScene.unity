@@ -35718,9 +35718,9 @@ MonoBehaviour:
   maxDistance: 0
   service: 0
   dayIndex: 1
-  buyFirstPrompt: "\xD6nce k\u0131yafetimi alay\u0131m"
+  buyFirstPrompt: 
   homeZone: {fileID: 577768845}
-  homeLockedPrompt: "\xD6nce kuaf\xF6re u\u011Frayay\u0131m"
+  homeLockedPrompt: 
   exitPoint: {fileID: 1249131919}
   captionTop: "B\u0130RKA\xC7 SAAT SONRA"
   captionMain: "SARI SA\xC7LAR"
@@ -72852,9 +72852,9 @@ MonoBehaviour:
   maxDistance: 0
   service: 1
   dayIndex: 3
-  buyFirstPrompt: "\xD6nce k\u0131yafetimi alay\u0131m"
+  buyFirstPrompt: 
   homeZone: {fileID: 577768845}
-  homeLockedPrompt: "\xD6nce klini\u011Fe u\u011Frayay\u0131m"
+  homeLockedPrompt: 
   exitPoint: {fileID: 542939442}
   captionTop: "B\u0130RKA\xC7 SAAT SONRA"
   captionMain: "YEN\u0130 B\u0130R Y\xDCZ"
@@ -92273,9 +92273,9 @@ MonoBehaviour:
   noticeAngle: 80
   maxAngle: 115
   cooldown: {x: 5, y: 11}
-  turnTime: 0.3
+  turnTime: 0.9
   holdTime: {x: 1.6, y: 2.6}
-  returnTime: 1.1
+  returnTime: 1.6
   headHeight: 1.5
 --- !u!1 &2039498865
 GameObject:

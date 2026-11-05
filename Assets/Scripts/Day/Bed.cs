@@ -44,38 +44,53 @@ public class Bed : Interactable
     [Header("Bildirimler")]
     [SerializeField] private string sleepPrompt = "Uyu";
     [SerializeField] private string notTiredPrompt = "Henüz uykum yok";
-    [SerializeField] private string wearFirstPrompt = "Önce yeni kıyafetimi giyeyim";
-    [SerializeField] private string poseFirstPrompt = "Önce aynada kendime bakayım";
+    [Tooltip("Uyumak için ışığı kapalı olması gereken oda (RoomLights.roomId).")]
+    [SerializeField] private string bedroomId = "Yatak";
+    [SerializeField] private RoomLights roomLights;
 
     private bool busy;
 
     public override InteractionKey Key => InteractionKey.Secondary;
 
+    /// <summary>
+    /// 05.11: şartlar yazılmaz. Gündüz ve alışverişten önce "Henüz uykum yok"; giyilmemiş/poz verilmemiş ya da yatak
+    /// odasının ışığı açıkken bildirim boş (yatak hiç seçilmez); hepsi tamamsa "Uyu".
+    /// </summary>
     public override string Prompt
     {
         get
         {
-            if (!DayRoutine.BoughtToday)
+            if (!DayRoutine.NightFell || (!DayRoutine.Prologue && !DayRoutine.BoughtToday))
                 return notTiredPrompt;
-            if (!DayRoutine.WornToday)
-                return wearFirstPrompt;
-            if (!DayRoutine.PosedToday)
-                return poseFirstPrompt;
+            if (!DayRoutine.CanSleep || LightOn)
+                return "";
             return sleepPrompt;
         }
     }
 
-    private void OnEnable() => DayRoutine.Sleepy += OnSleepy;
-
-    private void OnDisable() => DayRoutine.Sleepy -= OnSleepy;
-
-    private void Start() => DayRoutine.NotifyArrivedHome();
+    // Uyumak için yatak odasının ışığı kapalı olmalı (05.11, kullanıcı isteği).
+    private bool LightOn
+    {
+        get
+        {
+            if (roomLights == null)
+            {
+                foreach (RoomLights room in FindObjectsByType<RoomLights>(FindObjectsSortMode.None))
+                    if (room.RoomId == bedroomId)
+                        roomLights = room;
+            }
+            return roomLights != null && roomLights.IsOn;
+        }
+    }
 
     private void OnSleepy() => StartCoroutine(Yawn());
 
     private IEnumerator Yawn()
     {
         yield return new WaitForSeconds(yawnDelay);
+        // İlk gecenin reklamı ana menü açıkken de bitebilir: esneme oyun başlayınca gelir.
+        while (FindFirstObjectByType<IntroMenu>() != null)
+            yield return null;
         GameAudio.Play2D(yawnSound);
     }
 
@@ -90,7 +105,7 @@ public class Bed : Interactable
 
     public override void Interact(PlayerInteractor interactor)
     {
-        if (!busy && DayRoutine.CanSleep)
+        if (!busy && DayRoutine.CanSleep && !LightOn)
             StartCoroutine(Sleep(interactor));
     }
 
@@ -141,6 +156,8 @@ public class Bed : Interactable
         foreach (Renderer r in bodyRenderers)
             r.forceRenderingOff = true;
         StartCoroutine(ScreenFader.FadeOut(lieLength));
+        // TV sesi ekranla birlikte yavaş yavaş kesilir.
+        StartCoroutine(Television.FadeSleepFactor(0f, lieLength));
 
         Vector3 lieStart = sitPoint.position + Vector3.up * lyingStartHeight;
         Vector3 lieEnd = sitPoint.position + sitRotation * lyingEndOffset;
@@ -171,12 +188,14 @@ public class Bed : Interactable
         foreach (Renderer r in bodyRenderers)
             r.forceRenderingOff = false;
         // Gün geçişi yazısı karanlıkta belirir, ekran açılmadan söner.
-        StartCoroutine(ScreenFader.Caption("ERTESİ SABAH", $"{DayRoutine.DayNumber}. GÜN", Mathf.Max(1f, sleepDuration - 0.5f)));
+        StartCoroutine(ScreenFader.Caption("SABAH", $"{DayRoutine.DayNumber}. GÜN", Mathf.Max(1f, sleepDuration - 0.5f)));
         yield return new WaitForSeconds(sleepDuration);
 
         // 4) Ekran açılır, oyuncu kalkar.
         GameAudio.Play2D(wakeSound);
         StartCoroutine(ScreenFader.FadeIn(wakeFadeDuration));
+        // Uyanırken ses ekranla birlikte yavaşça geri gelir.
+        StartCoroutine(Television.FadeSleepFactor(1f, wakeFadeDuration * 1.2f));
         yield return new WaitForSeconds(wakeFadeDuration * standUpAt);
 
         duration = body.PlayStandUp();

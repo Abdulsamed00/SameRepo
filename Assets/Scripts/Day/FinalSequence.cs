@@ -82,7 +82,6 @@ public class FinalSequence : MonoBehaviour
 
     private IEnumerator Run()
     {
-        PlaytimeTimer.Stop();
         PlayerInteractor interactor = player.GetComponent<PlayerInteractor>();
         player.InputEnabled = false;
         if (interactor != null)

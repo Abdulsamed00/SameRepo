@@ -18,10 +18,10 @@ public class BeautyVisit : Interactable
     [SerializeField] private Service service;
     [Tooltip("Bu işin yapıldığı gün (0'dan: 1 = 2. gün).")]
     [SerializeField] private int dayIndex = 1;
-    [SerializeField] private string buyFirstPrompt = "Önce kıyafetimi alayım";
+    [SerializeField] private string buyFirstPrompt = "";
     [Tooltip("İş bitene kadar kilitlenen eve dönüş bölgesi.")]
     [SerializeField] private SceneZone homeZone;
-    [SerializeField] private string homeLockedPrompt = "Önce kuaföre uğrayayım";
+    [SerializeField] private string homeLockedPrompt = "";
     [Tooltip("Çıkınca oyuncunun durduğu nokta ve yönü.")]
     [SerializeField] private Transform exitPoint;
     [SerializeField] private string captionTop = "BİRKAÇ SAAT SONRA";

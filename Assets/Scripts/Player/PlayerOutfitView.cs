@@ -35,6 +35,9 @@ public class PlayerOutfitView : MonoBehaviour
     [Tooltip("Klinikte değişen blendshape'ler (burun, dudak).")]
     [SerializeField] private string[] blendShapeNames = { "burun", "dudak" };
     [SerializeField] private float surgeryWeight = 100f;
+    [Tooltip("Estetikten önce burun blendshape'i: 0 kemikli burun, eksi değer daha da iri ve kötü (05.11, kullanıcı: \"ilk önce burnu çok kötü olmalı\"). -80'den aşağısında burun deliğinde dikiş açılıyor.")]
+    [SerializeField] private float badNoseWeight = -70f;
+    [SerializeField] private string noseShape = "burun";
 
     private void OnEnable()
     {
@@ -72,7 +75,7 @@ public class PlayerOutfitView : MonoBehaviour
             {
                 int index = r.sharedMesh != null ? r.sharedMesh.GetBlendShapeIndex(shape) : -1;
                 if (index >= 0)
-                    r.SetBlendShapeWeight(index, weight);
+                    r.SetBlendShapeWeight(index, !PlayerLook.SurgeryDone && shape == noseShape ? badNoseWeight : weight);
             }
         }
     }
