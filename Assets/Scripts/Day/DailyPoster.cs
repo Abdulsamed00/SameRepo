@@ -1,7 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Reklam panosundaki afiş yüzeyi: o günün ürününün (<see cref="GameDay.Product"/>) afişini gösterir.
+/// Reklam panosundaki afiş yüzeyi: o günün ürününün (<see cref="GameDay.Product"/>) afişini, kuaför/klinik gününde
+/// ürün alındıktan sonra o hizmetin afişini gösterir (<see cref="PosterSet.PickToday"/>).
 /// Afiş hiç kırpılmaz ve esnetilmez: pano (üst obje, afişin arkasındaki yüzey) ilk boyutunu aşmadan afişin oranına
 /// getirilir, merkezi yerinde kalır. Yataydaki afişlerin oranı ürüne göre değiştiği için boyut her gün yeniden hesaplanır.
 /// </summary>
@@ -30,10 +31,17 @@ public class DailyPoster : MonoBehaviour
     private void OnEnable()
     {
         GameDay.Changed += Apply;
+        PlayerPurchases.Purchased += OnPurchased;
         Apply();
     }
 
-    private void OnDisable() => GameDay.Changed -= Apply;
+    private void OnDisable()
+    {
+        GameDay.Changed -= Apply;
+        PlayerPurchases.Purchased -= OnPurchased;
+    }
+
+    private void OnPurchased(ProductType _) => Apply();
 
     private void Apply()
     {
@@ -41,7 +49,7 @@ public class DailyPoster : MonoBehaviour
             return;
 
         float boardAspect = maxSize.x / maxSize.y;
-        Texture2D image = posters.Pick(GameDay.Product, boardAspect, index);
+        Texture2D image = posters.PickToday(boardAspect, index);
         if (image == null)
             return;
 
