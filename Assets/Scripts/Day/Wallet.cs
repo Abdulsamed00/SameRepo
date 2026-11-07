@@ -2,8 +2,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Masadaki cüzdan (05.11): sabah F ile alınır, el uzanır, cüzdan cebe girer (görünmez olur). Alınmadan evden
-/// çıkılmaz (<see cref="HouseExitLock"/>): "dışarı çıkıyorum" kararını bu verir. Gece eve dönünce yine masadadır.
+/// Cüzdan (05.11; 07.11'den beri Sıla'nın modeli, koridorda giriş kapısının yanındaki ayakkabılığın üstünde): sabah F ile alınır, el uzanır, cüzdan cebe girer (görünmez olur). Alınmadan evden
+/// çıkılmaz (<see cref="HouseExitLock"/>): "dışarı çıkıyorum" kararını bu verir. Gece eve dönünce yine yerindedir.
 /// Alınmayı beklerken (sabah, henüz alınmadı) çevresindeki beyaz kenar (Shader Graph outline) nabız gibi parlar
 /// (oyuncunun gözü masaya gitsin; kapıdan önce hatırlatma). Renkli ışık ve emission yok (07.11, kullanıcı isteği).
 /// </summary>
@@ -18,8 +18,8 @@ public class Wallet : Interactable
     [SerializeField] private float pulseSpeed = 2.2f;
 
     [Header("Beyaz kenar (outline)")]
-    [Tooltip("Shader Graph 'Same/Outline' malzemesi (Assets/Shaders/Outline/Cuzdan_Outline.mat): gövdeye ikinci malzeme " +
-             "olarak eklenir, cüzdanın çevresinde beyaz, bloom alan bir kenar çizer.")]
+    [Tooltip("Kenar malzemesi (Assets/Shaders/Outline/Cuzdan_Outline_Model.mat, shader 'Same/OutlineNormal': model kutu " +
+             "olmadığı için normal boyunca şişirir): gövdeye ikinci malzeme olarak eklenir, beyaz, bloom alan bir kenar çizer.")]
     [SerializeField] private Material outlineMaterial;
     [Tooltip("Kenar parlaklığı (HDR çarpanı; bloom bunun üstünü yayar).")]
     [SerializeField] private float outlineIntensity = 3f;
