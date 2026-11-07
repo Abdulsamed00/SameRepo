@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -13,6 +13,9 @@ public class RoomLights : MonoBehaviour
     [SerializeField] private Light[] lights;
     [Tooltip("Işıkla birlikte sönen lamba/avize renderer'ları (emission kapanır).")]
     [SerializeField] private Renderer[] glowRenderers;
+    [Tooltip("Işık kapalıyken Unlit (kendinden parlayan) ampullerin yerine geçen ışık alan cam malzemesi (08.11: kapalıyken " +
+             "simsiyah görünüyordu). Boşsa koddan kırık beyaz, parlak bir URP Lit malzeme kurulur.")]
+    [SerializeField] private Material offBulbMaterial;
     [Tooltip("Gece, oyuncu dokunmadan önce açık mı.")]
     [SerializeField] private bool onByDefault = true;
 
@@ -20,6 +23,8 @@ public class RoomLights : MonoBehaviour
     private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
+    private static Material defaultOffBulb;
+    private readonly Dictionary<Renderer, Material> litMaterials = new Dictionary<Renderer, Material>();
     private bool applied;
     private bool appliedOn;
 
@@ -45,6 +50,23 @@ public class RoomLights : MonoBehaviour
         Refresh(false);
     }
 
+    private Material OffBulb
+    {
+        get
+        {
+            if (offBulbMaterial != null)
+                return offBulbMaterial;
+            if (defaultOffBulb == null)
+            {
+                defaultOffBulb = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "Ampul_Sonuk (kod)" };
+                defaultOffBulb.SetColor(BaseColorId, new Color(0.86f, 0.84f, 0.78f));
+                defaultOffBulb.SetFloat("_Smoothness", 0.85f);
+                defaultOffBulb.SetFloat("_Metallic", 0f);
+            }
+            return defaultOffBulb;
+        }
+    }
+
     private void Refresh(bool force)
     {
         bool on = IsOn;
@@ -61,14 +83,20 @@ public class RoomLights : MonoBehaviour
         {
             if (r == null)
                 continue;
+            // Unlit ampul (renk = parlama): kapalıyken siyaha boyamak yerine ışık alan cam malzemesine geçer.
+            if (!litMaterials.ContainsKey(r) && r.sharedMaterial != null && r.sharedMaterial.shader.name.Contains("Unlit"))
+                litMaterials[r] = r.sharedMaterial;
+            if (litMaterials.TryGetValue(r, out Material glowMat))
+            {
+                r.sharedMaterial = on ? glowMat : OffBulb;
+                r.SetPropertyBlock(null);
+                continue;
+            }
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             if (!on)
             {
                 r.GetPropertyBlock(block);
                 block.SetColor(EmissionId, Color.black);
-                // Unlit ampulde renk = parlama; Lit abajur/avizede albedo siyaha dönmesin.
-                if (r.sharedMaterial != null && r.sharedMaterial.shader.name.Contains("Unlit"))
-                    block.SetColor(BaseColorId, Color.black);
             }
             r.SetPropertyBlock(block);
         }

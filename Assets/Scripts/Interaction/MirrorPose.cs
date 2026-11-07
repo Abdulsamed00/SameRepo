@@ -42,6 +42,13 @@ public class MirrorPose : Interactable
     [SerializeField] private Vector2 profileOffset = new Vector2(-0.42f, 0.10f);
     [SerializeField] private float zoomInDuration = 1.1f;
     [SerializeField] private float zoomHold = 2f;
+    [Tooltip("Estetikten sonraki ilk poz (08.11): yeni burun ve dudağın yandan gösterildiği süre (sn).")]
+    [SerializeField] private float revealHold = 3.5f;
+    [Tooltip("Estetik sonrası çekimde bakılan nokta burnun bu kadar altında (m): burun ve dudak birlikte kadrajda.")]
+    [SerializeField] private float revealLookDown = 0.035f;
+
+    // Estetikten sonra yeni hâli bir kez gösterildi mi (yeni oyunda PlayerLook sıfırlanınca yeniden).
+    private static bool surgeryRevealShown;
     [SerializeField] private float zoomOutDuration = 0.9f;
     [SerializeField] private float zoomFovStart = 34f;
     [SerializeField] private float zoomFovEnd = 26f;
@@ -160,17 +167,27 @@ public class MirrorPose : Interactable
         if (playedDefeat)
         {
             // Önce yandan buruna yakın çekim, sonra aynaya dönüp üzülür.
-            yield return NoseCloseUp(controller, body);
+            yield return NoseCloseUp(controller, body, zoomHold, 0f);
             body.PlayDefeat();
         }
         else
+        {
+            // Estetikten sonraki ilk poz: önce yandan yeni burun ve dudak, sonra normal poz.
+            if (!PlayerLook.SurgeryDone)
+                surgeryRevealShown = false;
+            else if (!surgeryRevealShown)
+            {
+                surgeryRevealShown = true;
+                yield return NoseCloseUp(controller, body, revealHold, revealLookDown);
+            }
             body.PlayPose();
+        }
         GameAudio.PlayAt(poseSound, surface.position);
         busy = false;
     }
 
     // Kamera göz noktasından karakterin yanına süzülür, burnu profilden yakın çeker, bekler, göze geri döner.
-    private IEnumerator NoseCloseUp(FirstPersonController controller, PlayerBody body)
+    private IEnumerator NoseCloseUp(FirstPersonController controller, PlayerBody body, float hold, float lookDown)
     {
         Camera cam = controller.GetComponentInChildren<Camera>();
         Animator animator = body.GetComponent<Animator>();
@@ -187,7 +204,7 @@ public class MirrorPose : Interactable
         body.SetThirdPerson(true);
 
         Transform player = controller.transform;
-        Vector3 Nose() => head.position + Vector3.up * noseOffset.x + player.forward * noseOffset.y;
+        Vector3 Nose() => head.position + Vector3.up * (noseOffset.x - lookDown) + player.forward * noseOffset.y;
         Vector3 ProfilePos() => Nose() + player.right * profileOffset.x + player.forward * profileOffset.y;
         Vector3 eyePos = camTransform.position;
         Quaternion eyeRot = camTransform.rotation;
@@ -204,9 +221,9 @@ public class MirrorPose : Interactable
             yield return null;
         }
         // Bekleme: yavaşça daha da yaklaşır (FOV daralır).
-        for (float t = 0f; t < zoomHold; t += Time.deltaTime)
+        for (float t = 0f; t < hold; t += Time.deltaTime)
         {
-            float k = Mathf.SmoothStep(0f, 1f, t / zoomHold);
+            float k = Mathf.SmoothStep(0f, 1f, t / hold);
             Vector3 pos = ProfilePos();
             camTransform.SetPositionAndRotation(pos, Quaternion.LookRotation(Nose() - pos, Vector3.up));
             cam.fieldOfView = Mathf.Lerp(zoomFovStart, zoomFovEnd, k);

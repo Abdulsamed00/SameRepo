@@ -10293,8 +10293,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.598402, y: 1.6116083, z: 0.73607326}
-  m_Center: {x: 0, y: 0.80580413, z: -0.00000047683716}
+  m_Size: {x: 1.598402, y: 0.4, z: 0.73607326}
+  m_Center: {x: 0, y: 0.2, z: -0.00000047683716}
 --- !u!1 &559288701
 GameObject:
   m_ObjectHideFlags: 0
@@ -13257,6 +13257,8 @@ MonoBehaviour:
   ringProfile: 1
   ringLook: TopuzSac
   joinDistance: 28
+  onlyLookalikes: 1
+  bystanderRadius: 40
 --- !u!1 &767819408
 GameObject:
   m_ObjectHideFlags: 0
