@@ -31453,18 +31453,26 @@ MonoBehaviour:
   flowSpotAhead: 18
   respawnDelay: {x: 2, y: 6}
   hiddenDistance: 35
-  finaleExtra: 40
+  finaleExtra: 75
   finaleRadius: 9
   finaleClearance: 1.6
   finaleSpawnBand: {x: 9, y: 24}
   finaleLaneX: {x: -4.5, y: 4.5}
   finaleLaneZ: {x: 3, y: 118}
-  ringCount: 18
-  ringRadius: 2.6
+  ringCount: 26
+  ringRadius: 1.15
+  innerJitter: 1.1
+  crowdSpacing: {x: 0.58, y: 0.86}
+  crowdLaneX: {x: -7.4, y: 7.4}
+  edgeRaggedness: 1.6
+  facingJitter: 18
+  lookAwayChance: 0.12
+  talkChance: 0.1
   ringSpawnBand: {x: 7, y: 16}
   ringWalkSpeed: 1.5
   ringProfile: 1
   ringLook: BlondeHair
+  joinDistance: 28
 --- !u!1 &466555560
 GameObject:
   m_ObjectHideFlags: 0
@@ -76380,8 +76388,16 @@ MonoBehaviour:
   finalFront: 4
   lookHeight: 1.2
   finalFieldOfView: 50
-  holdDuration: 3
-  maxRingWait: 8
+  holdDuration: 1.5
+  maxRingWait: 12
+  waitOrbitSpeed: 3
+  craneDuration: 9
+  craneHeight: 14
+  craneFront: 3.5
+  craneOrbit: 35
+  craneFieldOfView: 42
+  silenceDuration: 2.2
+  letterbox: 0.11
   fadeToBlackDuration: 2.5
   creditsDuration: 12
   quote: "Sen e\u015Fsizsin. T\u0131pk\u0131 di\u011Fer herkes gibi."

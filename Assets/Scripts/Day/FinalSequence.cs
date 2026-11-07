@@ -37,9 +37,25 @@ public class FinalSequence : MonoBehaviour
     [Tooltip("Kameranın baktığı nokta: karakterin kökünden bu kadar yukarı (m).")]
     [SerializeField] private float lookHeight = 1.2f;
     [SerializeField] private float finalFieldOfView = 50f;
-    [SerializeField] private float holdDuration = 3f;
-    [Tooltip("Son kareden önce kalabalığın halkası kapansın diye en fazla beklenen süre (sn).")]
-    [SerializeField] private float maxRingWait = 8f;
+    [SerializeField] private float holdDuration = 1.5f;
+    [Tooltip("Son kareden önce kalabalık toplansın diye en fazla beklenen süre (sn).")]
+    [SerializeField] private float maxRingWait = 12f;
+    [Tooltip("Kalabalığı beklerken kameranın karakterin çevresinde yavaşça döndüğü hız (derece/sn).")]
+    [SerializeField] private float waitOrbitSpeed = 3f;
+
+    [Header("Son vinç çekimi")]
+    [Tooltip("Kalabalık toplanınca kamera yavaşça tepeye çıkar: karakter aynı giyinmiş kalabalığın ortasında bir nokta olur.")]
+    [SerializeField] private float craneDuration = 9f;
+    [SerializeField] private float craneHeight = 14f;
+    [Tooltip("Tepedeyken karakterin önüne kayma (m): tam dik bakış yerine hafif eğik, yüzler seçilsin.")]
+    [SerializeField] private float craneFront = 3.5f;
+    [Tooltip("Vinç boyunca karakterin çevresinde dönüş (derece).")]
+    [SerializeField] private float craneOrbit = 35f;
+    [SerializeField] private float craneFieldOfView = 42f;
+    [Tooltip("Vinç sonunda her şey donar ve ses kesilir; bu kadar sessizlikte tutulur (sn).")]
+    [SerializeField] private float silenceDuration = 2.2f;
+    [Tooltip("Sinema bantlarının ekran yüksekliğine oranı (her biri).")]
+    [SerializeField, Range(0f, 0.2f)] private float letterbox = 0.11f;
 
     [Header("Jenerik")]
     [Tooltip("Görüntünün solup jeneriğin belirdiği süre (sn).")]
@@ -93,16 +109,32 @@ public class FinalSequence : MonoBehaviour
         NpcCrowd crowd = FindFirstObjectByType<NpcCrowd>();
         if (crowd != null)
             crowd.BeginFinale(new Vector3(streetCenterX, player.transform.position.y, player.transform.position.z));
+        StartCoroutine(Letterbox());
         yield return WalkToCenter();
         yield return new WaitForSeconds(stopDelay);
         player.Frozen = true;
 
         Camera cam = player.GetComponentInChildren<Camera>();
         yield return PullBack(cam);
-        // Halka (oyuncuya benzeyen kadınlar) kapanmadan son kare tutulmaz.
-        for (float t = 0f; crowd != null && !crowd.RingFormed && t < maxRingWait; t += Time.deltaTime)
+        // Kalabalık (hepsi aynı giyinmiş, en içte oyuncuya benzeyenler) toplanmadan son çekime geçilmez; bu arada
+        // kamera karakterin çevresinde çok yavaş döner.
+        for (float t = 0f; t < maxRingWait && (crowd == null || !crowd.RingFormed || t < holdDuration); t += Time.deltaTime)
+        {
+            Orbit(cam.transform, waitOrbitSpeed * Time.deltaTime);
             yield return null;
-        yield return new WaitForSeconds(holdDuration);
+        }
+        yield return Crane(cam);
+
+        // Son an: herkes olduğu pozda donar, ses tamamen kesilir.
+        if (crowd != null)
+            crowd.FreezeFinale();
+        Animator playerAnimator = player.GetComponentInChildren<Animator>();
+        if (playerAnimator != null)
+            playerAnimator.speed = 0f;
+        foreach (AudioSource source in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+            source.Pause();
+        yield return new WaitForSeconds(silenceDuration);
+        AudioListener.volume = GameSettings.MasterVolume / 100f;
         yield return Credits();
 
         DayRoutine.ResetAll();
@@ -192,6 +224,79 @@ public class FinalSequence : MonoBehaviour
             cam.fieldOfView = Mathf.Lerp(startFov, finalFieldOfView, smooth);
             yield return null;
         }
+    }
+
+    private void Orbit(Transform cam, float degrees)
+    {
+        Vector3 pivot = player.transform.position;
+        cam.RotateAround(pivot, Vector3.up, degrees);
+        cam.rotation = Quaternion.LookRotation(pivot + Vector3.up * lookHeight - cam.position, Vector3.up);
+    }
+
+    // Son çekim: kamera yavaşça karakterin tepesine çıkar ve hafifçe döner, bakış aşağı iner; karakter aynı giyinmiş
+    // kalabalığın ortasında küçülür. Bu sırada sokağın sesi yavaş yavaş kısılır.
+    private IEnumerator Crane(Camera cam)
+    {
+        Transform camTransform = cam.transform;
+        Vector3 pivot = player.transform.position;
+        Vector3 startOffset = camTransform.position - pivot;
+        float startYaw = Mathf.Atan2(startOffset.x, startOffset.z) * Mathf.Rad2Deg;
+        float startDistance = new Vector2(startOffset.x, startOffset.z).magnitude;
+        float startHeight = startOffset.y;
+        float startFov = cam.fieldOfView;
+        float startLook = lookHeight;
+        float startVolume = AudioListener.volume;
+
+        for (float t = 0f; t < craneDuration; t += Time.deltaTime)
+        {
+            float k = t / craneDuration;
+            // Yavaş başlar, tepede yavaşça durur.
+            float s = Mathf.SmoothStep(0f, 1f, k);
+            float yaw = (startYaw + craneOrbit * s) * Mathf.Deg2Rad;
+            float distance = Mathf.Lerp(startDistance, craneFront, s);
+            float height = Mathf.Lerp(startHeight, craneHeight, s);
+            camTransform.position = pivot + new Vector3(Mathf.Sin(yaw) * distance, height, Mathf.Cos(yaw) * distance);
+            Vector3 focus = pivot + Vector3.up * Mathf.Lerp(startLook, 0.6f, s);
+            camTransform.rotation = Quaternion.LookRotation(focus - camTransform.position, Vector3.up);
+            cam.fieldOfView = Mathf.Lerp(startFov, craneFieldOfView, s);
+            AudioListener.volume = startVolume * (1f - Mathf.SmoothStep(0f, 1f, k));
+            yield return null;
+        }
+        AudioListener.volume = 0f;
+    }
+
+    // Final başlarken üstten ve alttan siyah sinema bantları girer.
+    private IEnumerator Letterbox()
+    {
+        if (letterbox <= 0f)
+            yield break;
+        Canvas canvas = UiKit.CreateCanvas("FinalSinemaBantlari", short.MaxValue - 2);
+        RectTransform top = Bar(canvas.transform, 1f);
+        RectTransform bottom = Bar(canvas.transform, 0f);
+        for (float t = 0f; t < 2.5f; t += Time.deltaTime)
+        {
+            float h = letterbox * Mathf.SmoothStep(0f, 1f, t / 2.5f);
+            top.anchorMin = new Vector2(0f, 1f - h);
+            bottom.anchorMax = new Vector2(1f, h);
+            yield return null;
+        }
+        top.anchorMin = new Vector2(0f, 1f - letterbox);
+        bottom.anchorMax = new Vector2(1f, letterbox);
+    }
+
+    private static RectTransform Bar(Transform parent, float edge)
+    {
+        var go = new GameObject(edge > 0.5f ? "Ust_Bant" : "Alt_Bant", typeof(RectTransform));
+        go.transform.SetParent(parent, false);
+        var image = go.AddComponent<UnityEngine.UI.Image>();
+        image.color = Color.black;
+        image.raycastTarget = false;
+        var rt = (RectTransform)go.transform;
+        rt.anchorMin = new Vector2(0f, edge);
+        rt.anchorMax = new Vector2(1f, edge);
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+        return rt;
     }
 
     // Son kare renginden tamamen solar ve kararır, üstünde Hazırlayanlar ekranı belirir (ESC ile atlanır).

@@ -188,7 +188,7 @@ public class Bed : Interactable
         foreach (Renderer r in bodyRenderers)
             r.forceRenderingOff = false;
         // Gün geçişi yazısı karanlıkta belirir, ekran açılmadan söner.
-        StartCoroutine(ScreenFader.Caption("SABAH", $"{DayRoutine.DayNumber}. GÜN", Mathf.Max(1f, sleepDuration - 0.5f)));
+        StartCoroutine(ScreenFader.Caption("SABAH", Loc.DayTitle(DayRoutine.DayNumber), Mathf.Max(1f, sleepDuration - 0.5f)));
         yield return new WaitForSeconds(sleepDuration);
 
         // 4) Ekran açılır, oyuncu kalkar.

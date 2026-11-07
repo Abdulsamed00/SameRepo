@@ -165,7 +165,11 @@ public static class UiKit
         text.font = Font(kind);
         if (shadow)
             text.fontSharedMaterial = ShadowMaterial(kind);
-        text.text = content;
+        // Metin seçili dile çevrilir; dil değişince LocText yeniden çevirir.
+        if (string.IsNullOrEmpty(content))
+            text.text = content;
+        else
+            rect.gameObject.AddComponent<LocText>().Init(text, content);
         text.fontSize = size;
         text.characterSpacing = spacing;
         text.color = color ?? White;
@@ -218,7 +222,8 @@ public static class UiKit
 
         CreateKeyCap(row, key, out _, 33f);
         TextMeshProUGUI text = CreateText("Yazi", row, label, FontKind.Regular, 19.5f, 0f, Unselected);
-        text.rectTransform.sizeDelta = new Vector2(text.GetPreferredValues(label).x, 33f);
+        // Genişlik çevrilmiş yazıya göre; dil değişirse yazı taşar (yerleşim sola dayalı), ekranı kuran yeniden kurar.
+        text.rectTransform.sizeDelta = new Vector2(text.GetPreferredValues(text.text).x, 33f);
         text.alignment = TextAlignmentOptions.MidlineLeft;
         return row;
     }

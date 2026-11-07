@@ -89,8 +89,8 @@ public class ScreenFader : MonoBehaviour
 
     private IEnumerator ShowCaption(string top, string main, float duration, float fade)
     {
-        captionTop.text = top;
-        captionMain.text = main;
+        captionTop.text = Loc.T(top);
+        captionMain.text = Loc.T(main);
         for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
         {
             caption.alpha = Mathf.Min(Mathf.Clamp01(t / fade), Mathf.Clamp01((duration - t) / fade));

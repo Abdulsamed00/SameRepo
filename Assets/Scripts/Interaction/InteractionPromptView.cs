@@ -23,6 +23,7 @@ public class InteractionPromptView : MonoBehaviour
     private KeyLine seatedPrompt;
     private CanvasGroup seatedPromptGroup;
     private string lastTitle;
+    private int lastTitleVersion = -1;
 
     /// <summary>Tuş kutusu + yazı, yatayda ortalı.</summary>
     private class KeyLine
@@ -33,16 +34,19 @@ public class InteractionPromptView : MonoBehaviour
         public TextMeshProUGUI Text;
         private string key;
         private string label;
+        private int version = -1;
 
+        // newLabel Türkçe kaynak metin (sahnede serialize edilmiş olabilir); seçili dile burada çevrilir.
         public void Set(string newKey, string newLabel)
         {
-            if (newKey == key && newLabel == label)
+            if (newKey == key && newLabel == label && version == Loc.Version)
                 return;
             key = newKey;
             label = newLabel;
+            version = Loc.Version;
             UiKit.SetKeyLabel(Cap, CapText, key);
-            Text.text = label;
-            Text.rectTransform.sizeDelta = new Vector2(Text.GetPreferredValues(label).x, 36f);
+            Text.text = Loc.T(label);
+            Text.rectTransform.sizeDelta = new Vector2(Text.GetPreferredValues(Text.text).x, 36f);
             LayoutRebuilder.ForceRebuildLayoutImmediate(Root);
         }
     }
@@ -129,10 +133,11 @@ public class InteractionPromptView : MonoBehaviour
         if (focused != null && !seated)
         {
             string newTitle = focused.Title;
-            if (newTitle != lastTitle)
+            if (newTitle != lastTitle || lastTitleVersion != Loc.Version)
             {
                 lastTitle = newTitle;
-                title.text = newTitle ?? "";
+                lastTitleVersion = Loc.Version;
+                title.text = Loc.T(newTitle) ?? "";
             }
             // Etkileşim satırı ortanın 42 px altında; nesne adı varsa onun altında.
             bool hasTitle = !string.IsNullOrEmpty(newTitle);
