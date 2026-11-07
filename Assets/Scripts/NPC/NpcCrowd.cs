@@ -87,6 +87,8 @@ public class NpcCrowd : MonoBehaviour
         public Vector3 point;
         public Quaternion rotation;
         public NpcSpot spot;
+        /// <summary>Ring: yerinde konuşma klibini oynar.</summary>
+        public bool talk;
     }
 
     [SerializeField] private NpcProfile[] profiles =
@@ -173,27 +175,56 @@ public class NpcCrowd : MonoBehaviour
     [Tooltip("Caddenin boyu (dünya z, min-max): dışında doğan ek NPC'ler caddenin başındaki binanın kapısına yığılıyordu.")]
     [SerializeField] private Vector2 finaleLaneZ = new Vector2(3f, 118f);
 
-    [Header("Final Halkası")]
-    [Tooltip("Oyuncuya benzeyen (aynı ürünler, aynı topuz saç) kadınlardan oluşan halkadaki kişi sayısı.")]
-    [SerializeField] private int ringCount = 18;
-    [Tooltip("Halkanın yarıçapı (m). Kamera karakterin 4 m önünde/3.5 m üstünde: halka karakteri kapatmasın, ama dibinde dursun.")]
-    [SerializeField] private float ringRadius = 2.6f;
-    [Tooltip("Halka kadınlarının görüş dışında doğduğu bant: oyuncunun cadde boyunca önü/arkası (m, min-max).")]
+    [Header("Final Kalabalığı")]
+    [Tooltip("Oyuncuya benzeyen (aynı ürünler, aynı sarı saç) kadın sayısı. Kalabalığın en iç sırasını onlar alır.")]
+    [SerializeField] private int ringCount = 26;
+    [Tooltip("Oyuncunun çevresinde boş kalan alanın yarıçapı (m); açıya göre +innerJitter kadar düzensiz.")]
+    [SerializeField] private float ringRadius = 1.15f;
+    [SerializeField] private float innerJitter = 1.1f;
+    [Tooltip("Kalabalıkta iki kişi arası mesafe (m, min-max): her yer kendi aralığını rastgele alır.")]
+    [SerializeField] private Vector2 crowdSpacing = new Vector2(0.58f, 0.86f);
+    [Tooltip("Kalabalığın yayılabildiği şerit (dünya x): yol + kaldırımın sokak eşyası olmayan kısmı.")]
+    [SerializeField] private Vector2 crowdLaneX = new Vector2(-7.4f, 7.4f);
+    [Tooltip("Kalabalığın dış kenarı bu kadar düzensiz (m): yerler mesafe + bu kadar rastgele ile sıralanır.")]
+    [SerializeField] private float edgeRaggedness = 1.6f;
+    [Tooltip("Oyuncuya bakışta sapma (derece).")]
+    [SerializeField] private float facingJitter = 18f;
+    [Tooltip("Oyuncuya değil yanındakine dönük duranların oranı (dış sıralarda).")]
+    [Range(0f, 1f)] [SerializeField] private float lookAwayChance = 0.12f;
+    [Tooltip("Dış sıralarda yanındakiyle konuşanların oranı.")]
+    [Range(0f, 1f)] [SerializeField] private float talkChance = 0.1f;
+    [Tooltip("Benzerlerin görüş dışında doğduğu bant: oyuncunun cadde boyunca önü/arkası (m, min-max).")]
     [SerializeField] private Vector2 ringSpawnBand = new Vector2(7f, 16f);
     [SerializeField] private float ringWalkSpeed = 1.5f;
-    [Tooltip("Halka için kullanılan profil (kadın).")]
+    [Tooltip("Benzerler için kullanılan profil (kadın).")]
     [SerializeField] private int ringProfile = 1;
-    [Tooltip("Halkadakilerin hepsine giydirilen parça (oyuncunun saçı); aynı yuvadaki diğer seçenekler kapanır.")]
+    [Tooltip("Benzerlerin hepsine giydirilen parça (oyuncunun saçı); aynı yuvadaki diğer seçenekler kapanır.")]
     [SerializeField] private string ringLook = "BlondeHair";
+    [Tooltip("Finale başlarken bundan uzaktaki NPC'ler kalabalığa katılmaz, uzakta gezinir (m).")]
+    [SerializeField] private float joinDistance = 28f;
 
     private bool finale;
+    private bool frozen;
     private Vector3 finaleCenter;
     private NavMeshPath finalePath;
-    private readonly Dictionary<NpcAgent, int> ringSlots = new Dictionary<NpcAgent, int>();
+
+    private struct CrowdSlot
+    {
+        public Vector3 point;
+        public float key;
+        public NpcAgent owner;
+    }
+
+    private readonly List<CrowdSlot> crowdSlots = new List<CrowdSlot>();
+    private readonly HashSet<NpcAgent> lookalikes = new HashSet<NpcAgent>();
+    private readonly HashSet<NpcAgent> joiners = new HashSet<NpcAgent>();
     private int ringArrived;
 
-    /// <summary>Halkadakilerin çoğu yerini aldı (final kamerası bunu bekler).</summary>
-    public bool RingFormed => ringSlots.Count == 0 || ringArrived >= Mathf.CeilToInt(ringSlots.Count * 0.85f);
+    /// <summary>Kalabalığın çoğu yerini aldı (final kamerası bunu bekler).</summary>
+    public bool RingFormed => joiners.Count == 0 || ringArrived >= Mathf.CeilToInt(Mathf.Min(joiners.Count, crowdSlots.Count) * 0.8f);
+
+    /// <summary>Finalin son anı: herkes olduğu pozda donar.</summary>
+    public bool Frozen => frozen;
 
     private readonly List<Vector3> wanderPoints = new List<Vector3>();
     // Akış şeritleri: her gezinme kökünün noktaları, z'ye göre sıralı.
@@ -381,8 +412,17 @@ public class NpcCrowd : MonoBehaviour
         finale = true;
         finaleCenter = center;
         finalePath = new NavMeshPath();
+        // Uzaktakiler (görünmezler) kalabalığa yürüyüp gelmeye çalışmaz, yerler yakındakilere ve yeni doğanlara kalır.
         foreach (NpcAgent agent in agents)
+        {
+            Vector3 d = agent.transform.position - center;
+            d.y = 0f;
+            if (d.sqrMagnitude < joinDistance * joinDistance)
+                joiners.Add(agent);
             agent.Interrupt();
+        }
+
+        BuildCrowdSlots(center, ringCount + finaleExtra + joiners.Count + 8);
 
         Camera cam = playerCamera != null ? playerCamera : Camera.main;
         SpawnRing(center, cam);
@@ -405,6 +445,8 @@ public class NpcCrowd : MonoBehaviour
             toCenter.y = 0f;
             NpcAgent npc = Spawn(hit.position, Quaternion.LookRotation(toCenter), null);
             npc.GoalLimit = int.MaxValue;
+            npc.SetSpeed(Random.Range(1.2f, 1.6f));
+            joiners.Add(npc);
             spawned++;
         }
     }
@@ -417,11 +459,8 @@ public class NpcCrowd : MonoBehaviour
             return;
 
         NpcProfile profile = profiles[ringProfile];
-        var free = new List<int>();
-        for (int i = 0; i < ringCount; i++)
-            free.Add(i);
-
-        for (int attempt = 0; attempt < ringCount * 20 && free.Count > 0; attempt++)
+        int placed = 0;
+        for (int attempt = 0; attempt < ringCount * 20 && placed < ringCount; attempt++)
         {
             // Yer bulunamazsa bant giderek genişler.
             float widen = attempt / (float)(ringCount * 10);
@@ -435,34 +474,112 @@ public class NpcCrowd : MonoBehaviour
                 || finalePath.status != NavMeshPathStatus.PathComplete)
                 continue;
 
-            // Doğduğu yere en yakın boş yer: halkaya gelenler birbirinin önünü kesmesin.
-            int slot = free[0];
-            float best = float.MaxValue;
-            foreach (int s in free)
-            {
-                float d = (RingPoint(s) - hit.position).sqrMagnitude;
-                if (d < best)
-                {
-                    best = d;
-                    slot = s;
-                }
-            }
-            free.Remove(slot);
-
             Vector3 toCenter = center - hit.position;
             toCenter.y = 0f;
             NpcAgent npc = Spawn(hit.position, Quaternion.LookRotation(toCenter), null, profile);
             npc.GoalLimit = int.MaxValue;
-            npc.SetSpeed(ringWalkSpeed * Random.Range(0.95f, 1.1f));
+            npc.SetSpeed(ringWalkSpeed * Random.Range(0.9f, 1.15f));
             SetLook(npc.transform, profile, ringLook);
-            ringSlots[npc] = slot;
+            lookalikes.Add(npc);
+            joiners.Add(npc);
+            placed++;
         }
     }
 
-    private Vector3 RingPoint(int slot)
+    // Oyuncunun çevresinde düzensiz, sık bir kalabalık için duruş yerleri: iç kenar açıya göre dalgalı, kişiler arası
+    // mesafe yer başına rastgele, dış kenar yırtık (mesafe + rastgele ile sıralanıp sırayla doldurulur). Sokak eşyasının
+    // (lamba, bank, saksı) içine düşen yerler elenir.
+    private void BuildCrowdSlots(Vector3 center, int count)
     {
-        float angle = (slot + 0.5f) / ringCount * Mathf.PI * 2f;
-        return finaleCenter + new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * ringRadius;
+        crowdSlots.Clear();
+        float seedA = Random.Range(0f, 100f), seedB = Random.Range(0f, 100f);
+        const float maxRadius = 15f;
+        var candidates = new List<CrowdSlot>();
+        for (int i = 0; i < count * 30; i++)
+        {
+            Vector2 r = Random.insideUnitCircle * maxRadius;
+            float d = r.magnitude;
+            float angle = Mathf.Atan2(r.y, r.x);
+            float inner = ringRadius + innerJitter * Mathf.PerlinNoise(seedA + Mathf.Cos(angle) * 1.4f, seedB + Mathf.Sin(angle) * 1.4f);
+            if (d < inner)
+                continue;
+            Vector3 p = center + new Vector3(r.x, 0f, r.y);
+            if (p.x < crowdLaneX.x || p.x > crowdLaneX.y || p.z < finaleLaneZ.x || p.z > finaleLaneZ.y)
+                continue;
+            // İç sıralar sık: mesafeye ağırlık verilir, dış kenar rastgeleyle yırtılır.
+            candidates.Add(new CrowdSlot { point = p, key = d + Random.Range(0f, edgeRaggedness) });
+        }
+        candidates.Sort((a, b) => a.key.CompareTo(b.key));
+
+        var spacing = new List<float>();
+        const int blockMask = ~(1 << 2);
+        foreach (CrowdSlot c in candidates)
+        {
+            if (crowdSlots.Count >= count)
+                break;
+            float own = Random.Range(crowdSpacing.x, crowdSpacing.y);
+            bool clear = true;
+            for (int i = 0; i < crowdSlots.Count && clear; i++)
+            {
+                float need = (own + spacing[i]) * 0.5f;
+                Vector3 o = crowdSlots[i].point - c.point;
+                o.y = 0f;
+                clear = o.sqrMagnitude >= need * need;
+            }
+            if (!clear || !NavMesh.SamplePosition(c.point, out NavMeshHit hit, 0.35f, NavMesh.AllAreas))
+                continue;
+            Vector3 p = hit.position;
+            if (Physics.CheckCapsule(p + Vector3.up * 0.45f, p + Vector3.up * 1.5f, 0.22f, blockMask, QueryTriggerInteraction.Ignore))
+                continue;
+            crowdSlots.Add(new CrowdSlot { point = p, key = c.key });
+            spacing.Add(own);
+        }
+    }
+
+    // Benzerler en içteki boş yerlerden kendilerine en yakınını, diğerleri sırası (iç kenara yakınlık) ve yürüme
+    // mesafesine göre en iyisini alır: önce gelen içeri yerleşir, geç gelen dışta kalır, kimse kalabalığı yarıp geçmez.
+    private int ClaimSlot(NpcAgent npc)
+    {
+        Vector3 from = npc.transform.position;
+        bool lookalike = lookalikes.Contains(npc);
+        int innerLimit = Mathf.Min(crowdSlots.Count, Mathf.CeilToInt(ringCount * 1.4f));
+        int best = -1;
+        float bestCost = float.MaxValue;
+        for (int i = 0; i < crowdSlots.Count; i++)
+        {
+            if (crowdSlots[i].owner != null)
+                continue;
+            if (lookalike && i >= innerLimit && best >= 0)
+                break;
+            // En içteki birkaç sıra benzerlere ayrılır; diğerleri onlardan hemen sonra gelir (boşluk kalmasın).
+            if (!lookalike && i < innerLimit * 0.35f)
+                continue;
+            float walk = Vector3.Distance(from, crowdSlots[i].point);
+            float cost = lookalike ? crowdSlots[i].key * 2f + walk * 0.3f : crowdSlots[i].key * 2f + walk * 0.35f;
+            if (cost < bestCost)
+            {
+                bestCost = cost;
+                best = i;
+            }
+        }
+        if (best >= 0)
+        {
+            CrowdSlot s = crowdSlots[best];
+            s.owner = npc;
+            crowdSlots[best] = s;
+        }
+        return best;
+    }
+
+    /// <summary>Finalin son anı: kalabalık (ve yürüyenler) olduğu pozda donar.</summary>
+    public void FreezeFinale()
+    {
+        frozen = true;
+        foreach (NpcAgent agent in agents)
+        {
+            if (agent != null)
+                agent.Freeze();
+        }
     }
 
     // Parçayı açar, aynı yuvadaki diğer seçenekleri kapatır.
@@ -489,7 +606,7 @@ public class NpcCrowd : MonoBehaviour
     /// <summary>Halkadaki NPC yerine vardı.</summary>
     public void NotifyRingArrived(NpcAgent npc)
     {
-        if (ringSlots.ContainsKey(npc))
+        if (joiners.Contains(npc))
             ringArrived++;
     }
 
@@ -503,7 +620,9 @@ public class NpcCrowd : MonoBehaviour
     private Vector3 FinalePoint()
     {
         // Halka varsa geri kalan kalabalık onun dışında kalır.
-        float clearance = ringSlots.Count > 0 ? Mathf.Max(finaleClearance, ringRadius + 1.2f) : finaleClearance;
+        float clearance = finaleClearance;
+        if (crowdSlots.Count > 0)
+            clearance = Mathf.Max(clearance, crowdSlots[crowdSlots.Count - 1].key + 0.5f);
         for (int i = 0; i < 8; i++)
         {
             Vector2 r = Random.insideUnitCircle.normalized * Random.Range(clearance, Mathf.Max(finaleRadius, clearance + 2f));
@@ -522,14 +641,28 @@ public class NpcCrowd : MonoBehaviour
 
         if (finale)
         {
-            if (ringSlots.TryGetValue(npc, out int slot))
+            int slot = joiners.Contains(npc) ? ClaimSlot(npc) : -1;
+            if (slot >= 0)
             {
-                Vector3 p = RingPoint(slot);
-                if (NavMesh.SamplePosition(p, out NavMeshHit hit, 1f, NavMesh.AllAreas))
-                    p.y = hit.position.y;
+                Vector3 p = crowdSlots[slot].point;
                 Vector3 look = finaleCenter - p;
                 look.y = 0f;
-                return new Goal { kind = GoalKind.Ring, point = p, rotation = Quaternion.LookRotation(look) };
+                bool inner = slot < ringCount;
+                float yaw = Random.Range(-facingJitter, facingJitter);
+                bool talk = false;
+                if (!inner && Random.value < lookAwayChance + talkChance)
+                {
+                    // Dış sıralarda bazıları yanındakine döner (bir kısmı konuşur): kalabalık asker gibi dizilmesin.
+                    talk = Random.value < talkChance / (lookAwayChance + talkChance);
+                    yaw = Random.Range(55f, 110f) * (Random.value < 0.5f ? -1f : 1f);
+                }
+                return new Goal
+                {
+                    kind = GoalKind.Ring,
+                    point = p,
+                    rotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.LookRotation(look),
+                    talk = talk
+                };
             }
             return new Goal { kind = GoalKind.Wander, point = FinalePoint() };
         }

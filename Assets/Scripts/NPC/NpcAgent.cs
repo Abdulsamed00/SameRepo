@@ -142,7 +142,7 @@ public class NpcAgent : MonoBehaviour
 
                 case NpcCrowd.GoalKind.Ring:
                     Status = "Halka " + goal.point;
-                    yield return Ring(goal.point, goal.rotation);
+                    yield return Ring(goal.point, goal.rotation, goal.talk);
                     yield break;
 
                 case NpcCrowd.GoalKind.Leave:
@@ -274,22 +274,42 @@ public class NpcAgent : MonoBehaviour
         busy = false;
     }
 
-    // Final: halkadaki yerine yürür (takılırsa birkaç kez yeniden dener), oyuncuya dönüp yerinde durur.
-    private IEnumerator Ring(Vector3 point, Quaternion rotation)
+    // Final: kalabalıktaki yerine yürür (takılırsa birkaç kez yeniden dener), oyuncuya (ya da yanındakine) dönüp
+    // yerinde durur. Yerine ulaşamazsa (önü tıkalı) olduğu yerde kalır: kalabalığın arkasında itişen biri gibi.
+    private IEnumerator Ring(Vector3 point, Quaternion rotation, bool talk)
     {
-        for (int i = 0; i < 4 && (transform.position - point).sqrMagnitude > 0.4f * 0.4f; i++)
+        for (int i = 0; i < 3 && !frozen && (transform.position - point).sqrMagnitude > 0.4f * 0.4f; i++)
             yield return WalkTo(point);
+        if (frozen)
+            yield break;
 
+        Vector3 stand = (transform.position - point).sqrMagnitude > 1f ? transform.position : point;
         busy = true;
         walking = false;
-        animator.speed = 1f;
+        animator.speed = Random.Range(0.85f, 1.1f);
         agent.enabled = false;
         obstacle.enabled = true;
-        Play(profile.idleState);
         crowd.NotifyRingArrived(this);
-        yield return Align(Grounded(point), rotation);
+        // Herkes aynı karede aynı idle'ı oynamasın.
+        currentState = null;
+        animator.CrossFadeInFixedTime(talk ? profile.talkState : profile.idleState, CrossFade, 0, Random.value * 3f);
+        currentState = talk ? profile.talkState : profile.idleState;
+        yield return Align(Grounded(stand), rotation);
         AtSpot = true;
-        Status = "Halkada";
+        Status = "Kalabalıkta";
+    }
+
+    private bool frozen;
+
+    /// <summary>Finalin son anı: olduğu pozda donar (yürüyorsa da durur).</summary>
+    public void Freeze()
+    {
+        frozen = true;
+        interrupted = true;
+        if (animator != null)
+            animator.speed = 0f;
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+            agent.isStopped = true;
     }
 
     private IEnumerator Align(Vector3 position, Quaternion rotation)
@@ -307,7 +327,7 @@ public class NpcAgent : MonoBehaviour
 
     private void Update()
     {
-        if (busy || animator == null || !agent.enabled)
+        if (busy || frozen || animator == null || !agent.enabled)
             return;
 
         float speed = agent.velocity.magnitude;
@@ -328,7 +348,7 @@ public class NpcAgent : MonoBehaviour
     private void LateUpdate()
     {
         // NavMesh yüzeyi zeminden birkaç cm yukarıda kalıyor (voksel hassasiyeti): konum ajandan, yükseklik gerçek zeminden.
-        if (agent != null && agent.enabled)
+        if (agent != null && agent.enabled && !frozen)
             transform.position = Grounded(agent.nextPosition);
     }
 
