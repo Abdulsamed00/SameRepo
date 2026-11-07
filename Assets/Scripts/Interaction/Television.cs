@@ -177,6 +177,8 @@ public class Television : MonoBehaviour
     /// Ses: dinleyici ile ekran arasındaki engeller (duvar, kapı, uzun mobilya; alçak mobilya sayılmaz, kanepeden
     /// sehpa yüzünden boğuklaşmasın) sesi kısar ve boğuklaştırır; uyku çarpanı da burada uygulanır.
     /// </summary>
+    private float menuFactor; // 0'dan başlar: menü açılırken ilk karelerde ses kaçmasın
+
     private void UpdateSound()
     {
         if (listener == null)
@@ -211,7 +213,9 @@ public class Television : MonoBehaviour
 
         occlusion = Mathf.MoveTowards(occlusion, target, 3f * Time.unscaledDeltaTime);
         float category = GameSettings.Volume(AudioCategory.Effects);
-        audioSource.volume = volume * category * Mathf.Lerp(1f, MuffledVolume, occlusion) * SleepFactor;
+        // Ana menüdeyken reklam sesi çıkmaz; menü kapanınca 1 sn'de açılır.
+        menuFactor = Mathf.MoveTowards(menuFactor, IntroMenu.MenuOpen ? 0f : 1f, Time.unscaledDeltaTime);
+        audioSource.volume = volume * category * Mathf.Lerp(1f, MuffledVolume, occlusion) * SleepFactor * menuFactor;
         lowPass.cutoffFrequency = OpenCutoff * Mathf.Pow(MuffledCutoff / OpenCutoff, occlusion);
     }
 

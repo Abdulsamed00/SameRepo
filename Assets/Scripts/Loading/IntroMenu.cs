@@ -96,7 +96,11 @@ public class IntroMenu : MonoBehaviour
 
         Build();
         StartMusic();
+        MenuOpen = true;
     }
+
+    /// <summary>Menü açıkken true: TV reklamı sesi (<see cref="Television"/>) kısılır, menü müziği duyulsun.</summary>
+    public static bool MenuOpen { get; private set; }
 
     private void StartMusic()
     {
@@ -121,6 +125,7 @@ public class IntroMenu : MonoBehaviour
     private void OnDestroy()
     {
         GameSettings.Changed -= ApplyMusicVolume;
+        MenuOpen = false;
         if (blurred != null)
             blurred.Release();
     }
