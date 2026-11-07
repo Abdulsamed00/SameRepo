@@ -160,8 +160,23 @@ public static class GameSettings
 
         EnsureBrightnessVolume();
         // 0 → -1 EV, 50 → 0, 100 → +1 EV.
-        brightnessAdjustments.postExposure.Override((Brightness - 50) / 50f);
+        brightnessAdjustments.postExposure.Override((Brightness - 50) / 50f + SceneExposure);
         Changed?.Invoke();
+    }
+
+    /// <summary>
+    /// Sahneye özel ek pozlama (EV), parlaklık ayarının üstüne eklenir (05.11: ev gündüz sadece güneşle aydınlandığı
+    /// için karanlık kalıyordu; <see cref="HouseNightfall"/> gündüz açar, gece ve sahne kapanınca 0).
+    /// </summary>
+    public static float SceneExposure { get; private set; }
+
+    public static void SetSceneExposure(float ev)
+    {
+        if (Mathf.Approximately(SceneExposure, ev))
+            return;
+        SceneExposure = ev;
+        EnsureBrightnessVolume();
+        brightnessAdjustments.postExposure.Override((Brightness - 50) / 50f + SceneExposure);
     }
 
     private static void EnsureBrightnessVolume()

@@ -49,6 +49,9 @@ public class FinalSequence : MonoBehaviour
     [SerializeField] private string quoteAuthor = "Fight Club";
     [SerializeField] private string menuScene = "MainMenu";
     [SerializeField] private AudioClip clickSound;
+    [Tooltip("Jenerik başlarken çalan oyun sonu müziği.")]
+    [SerializeField] private AudioClip endMusic;
+    [SerializeField, Range(0f, 1f)] private float endMusicVolume = 0.6f;
 
     private FirstPersonController player;
     private Vector3 startPosition;
@@ -82,7 +85,6 @@ public class FinalSequence : MonoBehaviour
 
     private IEnumerator Run()
     {
-        PlaytimeTimer.Stop();
         PlayerInteractor interactor = player.GetComponent<PlayerInteractor>();
         player.InputEnabled = false;
         if (interactor != null)
@@ -198,6 +200,7 @@ public class FinalSequence : MonoBehaviour
         Canvas canvas = UiKit.CreateCanvas("FinalJenerik", short.MaxValue - 1);
         // ScreenFader perdesinin (short.MaxValue) altında kalır, yükleme geçişi bunun üstünden kararır.
         bool skipped = false;
+        AudioSource music = StartEndMusic();
         CreditsView view = CreditsView.Create(canvas.transform, 0.6f, clickSound, () => skipped = true, quote, quoteAuthor);
         view.Group.alpha = 0f;
         Cursor.visible = false;
@@ -215,5 +218,29 @@ public class FinalSequence : MonoBehaviour
 
         for (float t = 0f; t < creditsDuration && !skipped; t += Time.deltaTime)
             yield return null;
+
+        // Müzik menüye geçerken sönerek biter (sahne yüklemesi kaynağı zaten yok eder).
+        if (music != null)
+        {
+            float start = music.volume;
+            for (float t = 0f; t < 1.5f; t += Time.unscaledDeltaTime)
+            {
+                music.volume = start * (1f - t / 1.5f);
+                yield return null;
+            }
+        }
+    }
+
+    private AudioSource StartEndMusic()
+    {
+        if (endMusic == null)
+            return null;
+        AudioSource source = new GameObject("OyunSonuMuzigi").AddComponent<AudioSource>();
+        source.clip = endMusic;
+        source.spatialBlend = 0f;
+        source.loop = false;
+        source.volume = endMusicVolume * GameSettings.Volume(AudioCategory.Music);
+        source.Play();
+        return source;
     }
 }

@@ -18,16 +18,22 @@ public class BlondeGlance : MonoBehaviour
     [SerializeField] private float maxAngle = 115f;
     [Tooltip("İki bakış arası bekleme (sn).")]
     [SerializeField] private Vector2 cooldown = new Vector2(5f, 11f);
-    [SerializeField] private float turnTime = 0.3f;
+    [SerializeField] private float turnTime = 0.9f;
     [Tooltip("Kadını izleme süresi (sn).")]
     [SerializeField] private Vector2 holdTime = new Vector2(1.6f, 2.6f);
-    [SerializeField] private float returnTime = 1.1f;
+    [SerializeField] private float returnTime = 1.6f;
     [SerializeField] private float headHeight = 1.5f;
+    [Tooltip("Bakışın yürüyen kadına yetişme hızı (büyük = sert).")]
+    [SerializeField] private float followSharpness = 3f;
+    [Tooltip("Kilitlendikten sonra takip sıkılığı: nişan (ekran ortası) kadının kafasında kalır.")]
+    [SerializeField] private float holdFollowSharpness = 16f;
 
     private FirstPersonController player;
     private Transform view;
     private NpcDailyOutfit[] women = new NpcDailyOutfit[0];
     private Transform target;
+    private Transform headBone;
+    private Transform headBoneOwner;
     private Quaternion lastLook = Quaternion.identity;
     private float weight;
     private float holdLeft;
@@ -44,10 +50,19 @@ public class BlondeGlance : MonoBehaviour
             view = player.CameraRoot.GetComponentInChildren<Camera>().transform;
     }
 
+    private void OnDisable()
+    {
+        if (player != null)
+            player.LookLocked = false;
+    }
+
     private void LateUpdate()
     {
         if (player == null || view == null || view.parent != player.CameraRoot)
             return;
+
+        // Kilitlenirken ve bakış sürerken fare bakışı kapalı (05.11, kullanıcı isteği).
+        player.LookLocked = target != null || weight > 0f;
 
         if (target == null && weight <= 0f)
         {
@@ -64,7 +79,10 @@ public class BlondeGlance : MonoBehaviour
 
         if (target != null)
         {
-            lastLook = LookAtTarget();
+            // Hedef yürürken bakış ona yumuşakça yetişir (05.11: doğrudan kilitlenince kamera sert takip ediyordu).
+            // Dönüş sırasında yumuşak, kilitlenince nişan kafada kalsın diye sıkı takip.
+            float sharp = Mathf.Lerp(followSharpness, holdFollowSharpness, Mathf.SmoothStep(0f, 1f, weight));
+            lastLook = Quaternion.Slerp(lastLook, LookAtTarget(), 1f - Mathf.Exp(-sharp * Time.deltaTime));
             weight = Mathf.Min(1f, weight + Time.deltaTime / turnTime);
             if (weight >= 1f)
             {
@@ -89,8 +107,27 @@ public class BlondeGlance : MonoBehaviour
 
     private Quaternion LookAtTarget()
     {
-        Vector3 to = target.position + Vector3.up * headHeight - view.position;
+        Vector3 to = HeadPoint() - view.position;
         return Quaternion.Inverse(view.parent.rotation) * Quaternion.LookRotation(to, view.parent.up);
+    }
+
+    // Nişan kadının kafasının tam ortasına gelsin: kafa kemiği (yoksa sabit yükseklik).
+    private Vector3 HeadPoint()
+    {
+        if (headBone == null || headBoneOwner != target)
+        {
+            headBoneOwner = target;
+            headBone = null;
+            foreach (Transform t in target.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name.EndsWith("Head", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    headBone = t;
+                    break;
+                }
+            }
+        }
+        return headBone != null ? headBone.position + Vector3.up * 0.06f : target.position + Vector3.up * headHeight;
     }
 
     private bool StillInReach()
@@ -131,6 +168,8 @@ public class BlondeGlance : MonoBehaviour
 
         if (best == null)
             return;
+        if (weight <= 0f)
+            lastLook = Quaternion.identity;
         target = best;
         holdLeft = Random.Range(holdTime.x, holdTime.y);
     }

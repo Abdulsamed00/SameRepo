@@ -139,6 +139,9 @@ public class PlayerBody : MonoBehaviour
     private float pendingLean;
     private Transform carryRight;
     private Transform carryLeft;
+    // IK'dan önce eşyayı o karenin kamera konumuna taşır (eller bir kare geride kalıp titremesin).
+    private System.Action carrySync;
+    private float carryLean;
     private float carryStart;
     private float carryReach;
     private float carryEndTime = -1f;
@@ -180,6 +183,45 @@ public class PlayerBody : MonoBehaviour
     public Transform LeftHandHold { get; private set; }
 
 
+    /// <summary>
+    /// Çanta (ve askısı) tek kemiğe, sağ köprücüğe (RightShoulder) %100 bağlı. Poz verirken omuz/kol dönünce çanta
+    /// 1 m'lik kaldıraçla savrulup vücuttan ~15 cm açılıyordu (05.11). Köprücük yerine gövdeye (Spine1) sabit bir
+    /// vekil kemik konur: çanta bağlanma pozunda aynı yerde başlar, ama kol/omuz hareketinden değil gövdeden etkilenir.
+    /// </summary>
+    private void AnchorBagToTorso()
+    {
+        foreach (SkinnedMeshRenderer smr in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            if (smr.name != "Bag" || smr.sharedMesh == null)
+                continue;
+            Transform[] bones = smr.bones;
+            Matrix4x4[] bindPoses = smr.sharedMesh.bindposes;
+            Transform torso = null;
+            foreach (Transform b in bones)
+            {
+                if (b != null && b.name.EndsWith("Spine1"))
+                    torso = b;
+            }
+            if (torso == null)
+                continue;
+
+            for (int i = 0; i < bones.Length; i++)
+            {
+                if (bones[i] == null || !bones[i].name.EndsWith("RightShoulder"))
+                    continue;
+                Matrix4x4 bindWorld = smr.transform.localToWorldMatrix * bindPoses[i].inverse;
+                Matrix4x4 local = torso.worldToLocalMatrix * bindWorld;
+                Transform proxy = new GameObject("Canta_Vekil_Kemik").transform;
+                proxy.SetParent(torso, false);
+                proxy.localPosition = local.GetColumn(3);
+                proxy.localRotation = local.rotation;
+                proxy.localScale = local.lossyScale;
+                bones[i] = proxy;
+            }
+            smr.bones = bones;
+        }
+    }
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -187,6 +229,7 @@ public class PlayerBody : MonoBehaviour
         baseLocalPosition = transform.localPosition;
         RightHandHold = CreateHandHold(true);
         LeftHandHold = CreateHandHold(false);
+        AnchorBagToTorso();
         if (controller == null)
             controller = GetComponentInParent<FirstPersonController>();
         if (playerCamera == null && controller != null)
@@ -211,6 +254,12 @@ public class PlayerBody : MonoBehaviour
         }
 
         CreateHeadlessBody(layer);
+
+        // Skinned parçaların sınır kutusu bağlanma pozundan sabit kalıyordu: kollar öne uzanınca (eşya taşıma, kapı)
+        // eller kutunun dışına, kamera da gövdenin önünde olduğu için kutu kameranın arkasına düşüyor, gövde (eller
+        // dahil) hiç çizilmiyordu (06.11, "eşyayı tutarken eller görünmüyor"). Tek karakter, her kare sınır hesabı ucuz.
+        foreach (SkinnedMeshRenderer r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            r.updateWhenOffscreen = true;
 
         if (playerCamera != null)
             playerCamera.cullingMask &= ~(1 << layer);
@@ -639,8 +688,9 @@ public class PlayerBody : MonoBehaviour
     /// eşya nereye giderse oraya eşlik eder (IK, kapıdaki gibi). Sadece sağ verilirse tek el.
     /// </summary>
     /// <returns>Ellerin tutuş noktalarına ulaşma süresi (sn); eşya bundan sonra kameranın önüne gelmeli.</returns>
-    public float BeginCarry(Transform right, Transform left)
+    public float BeginCarry(Transform right, Transform left, System.Action syncItem = null)
     {
+        carrySync = syncItem;
         carryRight = right;
         carryLeft = left;
         carryStart = Time.time;
@@ -661,8 +711,12 @@ public class PlayerBody : MonoBehaviour
     private void ApplyCarry()
     {
         if (carryRight == null && carryLeft == null)
+        {
+            carryLean = 0f;
             return;
+        }
 
+        carrySync?.Invoke();
         float weight = Mathf.SmoothStep(0f, 1f, (Time.time - carryStart) / carryReach);
         if (carryEndTime >= 0f && Time.time >= carryEndTime)
         {
@@ -687,7 +741,10 @@ public class PlayerBody : MonoBehaviour
             Transform shoulderL = animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
             if (carryLeft != null && shoulderL != null)
                 lean = Mathf.Max(lean, LeanAngle(carryLeft.position, shoulderL, armLength, carryMaxLean));
-            pendingLean = Mathf.Max(pendingLean, lean * weight);
+            // Eğilme açısı 2.5° basamaklarla hesaplanıyor; yürürken omuz/eşya mesafesi eşikte gidip gelince gövde
+            // sıçrıyor ve eller titriyordu: yumuşatılır.
+            carryLean = Mathf.Lerp(carryLean, lean, 1f - Mathf.Exp(-6f * Time.deltaTime));
+            pendingLean = Mathf.Max(pendingLean, carryLean * weight);
         }
 
         ApplyHandGrip(AvatarIKGoal.RightHand, AvatarIKHint.RightElbow, carryRight, RightHandHold, weight, 1f);

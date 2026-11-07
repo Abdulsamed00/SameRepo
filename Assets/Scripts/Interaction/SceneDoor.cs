@@ -18,7 +18,7 @@ public class SceneDoor : Openable
     /// <summary>Kilit nedenine göre değişen bildirim (boşsa inspector'daki varsayılan).</summary>
     public string LockedPrompt { get; set; }
 
-    public override string Prompt => Locked ? (string.IsNullOrEmpty(LockedPrompt) ? lockedPrompt : LockedPrompt) : base.Prompt;
+    public override string Prompt => Locked ? (LockedPrompt ?? lockedPrompt) : base.Prompt;
 
     public override bool CanInteract(PlayerInteractor interactor) => !triggered && base.CanInteract(interactor);
 

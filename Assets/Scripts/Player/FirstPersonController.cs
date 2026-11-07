@@ -90,8 +90,14 @@ public class FirstPersonController : MonoBehaviour
     /// </summary>
     public bool Frozen { get; set; }
 
+    /// <summary>Fare ile bakış kilitli (yürüme serbest). Sarışına kilitlenirken kullanılır (<see cref="BlondeGlance"/>).</summary>
+    public bool LookLocked { get; set; }
+
     /// <summary>Yatay hız (m/sn). Karakter animasyonu bunu okur.</summary>
     public float HorizontalSpeed => horizontalVelocity.magnitude;
+
+    /// <summary>Kameranın o anki sallanma ofseti (yatay, dikey; m). Elde taşınan eşya buna ters yönde ek sallanır.</summary>
+    public Vector2 BobOffset => bobOffset;
 
     /// <summary>Yatay hız vektörü (dünya). Gövde bununla hareket yönüne döner.</summary>
     public Vector3 HorizontalVelocity => horizontalVelocity;
@@ -212,6 +218,8 @@ public class FirstPersonController : MonoBehaviour
     private void Look()
     {
         Vector2 rawDelta = lookAction.ReadValue<Vector2>();
+        if (LookLocked)
+            return;
         if (framesToSkip > 0)
         {
             framesToSkip--;

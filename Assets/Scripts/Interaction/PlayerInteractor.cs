@@ -41,6 +41,9 @@ public class PlayerInteractor : MonoBehaviour
     public PickupItem HeldItem { get; private set; }
     public bool IsHolding => HeldItem != null;
 
+    /// <summary>Elde tutulan eşya şu an bırakılabilir (mağaza ürünleri sadece yerlerinin yakınında).</summary>
+    public bool CanDropHeld => HeldItem != null && HeldItem.CanDropAt(viewCamera.position);
+
     /// <summary>Oyuncunun görünür gövdesi (el IK'sı için: kapı/dolap açarken el kapağa uzanır).</summary>
     public PlayerBody Body => body;
 
@@ -85,15 +88,21 @@ public class PlayerInteractor : MonoBehaviour
         Zone = null;
     }
 
+    /// <summary>
+    /// Etkileşilebilir ve söyleyecek bir bildirimi var (05.11: kilitli/şartı sağlanmamış durumlarda oyuncuya ne yapması
+    /// gerektiği yazılmıyor; bildirimi boş olan etkileşim hiç seçilmez, halka da çıkmaz).
+    /// </summary>
+    private bool Usable(Interactable target) => target.CanInteract(this) && !string.IsNullOrEmpty(target.Prompt);
+
     private void Update()
     {
         Focused = FindFocused();
-        if (Focused == null && Zone != null && Zone.CanInteract(this))
+        if (Focused == null && Zone != null && Usable(Zone))
             Focused = Zone;
 
         if (Focused != null && WasPressed(Focused.Key))
             Focused.Interact(this);
-        else if (IsHolding && dropAction.WasPressedThisFrame())
+        else if (IsHolding && dropAction.WasPressedThisFrame() && CanDropHeld)
             DropHeld();
     }
 
@@ -107,7 +116,7 @@ public class PlayerInteractor : MonoBehaviour
         {
             // Tek/iki el IK: eller önce eşyanın durduğu yere uzanır, sonra eşya kameranın önüne gelir, eller tutuşta kalır.
             item.GetGrips(holdPoint, out Transform right, out Transform left);
-            float reach = body.BeginCarry(right, left);
+            float reach = body.BeginCarry(right, left, item.UpdateHeldPose);
             item.OnPickedUp(this, holdPoint, reach);
             return;
         }
@@ -163,7 +172,7 @@ public class PlayerInteractor : MonoBehaviour
         if (hitSomething)
         {
             Interactable direct = hit.collider.GetComponentInParent<Interactable>();
-            if (direct != null && InReach(direct, hit.distance) && direct.CanInteract(this))
+            if (direct != null && InReach(direct, hit.distance) && Usable(direct))
             {
                 SetFocusHit(hit);
                 return direct;
@@ -183,7 +192,7 @@ public class PlayerInteractor : MonoBehaviour
             if (hits[i].collider.transform.IsChildOf(transform) || hits[i].distance <= 0f || hits[i].distance >= bestDistance)
                 continue;
             Interactable candidate = hits[i].collider.GetComponentInParent<Interactable>();
-            if (candidate == null || !InReach(candidate, hits[i].distance) || !candidate.CanInteract(this)
+            if (candidate == null || !InReach(candidate, hits[i].distance) || !Usable(candidate)
                 || !InSight(candidate, hits[i].point))
                 continue;
             best = candidate;
