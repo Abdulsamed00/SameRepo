@@ -63852,6 +63852,18 @@ MonoBehaviour:
   standDistance: 1.6
   moveDuration: 0.5
   poseSound: {fileID: 8300000, guid: c3502a59f1a812e42bc6d635bc693833, type: 3}
+  outlineMaterial: {fileID: 2100000, guid: a10b450d00e2dda4c8d1c545a9fa6cb4, type: 2}
+  outlineTarget: {fileID: 1940061689}
+  outlineIntensity: 3
+  outlineWidth: 0.006
+  pulseSpeed: 2.2
+  noseOffset: {x: 0.06, y: 0.11}
+  profileOffset: {x: -0.42, y: 0.1}
+  zoomInDuration: 1.1
+  zoomHold: 2
+  zoomOutDuration: 0.9
+  zoomFovStart: 34
+  zoomFovEnd: 26
 --- !u!1 &1905483832
 GameObject:
   m_ObjectHideFlags: 0
@@ -65159,6 +65171,11 @@ PrefabInstance:
 --- !u!4 &1940061688 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7910acb6023791547b4ded64487f0cb5, type: 3}
+  m_PrefabInstance: {fileID: 1940061687}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &1940061689 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 7910acb6023791547b4ded64487f0cb5, type: 3}
   m_PrefabInstance: {fileID: 1940061687}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1941987655

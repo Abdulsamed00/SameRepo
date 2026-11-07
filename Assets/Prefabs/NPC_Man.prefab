@@ -566,6 +566,24 @@ MonoBehaviour:
   - product: 4
     wear: Glasses
     alternatives: []
+  blondeHair: 
+  otherHair: []
+  colorVariants:
+  - part: Meshy_Navy Crewneck Sweater_Mesh_0.021
+    materials:
+    - {fileID: 2100000, guid: 6d27d9cc7848fac4989bceb60d8d9df9, type: 2}
+    - {fileID: 2100000, guid: d6764f126a990dc44a95753b6326795b, type: 2}
+    - {fileID: 2100000, guid: 35849ac4341d79646bdd900b20fb1f28, type: 2}
+    - {fileID: 2100000, guid: 822f11514f80f2b46af2135f2642e170, type: 2}
+    - {fileID: 2100000, guid: e55d3ec0c33d5e94c89aa2878b376704, type: 2}
+    - {fileID: 2100000, guid: 89eecc6d0860ba240b93693872efcc3e, type: 2}
+  - part: Pants
+    materials:
+    - {fileID: 2100000, guid: b656503254a26ab4aae358c0249ab3c2, type: 2}
+    - {fileID: 2100000, guid: 59eae3c7c3a5f474f9b76bb8362e3c84, type: 2}
+    - {fileID: 2100000, guid: d45f795df5fdaa44ba0162719bf40f32, type: 2}
+    - {fileID: 2100000, guid: 737bb97f8d9f73848bcd6d96b63e4059, type: 2}
+    - {fileID: 2100000, guid: 843514a25be146c4f972e44ea2192f74, type: 2}
 --- !u!4 &5648045066079046775 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8142028300753827730, guid: 084cbd60e8dc8e24899e395bad46d68b, type: 3}
