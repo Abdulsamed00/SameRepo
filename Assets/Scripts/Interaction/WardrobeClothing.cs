@@ -68,6 +68,7 @@ public class WardrobeClothing : Interactable
 
     private void Awake()
     {
+        KeyBindings.Ensure(inputActions); // kayıtlı tuş atamaları
         InputActionMap playerMap = inputActions.FindActionMap("Player", true);
         lookAction = playerMap.FindAction("Look", true);
         dropAction = playerMap.FindAction("Drop", true);

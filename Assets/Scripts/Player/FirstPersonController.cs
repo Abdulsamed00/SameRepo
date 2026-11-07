@@ -149,6 +149,7 @@ public class FirstPersonController : MonoBehaviour
         if (body == null)
             body = GetComponentInChildren<PlayerBody>(true);
 
+        KeyBindings.Ensure(inputActions); // kayıtlı tuş atamaları
         InputActionMap playerMap = inputActions.FindActionMap("Player", true);
         moveAction = playerMap.FindAction("Move", true);
         lookAction = playerMap.FindAction("Look", true);

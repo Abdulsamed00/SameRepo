@@ -61,6 +61,7 @@ public class PlayerSitController : MonoBehaviour
             body = GetComponentInChildren<PlayerBody>(true);
         standingCameraPosition = cameraRoot.localPosition;
 
+        KeyBindings.Ensure(inputActions); // kayıtlı tuş atamaları
         InputActionMap playerMap = inputActions.FindActionMap("Player", true);
         sitAction = playerMap.FindAction("Sit", true);
         lookAction = playerMap.FindAction("Look", true);

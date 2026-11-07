@@ -75,7 +75,7 @@ public class CreditsView : MonoBehaviour
 
         if (!string.IsNullOrEmpty(quote))
         {
-            TextMeshProUGUI text = UiKit.CreateText("OzluSoz", center, "“" + quote + "”", UiKit.FontKind.Light, 24f, 34f,
+            TextMeshProUGUI text = UiKit.CreateText("OzluSoz", center, "“" + Loc.T(quote) + "”", UiKit.FontKind.Light, 24f, 34f,
                 UiKit.White, TextAlignmentOptions.Center);
             UiKit.Place(text.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -235f), new Vector2(900f, 72f));
             if (!string.IsNullOrEmpty(quoteAuthor))
@@ -89,7 +89,10 @@ public class CreditsView : MonoBehaviour
         RectTransform skip = UiKit.CreateFooterHint(transform, "ESC", "Atla", new Vector2(1f, 0f), new Vector2(-72f, 69f));
         Image hit = skip.gameObject.AddComponent<Image>();
         hit.color = Color.clear;
-        skip.gameObject.AddComponent<MenuRowEvents>().Click = Skip;
+        MenuRowEvents skipEvents = skip.gameObject.AddComponent<MenuRowEvents>();
+        skipEvents.Click = Skip;
+        skipEvents.HoverBrighten = true;
+        skipEvents.HoverScale = 1.1f;
     }
 
     public IEnumerator Fade(float from, float to, float duration)

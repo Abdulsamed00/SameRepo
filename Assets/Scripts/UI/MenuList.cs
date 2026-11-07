@@ -129,17 +129,89 @@ public class MenuList : MonoBehaviour
 }
 
 /// <summary>Menü satırının fare olayları.</summary>
-public class MenuRowEvents : MonoBehaviour, IPointerEnterHandler, IPointerClickHandler
+public class MenuRowEvents : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public Action Hover;
+    public Action Exit;
     public Action Click;
 
-    public void OnPointerEnter(PointerEventData eventData) => Hover?.Invoke();
+    /// <summary>
+    /// Fare üstündeyken (07.11, kullanıcı: "mouse butonun üzerine geldiğinde belirtilsin") öğe bu ölçeğe büyür
+    /// (zaman ölçeğinden bağımsız, duraklatmada da). 1 = büyümez.
+    /// </summary>
+    public float HoverScale = 1f;
+
+    /// <summary>Fare üstündeyken görünen yazı/ikonlar beyaz olur; sadece rengi başka kodun değiştirmediği öğelerde aç.</summary>
+    public bool HoverBrighten;
+
+    private Graphic[] graphics;
+    private Color[] colors;
+    private bool hovered;
+    private Vector3 baseScale = Vector3.one;
+    private bool scaleCaptured;
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        hovered = true;
+        if (HoverBrighten)
+            Brighten();
+        Hover?.Invoke();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        hovered = false;
+        Restore();
+        Exit?.Invoke();
+    }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Left)
             Click?.Invoke();
+    }
+
+    private void Brighten()
+    {
+        graphics = GetComponentsInChildren<Graphic>();
+        colors = new Color[graphics.Length];
+        for (int i = 0; i < graphics.Length; i++)
+        {
+            colors[i] = graphics[i].color;
+            if (colors[i].a > 0.01f) // görünmez tıklama alanları değil
+                graphics[i].color = new Color(1f, 1f, 1f, colors[i].a);
+        }
+    }
+
+    private void Restore()
+    {
+        if (graphics == null)
+            return;
+        for (int i = 0; i < graphics.Length; i++)
+            if (graphics[i] != null)
+                graphics[i].color = colors[i];
+        graphics = null;
+    }
+
+    private void OnDisable()
+    {
+        hovered = false;
+        Restore();
+        if (scaleCaptured)
+            transform.localScale = baseScale;
+    }
+
+    private void Update()
+    {
+        if (Mathf.Approximately(HoverScale, 1f))
+            return;
+        if (!scaleCaptured)
+        {
+            baseScale = transform.localScale;
+            scaleCaptured = true;
+        }
+        Vector3 target = hovered ? baseScale * HoverScale : baseScale;
+        transform.localScale = Vector3.Lerp(transform.localScale, target, 1f - Mathf.Exp(-20f * Time.unscaledDeltaTime));
     }
 }
 

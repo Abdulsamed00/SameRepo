@@ -64,6 +64,7 @@ public class PlayerInteractor : MonoBehaviour
 
     private void Awake()
     {
+        KeyBindings.Ensure(inputActions); // kayıtlı tuş atamaları
         InputActionMap playerMap = inputActions.FindActionMap("Player", true);
         interactAction = playerMap.FindAction("Interact", true);
         dropAction = playerMap.FindAction("Drop", true);

@@ -30,7 +30,43 @@ public class SettingsView : MonoBehaviour
         public TextMeshProUGUI Label;
         public abstract void Step(int direction);
         public abstract void Refresh();
+        public virtual void Activate() { }
     }
+
+    // Tuş atama satırı: Enter/tıklama tuş bekler (KeyBindings.Rebind), ESC iptal.
+    private class KeyRow : Row
+    {
+        public TextMeshProUGUI Value;
+        public KeyBindings.Entry Entry;
+        public SettingsView View;
+        public bool Listening;
+
+        public override void Step(int direction) { }
+
+        public override void Refresh() =>
+            Value.text = Listening ? Loc.T("Bir tuşa bas  (ESC iptal)") : KeyBindings.Display(Entry);
+
+        public override void Activate()
+        {
+            if (Listening || KeyBindings.IsRebinding)
+                return;
+            Listening = true;
+            View.listening = true;
+            Refresh();
+            KeyBindings.Rebind(Entry, () =>
+            {
+                Listening = false;
+                View.listening = false;
+                // Tuşa basıldığı ya da ESC'ye basıldığı kare (ve sonraki) menüye girdi sayılmasın.
+                View.inputGuardFrame = Time.frameCount + 1;
+                View.RefreshRows();
+            });
+        }
+    }
+
+    private bool listening;
+    private int inputGuardFrame = -1;
+    private float rowHeight = RowHeight;
 
     private class SliderRow : Row
     {
@@ -66,7 +102,7 @@ public class SettingsView : MonoBehaviour
                 Set(((Get() + direction) % count + count) % count);
         }
 
-        public override void Refresh() => Value.text = Name(Get());
+        public override void Refresh() => Value.text = Loc.T(Name(Get()));
     }
 
     private class Tab
@@ -75,6 +111,7 @@ public class SettingsView : MonoBehaviour
         public TextMeshProUGUI Text;
         public Action<SettingsView> Build;
         public Action Reset;
+        public float RowHeight;
     }
 
     private readonly List<Tab> tabs = new List<Tab>();
@@ -99,12 +136,36 @@ public class SettingsView : MonoBehaviour
         return view;
     }
 
-    private void OnEnable() => GameSettings.Changed += RefreshRows;
+    private void OnEnable()
+    {
+        GameSettings.Changed += RefreshRows;
+        Loc.Changed += Rebuild;
+    }
 
-    private void OnDisable() => GameSettings.Changed -= RefreshRows;
+    private void OnDisable()
+    {
+        GameSettings.Changed -= RefreshRows;
+        Loc.Changed -= Rebuild;
+    }
+
+    // Dil değişince ekran yeni dilde yeniden kurulur (sekme genişlikleri yazıya göre), aynı sekme ve satırda kalınır.
+    private void Rebuild()
+    {
+        int tab = currentTab, row = selectedRow;
+        foreach (Transform child in transform)
+            Destroy(child.gameObject);
+        tabs.Clear();
+        rows.Clear();
+        Build(backdrop);
+        ShowTab(tab);
+        SelectRow(row);
+    }
+
+    private Texture backdrop;
 
     private void Build(Texture backdrop)
     {
+        this.backdrop = backdrop;
         if (backdrop != null)
         {
             RawImage blur = UiKit.CreateRect("Bulanik", transform).gameObject.AddComponent<RawImage>();
@@ -129,6 +190,7 @@ public class SettingsView : MonoBehaviour
         AddTab("Ses", v => v.BuildAudio(), GameSettings.ResetAudio);
         AddTab("Kontroller", v => v.BuildControls(), GameSettings.ResetControls);
         AddTab("Görüntü", v => v.BuildDisplay(), GameSettings.ResetDisplay);
+        AddTab("Tuşlar", v => v.BuildKeys(), KeyBindings.ResetAll, 66f);
 
         rowsRoot = UiKit.CreateRect("Satirlar", content);
         UiKit.Place(rowsRoot, new Vector2(0f, 1f), new Vector2(0f, -FirstRowTop), new Vector2(Width, 500f));
@@ -141,7 +203,7 @@ public class SettingsView : MonoBehaviour
         ShowTab(0);
     }
 
-    private void AddTab(string title, Action<SettingsView> build, Action reset)
+    private void AddTab(string title, Action<SettingsView> build, Action reset, float tabRowHeight = RowHeight)
     {
         int index = tabs.Count;
         float x = 0f;
@@ -150,19 +212,20 @@ public class SettingsView : MonoBehaviour
 
         TextMeshProUGUI text = UiKit.CreateText("Sekme_" + title, content, title, UiKit.FontKind.Medium, 22.5f, 4f, UiKit.Secondary,
             TextAlignmentOptions.Center);
-        float width = text.GetPreferredValues(title).x;
+        float width = text.GetPreferredValues(text.text).x;
         UiKit.Place(text.rectTransform, new Vector2(0f, 1f), new Vector2(x, -(TabCenter - 20f)), new Vector2(width, 40f));
         text.raycastTarget = true;
-        MakeClickable(text.rectTransform, () => ShowTab(index));
+        MenuRowEvents events = MakeClickable(text.rectTransform, () => ShowTab(index), brighten: false, scale: 1f);
+        events.Hover = () => { hoveredTab = index; UpdateTabColors(); };
+        events.Exit = () => { if (hoveredTab == index) hoveredTab = -1; UpdateTabColors(); };
 
-        tabs.Add(new Tab { Title = title, Text = text, Build = build, Reset = reset });
+        tabs.Add(new Tab { Title = title, Text = text, Build = build, Reset = reset, RowHeight = tabRowHeight });
     }
 
     private void ShowTab(int index)
     {
         currentTab = (index % tabs.Count + tabs.Count) % tabs.Count;
-        for (int i = 0; i < tabs.Count; i++)
-            tabs[i].Text.color = i == currentTab ? UiKit.White : UiKit.Secondary;
+        UpdateTabColors();
 
         RectTransform tabRect = tabs[currentTab].Text.rectTransform;
         UiKit.Place(tabUnderline.rectTransform, new Vector2(0f, 1f), new Vector2(tabRect.anchoredPosition.x, -(TabLine - 1f)),
@@ -171,6 +234,7 @@ public class SettingsView : MonoBehaviour
         foreach (Transform child in rowsRoot)
             Destroy(child.gameObject);
         rows.Clear();
+        rowHeight = tabs[currentTab].RowHeight;
         tabs[currentTab].Build(this);
         selectedRow = 0;
         RefreshRows();
@@ -192,6 +256,9 @@ public class SettingsView : MonoBehaviour
 
     private void BuildDisplay()
     {
+        // Dil adları kendi dillerinde yazılır, çevrilmez.
+        AddChoice("Dil", () => 2, i => Loc.NativeName((GameLanguage)i), () => (int)Loc.Current,
+            i => Loc.SetLanguage((GameLanguage)i));
         AddChoice("Ekran modu", () => 2, i => i == 0 ? "Tam ekran" : "Pencere", () => GameSettings.Fullscreen ? 0 : 1,
             i => GameSettings.SetFullscreen(i == 0));
         AddChoice("Çözünürlük", () => GameSettings.Resolutions.Count,
@@ -201,11 +268,34 @@ public class SettingsView : MonoBehaviour
         AddChoice("Dikey senkronizasyon", () => 2, i => OffOn[i], () => GameSettings.VSync ? 1 : 0, i => GameSettings.SetVSync(i == 1));
     }
 
+    private void BuildKeys()
+    {
+        if (KeyBindings.Asset == null)
+        {
+            FirstPersonController player = FindFirstObjectByType<FirstPersonController>();
+            if (player != null)
+                KeyBindings.Ensure(player.InputActions);
+        }
+        foreach (KeyBindings.Entry entry in KeyBindings.Entries)
+            AddKey(entry);
+    }
+
+    private void AddKey(KeyBindings.Entry entry)
+    {
+        RectTransform rect = CreateRowBase(entry.Label, out TextMeshProUGUI labelText);
+        KeyRow row = new KeyRow { Rect = rect, Label = labelText, Entry = entry, View = this };
+        row.Value = UiKit.CreateText("Deger", rect, "", UiKit.FontKind.Medium, 22.5f, 0f, UiKit.White, TextAlignmentOptions.Center);
+        float center = (ChoiceLeft + ChoiceRight) * 0.5f;
+        UiKit.Place(row.Value.rectTransform, new Vector2(0f, 0.5f), new Vector2(center - 200f, 0f), new Vector2(400f, rowHeight));
+        rect.GetComponent<MenuRowEvents>().Click = () => { Click(); row.Activate(); };
+        rows.Add(row);
+    }
+
     private RectTransform CreateRowBase(string label, out TextMeshProUGUI labelText)
     {
         int index = rows.Count;
         RectTransform rect = UiKit.CreateRect("Satir_" + label, rowsRoot);
-        UiKit.Place(rect, new Vector2(0f, 1f), new Vector2(0f, -index * RowHeight), new Vector2(Width, RowHeight));
+        UiKit.Place(rect, new Vector2(0f, 1f), new Vector2(0f, -index * rowHeight), new Vector2(Width, rowHeight));
 
         Image hit = rect.gameObject.AddComponent<Image>();
         hit.color = Color.clear;
@@ -217,7 +307,7 @@ public class SettingsView : MonoBehaviour
 
         labelText = UiKit.CreateText("Etiket", rect, label, UiKit.FontKind.Regular, 22.5f, 0f, UiKit.Unselected,
             TextAlignmentOptions.MidlineLeft);
-        UiKit.Place(labelText.rectTransform, new Vector2(0f, 0.5f), Vector2.zero, new Vector2(500f, RowHeight));
+        UiKit.Place(labelText.rectTransform, new Vector2(0f, 0.5f), Vector2.zero, new Vector2(500f, rowHeight));
         return rect;
     }
 
@@ -264,7 +354,7 @@ public class SettingsView : MonoBehaviour
 
         row.Value = UiKit.CreateText("Deger", rect, "", UiKit.FontKind.Regular, 22.5f, 0f, UiKit.Unselected,
             TextAlignmentOptions.MidlineRight);
-        UiKit.Place(row.Value.rectTransform, new Vector2(1f, 0.5f), Vector2.zero, new Vector2(70f, RowHeight));
+        UiKit.Place(row.Value.rectTransform, new Vector2(1f, 0.5f), Vector2.zero, new Vector2(70f, rowHeight));
         rows.Add(row);
     }
 
@@ -285,7 +375,7 @@ public class SettingsView : MonoBehaviour
 
         row.Value = UiKit.CreateText("Deger", rect, "", UiKit.FontKind.Medium, 22.5f, 0f, UiKit.White, TextAlignmentOptions.Center);
         float center = (ChoiceLeft + ChoiceRight) * 0.5f;
-        UiKit.Place(row.Value.rectTransform, new Vector2(0f, 0.5f), new Vector2(center - 120f, 0f), new Vector2(240f, RowHeight));
+        UiKit.Place(row.Value.rectTransform, new Vector2(0f, 0.5f), new Vector2(center - 120f, 0f), new Vector2(240f, rowHeight));
         rows.Add(row);
     }
 
@@ -295,7 +385,14 @@ public class SettingsView : MonoBehaviour
             return;
         selectedRow = Mathf.Clamp(index, 0, rows.Count - 1);
         for (int i = 0; i < rows.Count; i++)
-            rows[i].Label.color = i == selectedRow ? UiKit.White : UiKit.Unselected;
+        {
+            bool selected = i == selectedRow;
+            rows[i].Label.color = selected ? UiKit.White : UiKit.Unselected;
+            // Seçili satırın (fare üstünde ya da klavyeyle seçili) arkası hafif aydınlanır.
+            Image background = rows[i].Rect.GetComponent<Image>();
+            if (background != null)
+                background.color = selected ? new Color(1f, 1f, 1f, 0.035f) : Color.clear;
+        }
     }
 
     private void RefreshRows()
@@ -309,6 +406,7 @@ public class SettingsView : MonoBehaviour
     {
         Click();
         tabs[currentTab].Reset();
+        RefreshRows(); // tuş atamaları GameSettings.Changed tetiklemez
     }
 
     private void Close()
@@ -321,7 +419,8 @@ public class SettingsView : MonoBehaviour
 
     private void Click() => GameAudio.PlayUI(clickSound);
 
-    private static void MakeClickable(RectTransform rect, Action action)
+    // Fare üstündeyken: brighten = yazı/ikon beyazlar (rengi sabit öğeler: oklar, alt bilgi), scale = hafif büyür.
+    private static MenuRowEvents MakeClickable(RectTransform rect, Action action, bool brighten = true, float scale = 1.1f)
     {
         if (rect.GetComponent<Graphic>() == null)
         {
@@ -331,10 +430,30 @@ public class SettingsView : MonoBehaviour
         rect.GetComponent<Graphic>().raycastTarget = true;
         MenuRowEvents events = rect.gameObject.AddComponent<MenuRowEvents>();
         events.Click = action;
+        events.HoverBrighten = brighten;
+        events.HoverScale = scale;
+        return events;
+    }
+
+    // Sekmeler: rengi ShowTab da değiştirdiği için vurgu burada hesaplanır (seçili ya da fare üstünde = beyaz).
+    private int hoveredTab = -1;
+
+    private void UpdateTabColors()
+    {
+        for (int i = 0; i < tabs.Count; i++)
+            tabs[i].Text.color = i == currentTab || i == hoveredTab ? UiKit.White : UiKit.Secondary;
     }
 
     private void Update()
     {
+        // Tuş beklenirken basılan tuş (ve ESC) menüyü kapatmasın / satır değiştirmesin.
+        if (listening || Time.frameCount <= inputGuardFrame)
+            return;
+        if (UiInput.Submit() && rows.Count > 0)
+        {
+            rows[selectedRow].Activate();
+            return;
+        }
         if (UiInput.Back())
         {
             Close();
