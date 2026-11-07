@@ -20,7 +20,7 @@ public class BlondeGlance : MonoBehaviour
     [SerializeField] private Vector2 cooldown = new Vector2(5f, 11f);
     [SerializeField] private float turnTime = 0.9f;
     [Tooltip("Kadını izleme süresi (sn).")]
-    [SerializeField] private Vector2 holdTime = new Vector2(1.6f, 2.6f);
+    [SerializeField] private Vector2 holdTime = new Vector2(2.5f, 3.5f);
     [SerializeField] private float returnTime = 1.6f;
     [SerializeField] private float headHeight = 1.5f;
     [Tooltip("Bakışın yürüyen kadına yetişme hızı (büyük = sert).")]
@@ -54,6 +54,22 @@ public class BlondeGlance : MonoBehaviour
     {
         if (player != null)
             player.LookLocked = false;
+        SetMovementLock(false);
+    }
+
+    // Bakış sürerken karakter durur (07.11, kullanıcı isteği): kafa dönüp kadına bakarken yürüyemez, bakış bitip
+    // kamera geri gelince kontrol oyuncuya döner.
+    private bool movementLocked;
+
+    private void SetMovementLock(bool locked)
+    {
+        if (player == null || locked == movementLocked)
+            return;
+        movementLocked = locked;
+        if (locked)
+            player.LockMovement();
+        else
+            player.UnlockMovement();
     }
 
     private void LateUpdate()
@@ -63,6 +79,7 @@ public class BlondeGlance : MonoBehaviour
 
         // Kilitlenirken ve bakış sürerken fare bakışı kapalı (05.11, kullanıcı isteği).
         player.LookLocked = target != null || weight > 0f;
+        SetMovementLock(target != null || weight > 0f);
 
         if (target == null && weight <= 0f)
         {
