@@ -82,7 +82,14 @@ public class PlanarMirror : MonoBehaviour
         data.renderPostProcessing = false;
         data.requiresDepthTexture = false;
         data.requiresColorTexture = false;
+        // FPS: yansıma kamerası sahneyi bir kez daha çizer; gölge haritası geçişleri (ve alt ışıkları) en pahalı kısım,
+        // aynada gölge farkı pek seçilmiyor.
+        data.renderShadows = false;
     }
+
+    // Sahnede serileştirilmiş eski değerler (1.5 / 2048) aynaya bakınca FPS düşürüyordu: tavan koddan uygulanır.
+    private const float MaxResolutionScale = 1f;
+    private const int MaxTextureCap = 1280;
 
     private void OnDestroy()
     {
@@ -219,8 +226,10 @@ public class PlanarMirror : MonoBehaviour
     // %60'ın altına inince küçülür.
     private void EnsureTexture(Vector2 pixels)
     {
-        int needW = Mathf.Clamp(Mathf.CeilToInt(pixels.x * resolutionScale / 32f) * 32, 32, maxTextureHeight);
-        int needH = Mathf.Clamp(Mathf.CeilToInt(pixels.y * resolutionScale / 32f) * 32, 32, maxTextureHeight);
+        float scale = Mathf.Min(resolutionScale, MaxResolutionScale);
+        int cap = Mathf.Min(maxTextureHeight, MaxTextureCap);
+        int needW = Mathf.Clamp(Mathf.CeilToInt(pixels.x * scale / 32f) * 32, 32, cap);
+        int needH = Mathf.Clamp(Mathf.CeilToInt(pixels.y * scale / 32f) * 32, 32, cap);
         if (texture != null)
         {
             bool grow = needW > texture.width || needH > texture.height;
@@ -235,11 +244,11 @@ public class PlanarMirror : MonoBehaviour
         texture = new RenderTexture(textureWidth, textureHeight, 24, RenderTextureFormat.DefaultHDR)
         {
             name = "Ayna_Yansima",
-            antiAliasing = 4,
+            antiAliasing = 2,
             useMipMap = true,
             autoGenerateMips = true,
             filterMode = FilterMode.Trilinear,
-            anisoLevel = 8,
+            anisoLevel = 4,
             wrapMode = TextureWrapMode.Clamp
         };
         shownTexture = null;

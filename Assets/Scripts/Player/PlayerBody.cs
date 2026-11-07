@@ -144,6 +144,9 @@ public class PlayerBody : MonoBehaviour
     private float carryLean;
     private float carryStart;
     private float carryReach;
+    private bool carryLeftJoinsLate;
+    private const float leftJoinDelay = 0.1f; // sağ el ulaştıktan sonra sol elin başlama gecikmesi
+    private const float leftJoinTime = 0.4f;  // sol elin tutuşa girme süresi
     private float carryEndTime = -1f;
     private Transform touchAnchor;
     private Vector3 touchLocalPoint;
@@ -688,8 +691,9 @@ public class PlayerBody : MonoBehaviour
     /// eşya nereye giderse oraya eşlik eder (IK, kapıdaki gibi). Sadece sağ verilirse tek el.
     /// </summary>
     /// <returns>Ellerin tutuş noktalarına ulaşma süresi (sn); eşya bundan sonra kameranın önüne gelmeli.</returns>
-    public float BeginCarry(Transform right, Transform left, System.Action syncItem = null)
+    public float BeginCarry(Transform right, Transform left, System.Action syncItem = null, bool leftJoinsLate = false)
     {
+        carryLeftJoinsLate = leftJoinsLate && left != null;
         carrySync = syncItem;
         carryRight = right;
         carryLeft = left;
@@ -748,8 +752,15 @@ public class PlayerBody : MonoBehaviour
         }
 
         ApplyHandGrip(AvatarIKGoal.RightHand, AvatarIKHint.RightElbow, carryRight, RightHandHold, weight, 1f);
-        ApplyHandGrip(AvatarIKGoal.LeftHand, AvatarIKHint.LeftElbow, carryLeft, LeftHandHold, weight, -1f);
+        // Sol el geç katılıyorsa (palto): sağ el eşyaya uzanıp alırken sol el serbest, eşya ele gelince tutar.
+        float leftWeight = weight;
+        if (carryLeftJoinsLate)
+            leftWeight *= Mathf.SmoothStep(0f, 1f, (Time.time - carryStart - carryReach - leftJoinDelay) / leftJoinTime);
+        ApplyHandGrip(AvatarIKGoal.LeftHand, AvatarIKHint.LeftElbow, carryLeft, LeftHandHold, leftWeight, -1f);
     }
+
+    /// <summary>Tek elle alıp iki elle tutmada sol elin tutuşa katılması tamamlanana kadar geçen süre (sn).</summary>
+    public float LeftJoinTotal => leftJoinDelay + leftJoinTime;
 
     // Avuç tutma noktası (eksenleri CreateHandHold'da) eşyanın tutuş noktasıyla çakışacak şekilde el kemiği taşınır ve
     // döndürülür; dirsek yana/aşağı bakar, kol ters bükülmesin.

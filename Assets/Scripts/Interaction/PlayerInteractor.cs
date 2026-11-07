@@ -87,6 +87,10 @@ public class PlayerInteractor : MonoBehaviour
         sitAction.Disable();
         Focused = null;
         Zone = null;
+        // Kapanırken süren kilitler (coroutine durur) açılmazsa oyuncu sonsuza kadar kilitli kalır.
+        for (; walkLocks > 0; walkLocks--)
+            walker.UnlockMovement();
+        busyUntil = 0f;
     }
 
     /// <summary>
@@ -100,6 +104,9 @@ public class PlayerInteractor : MonoBehaviour
         Focused = FindFocused();
         if (Focused == null && Zone != null && Usable(Zone))
             Focused = Zone;
+
+        if (IsBusy)
+            return; // alma/bırakma bitmeden yeni eylem yok
 
         if (Focused != null && WasPressed(Focused.Key))
             Focused.Interact(this);
@@ -117,8 +124,11 @@ public class PlayerInteractor : MonoBehaviour
         {
             // Tek/iki el IK: eller önce eşyanın durduğu yere uzanır, sonra eşya kameranın önüne gelir, eller tutuşta kalır.
             item.GetGrips(holdPoint, out Transform right, out Transform left);
-            float reach = body.BeginCarry(right, left, item.UpdateHeldPose);
+            bool oneHandFirst = item.ReachWithOneHand && left != null;
+            float reach = body.BeginCarry(right, left, item.UpdateHeldPose, oneHandFirst);
             item.OnPickedUp(this, holdPoint, reach);
+            // Eşya ele gelip eller tutana kadar (palto: sol el sonradan katılır) yürünemez.
+            BusyFor(reach + 0.5f + (oneHandFirst ? body.LeftJoinTotal : 0f));
             return;
         }
 
@@ -128,7 +138,41 @@ public class PlayerInteractor : MonoBehaviour
             item.OnPickedUp(this, body.RightHandHold, reachTime);
         else
             item.OnPickedUp(this, holdPoint);
+        BusyFor(reachTime + 0.4f);
     }
+
+    private float busyUntil;
+    private FirstPersonController walker;
+
+    /// <summary>Alma/bırakma animasyonu sürüyor: yeni etkileşim ve yürüme kapalı.</summary>
+    public bool IsBusy => Time.time < busyUntil;
+
+    /// <summary>Oyuncu <paramref name="seconds"/> sn boyunca yürüyemez ve başka etkileşime giremez (eylem bitene kadar).</summary>
+    public void BusyFor(float seconds)
+    {
+        if (seconds <= 0f)
+            return;
+        if (walker == null)
+            walker = GetComponent<FirstPersonController>();
+        busyUntil = Mathf.Max(busyUntil, Time.time + seconds);
+        if (walker != null)
+            StartCoroutine(LockWalking(seconds));
+    }
+
+    private System.Collections.IEnumerator LockWalking(float seconds)
+    {
+        FirstPersonController controller = walker;
+        controller.LockMovement();
+        walkLocks++;
+        yield return new WaitForSeconds(seconds);
+        if (walkLocks > 0)
+        {
+            walkLocks--;
+            controller.UnlockMovement();
+        }
+    }
+
+    private int walkLocks;
 
     /// <summary>
     /// Elde tutulan eşyayı yerine koymadan elden çıkarır (ör. kasada satın alınan ürün). Eşyanın ne olacağına çağıran karar verir.
@@ -156,6 +200,8 @@ public class PlayerInteractor : MonoBehaviour
             // Eşya elde tutuluyormuş gibi yerine kayar, eller onunla gider, sonra bırakır.
             item.OnDropped(fallback, animate ? 0.05f : 0f);
             body.EndCarry(animate ? 0.45f : 0f);
+            if (animate)
+                BusyFor(0.45f + 0.5f);
             return;
         }
 
@@ -163,6 +209,8 @@ public class PlayerInteractor : MonoBehaviour
             ? body.PlayPutDown(item.DropPosition(fallback))
             : 0f;
         item.OnDropped(fallback, releaseTime);
+        if (animate)
+            BusyFor(releaseTime + 0.4f);
     }
 
     private Interactable FindFocused()

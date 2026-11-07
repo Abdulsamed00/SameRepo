@@ -94,6 +94,9 @@ public class PickupItem : Interactable
         }
     }
 
+    /// <summary>Açıksa alırken önce sağ el uzanır, eşya gelince sol el de tutar (iki el tutuşlu ürünlerde).</summary>
+    public virtual bool ReachWithOneHand => false;
+
     /// <summary>Yerinin dünya konumu (ilk konum).</summary>
     public Vector3 HomePosition => StartPosition;
 

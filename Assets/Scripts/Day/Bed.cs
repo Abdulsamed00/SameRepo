@@ -83,7 +83,30 @@ public class Bed : Interactable
         }
     }
 
-    private void OnSleepy() => StartCoroutine(Yawn());
+    [Tooltip("Uyku vakti gelince esneme bu aralıkla (sn, en az/en çok) tekrarlanır; yatana kadar sürer.")]
+    [SerializeField] private Vector2 yawnRepeat = new Vector2(35f, 60f);
+
+    private float nextYawn = -1f;
+
+    private void OnEnable() => DayRoutine.Sleepy += OnSleepy;
+
+    private void OnDisable() => DayRoutine.Sleepy -= OnSleepy;
+
+    private void OnSleepy()
+    {
+        StartCoroutine(Yawn());
+        nextYawn = Time.time + Random.Range(yawnRepeat.x, yawnRepeat.y);
+    }
+
+    private void Update()
+    {
+        // Uyku vakti geldi (gece, her şey tamam) ama oyuncu hâlâ yatmadı: arada esner.
+        if (busy || !DayRoutine.CanSleep || nextYawn < 0f || Time.time < nextYawn || PauseMenu.IsPaused
+            || FindFirstObjectByType<IntroMenu>() != null)
+            return;
+        nextYawn = Time.time + Random.Range(yawnRepeat.x, yawnRepeat.y);
+        GameAudio.Play2D(yawnSound);
+    }
 
     private IEnumerator Yawn()
     {

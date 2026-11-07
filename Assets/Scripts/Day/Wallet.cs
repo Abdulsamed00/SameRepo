@@ -62,7 +62,9 @@ public class Wallet : Interactable
         glowLight.range = lightRange;
         glowLight.intensity = 0f;
         glowLight.shadows = LightShadows.None;
+#if UNITY_EDITOR
         glowLight.lightmapBakeType = LightmapBakeType.Realtime;
+#endif
         glowLight.enabled = false;
     }
 
@@ -113,6 +115,7 @@ public class Wallet : Interactable
         taking = true;
         PlayerBody body = interactor.GetComponentInChildren<PlayerBody>();
         float reach = body != null ? body.PlayPickup(transform.position) : 0f;
+        interactor.BusyFor(reach + 0.5f); // eli çekene kadar yürüyemez
         yield return new WaitForSeconds(reach);
         GameAudio.PlayAt(takeSound, transform.position);
         DayRoutine.NotifyWalletTaken();

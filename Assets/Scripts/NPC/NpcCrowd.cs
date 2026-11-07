@@ -179,8 +179,8 @@ public class NpcCrowd : MonoBehaviour
     [Tooltip("Oyuncuya benzeyen (aynı ürünler, aynı sarı saç) kadın sayısı. Kalabalığın en iç sırasını onlar alır.")]
     [SerializeField] private int ringCount = 26;
     [Tooltip("Oyuncunun çevresinde boş kalan alanın yarıçapı (m); açıya göre +innerJitter kadar düzensiz.")]
-    [SerializeField] private float ringRadius = 1.15f;
-    [SerializeField] private float innerJitter = 1.1f;
+    [SerializeField] private float ringRadius = 0.95f;
+    [SerializeField] private float innerJitter = 0.7f;
     [Tooltip("Kalabalıkta iki kişi arası mesafe (m, min-max): her yer kendi aralığını rastgele alır.")]
     [SerializeField] private Vector2 crowdSpacing = new Vector2(0.58f, 0.86f);
     [Tooltip("Kalabalığın yayılabildiği şerit (dünya x): yol + kaldırımın sokak eşyası olmayan kısmı.")]
@@ -551,9 +551,8 @@ public class NpcCrowd : MonoBehaviour
                 continue;
             if (lookalike && i >= innerLimit && best >= 0)
                 break;
-            // En içteki birkaç sıra benzerlere ayrılır; diğerleri onlardan hemen sonra gelir (boşluk kalmasın).
-            if (!lookalike && i < innerLimit * 0.35f)
-                continue;
+            // Kimseye yer ayrılmaz: içeriden dışarı dolar. Ayrılan iç yerlere geç gelen benzerler dış sıraları
+            // yaramadığı için oyuncunun dibi boş kalıyordu.
             float walk = Vector3.Distance(from, crowdSlots[i].point);
             float cost = lookalike ? crowdSlots[i].key * 2f + walk * 0.3f : crowdSlots[i].key * 2f + walk * 0.35f;
             if (cost < bestCost)
@@ -569,6 +568,87 @@ public class NpcCrowd : MonoBehaviour
             crowdSlots[best] = s;
         }
         return best;
+    }
+
+    private Goal SlotGoal(int slot)
+    {
+        Vector3 p = crowdSlots[slot].point;
+        Vector3 look = finaleCenter - p;
+        look.y = 0f;
+        bool inner = slot < ringCount;
+        float yaw = Random.Range(-facingJitter, facingJitter);
+        bool talk = false;
+        if (!inner && Random.value < lookAwayChance + talkChance)
+        {
+            // Dış sıralarda bazıları yanındakine döner (bir kısmı konuşur): kalabalık asker gibi dizilmesin.
+            talk = Random.value < talkChance / (lookAwayChance + talkChance);
+            yaw = Random.Range(55f, 110f) * (Random.value < 0.5f ? -1f : 1f);
+        }
+        return new Goal
+        {
+            kind = GoalKind.Ring,
+            point = p,
+            rotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.LookRotation(look.sqrMagnitude > 0.001f ? look : Vector3.forward),
+            talk = talk
+        };
+    }
+
+    private int OwnedSlot(NpcAgent npc)
+    {
+        for (int i = 0; i < crowdSlots.Count; i++)
+        {
+            if (crowdSlots[i].owner == npc)
+                return i;
+        }
+        return -1;
+    }
+
+    private void SetOwner(int slot, NpcAgent owner)
+    {
+        CrowdSlot s = crowdSlots[slot];
+        s.owner = owner;
+        crowdSlots[slot] = s;
+    }
+
+    /// <summary>
+    /// Yürürken: önündeki daha içteki bir yer boşsa ona geçer. Uzaktan iç yer kapan NPC'ler final donana kadar
+    /// yetişemiyordu, oyuncunun dibi boş kalıyordu; artık o yerleri oraya ilk varan doldurur.
+    /// </summary>
+    public bool TryUpgradeSlot(NpcAgent npc, out Goal goal)
+    {
+        goal = default;
+        if (frozen)
+            return false;
+        int current = OwnedSlot(npc);
+        if (current < 0)
+            return false;
+        Vector3 from = npc.transform.position;
+        float currentDistance = Vector3.Distance(from, crowdSlots[current].point);
+        int best = -1;
+        float bestKey = crowdSlots[current].key - 0.35f;
+        for (int i = 0; i < current; i++)
+        {
+            if (crowdSlots[i].owner != null || crowdSlots[i].key >= bestKey)
+                continue;
+            if (Vector3.Distance(from, crowdSlots[i].point) > currentDistance + 0.6f)
+                continue;
+            best = i;
+            bestKey = crowdSlots[i].key;
+        }
+        if (best < 0)
+            return false;
+        SetOwner(current, null);
+        SetOwner(best, npc);
+        goal = SlotGoal(best);
+        return true;
+    }
+
+    /// <summary>Yerine varamayan NPC olduğu yerde durur; yeri başkası doldurabilsin diye bırakılır.</summary>
+    public void ReleaseSlot(NpcAgent npc)
+    {
+        int slot = OwnedSlot(npc);
+        if (slot >= 0)
+            SetOwner(slot, null);
     }
 
     /// <summary>Finalin son anı: kalabalık (ve yürüyenler) olduğu pozda donar.</summary>
@@ -643,27 +723,7 @@ public class NpcCrowd : MonoBehaviour
         {
             int slot = joiners.Contains(npc) ? ClaimSlot(npc) : -1;
             if (slot >= 0)
-            {
-                Vector3 p = crowdSlots[slot].point;
-                Vector3 look = finaleCenter - p;
-                look.y = 0f;
-                bool inner = slot < ringCount;
-                float yaw = Random.Range(-facingJitter, facingJitter);
-                bool talk = false;
-                if (!inner && Random.value < lookAwayChance + talkChance)
-                {
-                    // Dış sıralarda bazıları yanındakine döner (bir kısmı konuşur): kalabalık asker gibi dizilmesin.
-                    talk = Random.value < talkChance / (lookAwayChance + talkChance);
-                    yaw = Random.Range(55f, 110f) * (Random.value < 0.5f ? -1f : 1f);
-                }
-                return new Goal
-                {
-                    kind = GoalKind.Ring,
-                    point = p,
-                    rotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.LookRotation(look),
-                    talk = talk
-                };
-            }
+                return SlotGoal(slot);
             return new Goal { kind = GoalKind.Wander, point = FinalePoint() };
         }
 

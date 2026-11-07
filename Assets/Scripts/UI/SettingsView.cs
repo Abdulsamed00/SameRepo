@@ -13,6 +13,7 @@ using UnityEngine.UI;
 public class SettingsView : MonoBehaviour
 {
     private const float Width = 960f;
+    private const float HighlightPad = 28f; // seçili satır vurgusunun yazıdan taşma payı
     private const float RowHeight = 87f;
     private const float FirstRowTop = 212f;   // başlık üstünden ilk satırın üstüne (ekranda y = 338)
     private const float TabCenter = 126f;     // ekranda y = 252
@@ -302,8 +303,15 @@ public class SettingsView : MonoBehaviour
         MenuRowEvents events = rect.gameObject.AddComponent<MenuRowEvents>();
         events.Hover = () => SelectRow(index);
 
+        // Vurgu, yazının kenarına yapışmasın diye satırdan iki yana HighlightPad kadar taşar.
+        Image highlight = UiKit.CreateImage("Vurgu", rect, Color.clear);
+        highlight.raycastTarget = false;
+        UiKit.Place(highlight.rectTransform, new Vector2(0f, 0.5f), new Vector2(-HighlightPad, 0f),
+            new Vector2(Width + HighlightPad * 2f, rowHeight - 1f));
+        highlight.rectTransform.SetAsFirstSibling();
+
         Image line = UiKit.CreateImage("Ayirici", rect, UiKit.Divider);
-        UiKit.Place(line.rectTransform, Vector2.zero, Vector2.zero, new Vector2(Width, 1f));
+        UiKit.Place(line.rectTransform, Vector2.zero, new Vector2(-HighlightPad, 0f), new Vector2(Width + HighlightPad * 2f, 1f));
 
         labelText = UiKit.CreateText("Etiket", rect, label, UiKit.FontKind.Regular, 22.5f, 0f, UiKit.Unselected,
             TextAlignmentOptions.MidlineLeft);
@@ -389,7 +397,8 @@ public class SettingsView : MonoBehaviour
             bool selected = i == selectedRow;
             rows[i].Label.color = selected ? UiKit.White : UiKit.Unselected;
             // Seçili satırın (fare üstünde ya da klavyeyle seçili) arkası hafif aydınlanır.
-            Image background = rows[i].Rect.GetComponent<Image>();
+            Transform highlight = rows[i].Rect.Find("Vurgu");
+            Image background = highlight != null ? highlight.GetComponent<Image>() : null;
             if (background != null)
                 background.color = selected ? new Color(1f, 1f, 1f, 0.035f) : Color.clear;
         }
