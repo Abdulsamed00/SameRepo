@@ -20,6 +20,9 @@ public class ShopProduct : PickupItem
     // Ürünlerin tutma ofsetleri kameradaki tutma noktasına göre ayarlı; ele bağlanmazlar.
     public override bool HoldInHand => false;
 
+    // Palto: tek elle alınır, iki elle tutulur ve bırakılır.
+    public override bool ReachWithOneHand => product == ProductType.Palto;
+
     [Tooltip("Taşırken ürünü kameranın önünde bu kadar aşağı indirir (m): yukarıda tutulunca önü görmek zorlaşıyordu (06.11).")]
     [SerializeField] private float holdLowering = 0.16f;
     protected override float HoldLowering => holdLowering;
