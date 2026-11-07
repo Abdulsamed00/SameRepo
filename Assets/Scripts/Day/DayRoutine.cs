@@ -92,9 +92,6 @@ public static class DayRoutine
     /// <summary>Klinik günü (4. gün) sabahı aynaya bakmadan evden çıkılmaz; aynada yenilgi animasyonu oynar.</summary>
     public const int ClinicDay = 3;
 
-    /// <summary>Kuaför günü (2. gün, sarışınlar).</summary>
-    public const int SalonDay = 1;
-
     public static bool MorningMirrorSeen { get; private set; }
 
     public static bool MorningMirrorPending => GameDay.Index == ClinicDay && !MorningMirrorSeen && !BoughtToday;
