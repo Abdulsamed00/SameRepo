@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -44,14 +44,16 @@ public class FinalSequence : MonoBehaviour
     [SerializeField] private float waitOrbitSpeed = 3f;
 
     [Header("Son vinç çekimi")]
-    [Tooltip("Kalabalık toplanınca kamera yavaşça tepeye çıkar: karakter aynı giyinmiş kalabalığın ortasında bir nokta olur.")]
-    [SerializeField] private float craneDuration = 9f;
-    [SerializeField] private float craneHeight = 14f;
-    [Tooltip("Tepedeyken karakterin önüne kayma (m): tam dik bakış yerine hafif eğik, yüzler seçilsin.")]
-    [SerializeField] private float craneFront = 3.5f;
-    [Tooltip("Vinç boyunca karakterin çevresinde dönüş (derece).")]
-    [SerializeField] private float craneOrbit = 35f;
-    [SerializeField] private float craneFieldOfView = 42f;
+    [Tooltip("Kalabalık toplanınca kamera yükselerek karakterin çevresinden dolaşır ve arkasına geçer, hafif eğik bakar: " +
+             "karakter sırtı dönük, aynı giyinmiş kalabalığın ortasında, önünde cadde ve mağaza.")]
+    [SerializeField] private float craneDuration = 12f;
+    [SerializeField] private float craneHeight = 7.5f;
+    [Tooltip("Son karede kameranın karakterin arkasındaki yatay uzaklığı (m).")]
+    [SerializeField] private float craneBack = 7f;
+    [Tooltip("Son karede bakılan nokta: karakterin bu kadar önü (m); bakış hafif eğik kalır, ufuk/mağaza görünür.")]
+    [SerializeField] private float craneLookAhead = 2.5f;
+    [SerializeField] private float craneLookHeight = 0.8f;
+    [SerializeField] private float craneFieldOfView = 45f;
     [Tooltip("Vinç sonunda her şey donar ve ses kesilir; bu kadar sessizlikte tutulur (sn).")]
     [SerializeField] private float silenceDuration = 2.2f;
     [Tooltip("Sinema bantlarının ekran yüksekliğine oranı (her biri).")]
@@ -118,12 +120,15 @@ public class FinalSequence : MonoBehaviour
         yield return PullBack(cam);
         // Kalabalık (hepsi aynı giyinmiş, en içte oyuncuya benzeyenler) toplanmadan son çekime geçilmez; bu arada
         // kamera karakterin çevresinde çok yavaş döner.
+        // Dönüş hızı yavaşça açılır (çekilme duruşla bitiyor), vinç de bu hızla devralır: geçişlerde kesinti olmaz.
+        float orbitSpeed = 0f;
         for (float t = 0f; t < maxRingWait && (crowd == null || !crowd.RingFormed || t < holdDuration); t += Time.deltaTime)
         {
-            Orbit(cam.transform, waitOrbitSpeed * Time.deltaTime);
+            orbitSpeed = waitOrbitSpeed * Mathf.SmoothStep(0f, 1f, t / 2f);
+            Orbit(cam.transform, orbitSpeed * Time.deltaTime);
             yield return null;
         }
-        yield return Crane(cam);
+        yield return Crane(cam, orbitSpeed);
 
         // Son an: herkes olduğu pozda donar, ses tamamen kesilir.
         if (crowd != null)
@@ -233,36 +238,62 @@ public class FinalSequence : MonoBehaviour
         cam.rotation = Quaternion.LookRotation(pivot + Vector3.up * lookHeight - cam.position, Vector3.up);
     }
 
-    // Son çekim: kamera yavaşça karakterin tepesine çıkar ve hafifçe döner, bakış aşağı iner; karakter aynı giyinmiş
-    // kalabalığın ortasında küçülür. Bu sırada sokağın sesi yavaş yavaş kısılır.
-    private IEnumerator Crane(Camera cam)
+    // Son çekim: kamera yükselerek karakterin çevresinden (bekleme dönüşünün yönünde, aynı hızla başlayıp) dolaşır ve
+    // arkasına geçer; bakış karakterden önündeki caddeye kayar, hafif eğik kalır. Konum, yükseklik, bakış ve FOV
+    // smootherstep ile, yatay açı Hermite eğrisiyle (başta bekleme hızı, sonda 0) ilerler: başta ve sonda sarsıntı yok.
+    // Bu sırada sokağın sesi yavaş yavaş kısılır.
+    private IEnumerator Crane(Camera cam, float startYawSpeed)
     {
         Transform camTransform = cam.transform;
-        Vector3 pivot = player.transform.position;
+        Transform target = player.transform;
+        Vector3 pivot = target.position;
+        Vector3 forward = target.forward;
+        forward.y = 0f;
+        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+
         Vector3 startOffset = camTransform.position - pivot;
         float startYaw = Mathf.Atan2(startOffset.x, startOffset.z) * Mathf.Rad2Deg;
         float startDistance = new Vector2(startOffset.x, startOffset.z).magnitude;
         float startHeight = startOffset.y;
         float startFov = cam.fieldOfView;
-        float startLook = lookHeight;
+        Vector3 startFocus = pivot + Vector3.up * lookHeight;
+        Vector3 endFocus = pivot + forward * craneLookAhead + Vector3.up * craneLookHeight;
         float startVolume = AudioListener.volume;
+
+        // Arkası: karakterin baktığı yönün tersi. Bekleme dönüşü hangi yöne gidiyorsa o yönde devam edilir.
+        float behindYaw = Mathf.Atan2(-forward.x, -forward.z) * Mathf.Rad2Deg;
+        float dir = startYawSpeed < 0f ? -1f : 1f;
+        float delta = Mathf.Repeat((behindYaw - startYaw) * dir, 360f);
+        if (delta < 45f)
+            delta += 360f;
+        float endYaw = startYaw + delta * dir;
+        float m0 = startYawSpeed * craneDuration;
 
         for (float t = 0f; t < craneDuration; t += Time.deltaTime)
         {
             float k = t / craneDuration;
-            // Yavaş başlar, tepede yavaşça durur.
-            float s = Mathf.SmoothStep(0f, 1f, k);
-            float yaw = (startYaw + craneOrbit * s) * Mathf.Deg2Rad;
-            float distance = Mathf.Lerp(startDistance, craneFront, s);
-            float height = Mathf.Lerp(startHeight, craneHeight, s);
-            camTransform.position = pivot + new Vector3(Mathf.Sin(yaw) * distance, height, Mathf.Cos(yaw) * distance);
-            Vector3 focus = pivot + Vector3.up * Mathf.Lerp(startLook, 0.6f, s);
+            float s = SmootherStep(k);
+            // Yükseliş biraz önden gider: kamera önce kalabalığın üstüne çıkar, sonra arkaya dolaşır.
+            float rise = SmootherStep(Mathf.Clamp01(k * 1.25f));
+            float k2 = k * k, k3 = k2 * k;
+            float yaw = (2f * k3 - 3f * k2 + 1f) * startYaw + (k3 - 2f * k2 + k) * m0 + (-2f * k3 + 3f * k2) * endYaw;
+            float yawRad = yaw * Mathf.Deg2Rad;
+            float distance = Mathf.Lerp(startDistance, craneBack, s);
+            float height = Mathf.Lerp(startHeight, craneHeight, rise);
+            camTransform.position = pivot + new Vector3(Mathf.Sin(yawRad) * distance, height, Mathf.Cos(yawRad) * distance);
+            Vector3 focus = Vector3.Lerp(startFocus, endFocus, s);
             camTransform.rotation = Quaternion.LookRotation(focus - camTransform.position, Vector3.up);
             cam.fieldOfView = Mathf.Lerp(startFov, craneFieldOfView, s);
             AudioListener.volume = startVolume * (1f - Mathf.SmoothStep(0f, 1f, k));
             yield return null;
         }
         AudioListener.volume = 0f;
+    }
+
+    private static float SmootherStep(float x)
+    {
+        x = Mathf.Clamp01(x);
+        return x * x * x * (x * (x * 6f - 15f) + 10f);
     }
 
     // Final başlarken üstten ve alttan siyah sinema bantları girer.

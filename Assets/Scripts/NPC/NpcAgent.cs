@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -278,53 +278,81 @@ public class NpcAgent : MonoBehaviour
     // yerinde durur. Yerine ulaşamazsa (önü tıkalı) olduğu yerde kalır: kalabalığın arkasında itişen biri gibi.
     private IEnumerator Ring(Vector3 point, Quaternion rotation, bool talk)
     {
-        for (int i = 0; i < 3 && !frozen && (transform.position - point).sqrMagnitude > 0.4f * 0.4f; i++)
+        while (!frozen)
         {
-            if (!agent.enabled || !agent.isOnNavMesh || !agent.SetDestination(point))
-                break;
-            float timeout = Vector3.Distance(transform.position, point) / Mathf.Max(agent.speed, 0.1f) * 2f + 8f;
-            float check = 0.5f;
-            while (timeout > 0f && !frozen)
+            for (int i = 0; i < 3 && !frozen && (transform.position - point).sqrMagnitude > 0.4f * 0.4f; i++)
             {
-                if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.05f)
+                if (!agent.enabled || !agent.isOnNavMesh || !agent.SetDestination(point))
                     break;
-                // Yolda daha içte boş bir yer varsa ona geçer (oyuncunun dibi boş kalmasın).
-                check -= Time.deltaTime;
-                if (check <= 0f)
+                float timeout = Vector3.Distance(transform.position, point) / Mathf.Max(agent.speed, 0.1f) * 2f + 8f;
+                float check = 0.5f;
+                while (timeout > 0f && !frozen)
                 {
-                    check = 0.5f;
-                    if (crowd.TryUpgradeSlot(this, out NpcCrowd.Goal better))
+                    if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.05f)
+                        break;
+                    // Yolda daha içte boş bir yer varsa ona geçer (oyuncunun dibi boş kalmasın).
+                    check -= Time.deltaTime;
+                    if (check <= 0f)
                     {
-                        point = better.point;
-                        rotation = better.rotation;
-                        talk = better.talk;
-                        agent.SetDestination(point);
+                        check = 0.5f;
+                        if (crowd.TryUpgradeSlot(this, out NpcCrowd.Goal better))
+                        {
+                            point = better.point;
+                            rotation = better.rotation;
+                            talk = better.talk;
+                            agent.SetDestination(point);
+                        }
                     }
+                    timeout -= Time.deltaTime;
+                    yield return null;
                 }
-                timeout -= Time.deltaTime;
-                yield return null;
             }
-        }
-        if (frozen)
-            yield break;
+            if (frozen)
+                yield break;
 
-        bool reached = (transform.position - point).sqrMagnitude <= 1f;
-        if (!reached)
-            crowd.ReleaseSlot(this);
-        Vector3 stand = reached ? point : transform.position;
-        busy = true;
-        walking = false;
-        animator.speed = Random.Range(0.85f, 1.1f);
-        agent.enabled = false;
-        obstacle.enabled = true;
-        crowd.NotifyRingArrived(this);
-        // Herkes aynı karede aynı idle'ı oynamasın.
-        currentState = null;
-        animator.CrossFadeInFixedTime(talk ? profile.talkState : profile.idleState, CrossFade, 0, Random.value * 3f);
-        currentState = talk ? profile.talkState : profile.idleState;
-        yield return Align(Grounded(stand), rotation);
-        AtSpot = true;
-        Status = "Kalabalıkta";
+            bool reached = (transform.position - point).sqrMagnitude <= 1f;
+            if (!reached)
+                crowd.ReleaseSlot(this);
+            Vector3 stand = reached ? point : transform.position;
+            if (agent.enabled && agent.isOnNavMesh)
+                agent.ResetPath();
+            busy = true;
+            walking = false;
+            animator.speed = Random.Range(0.85f, 1.1f);
+            agent.enabled = false;
+            obstacle.enabled = true;
+            crowd.NotifyRingArrived(this);
+            // Herkes aynı karede aynı idle'ı oynamasın.
+            currentState = null;
+            animator.CrossFadeInFixedTime(talk ? profile.talkState : profile.idleState, CrossFade, 0, Random.value * 3f);
+            currentState = talk ? profile.talkState : profile.idleState;
+            yield return Align(Grounded(stand), rotation);
+            AtSpot = true;
+            Status = "Kalabalıkta";
+
+            // Yerleştikten sonra da dibindeki boş iç yere adım atar: kalabalığın içinde delik kalmasın.
+            NpcCrowd.Goal step = default;
+            bool move = false;
+            while (!frozen && !move)
+            {
+                for (float w = Random.Range(0.6f, 1.4f); w > 0f && !frozen; w -= Time.deltaTime)
+                    yield return null;
+                if (!frozen)
+                    move = crowd.TryUpgradeSlot(this, out step, true);
+            }
+            if (frozen)
+                yield break;
+
+            point = step.point;
+            rotation = step.rotation;
+            talk = step.talk;
+            AtSpot = false;
+            obstacle.enabled = false;
+            agent.enabled = true;
+            agent.Warp(transform.position);
+            busy = false;
+            Status = "Kalabalıkta öne geçiyor";
+        }
     }
 
     private bool frozen;

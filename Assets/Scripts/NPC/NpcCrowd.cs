@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -202,8 +202,17 @@ public class NpcCrowd : MonoBehaviour
     [SerializeField] private string ringLook = "BlondeHair";
     [Tooltip("Finale başlarken bundan uzaktaki NPC'ler kalabalığa katılmaz, uzakta gezinir (m).")]
     [SerializeField] private float joinDistance = 28f;
+    [Tooltip("Açıksa kalabalık SADECE oyuncuya benzeyen kadınlardan oluşur (07.11, kullanıcı isteği): sokaktaki diğer " +
+             "NPC'ler uzaklaşıp kamera görmeyince kaybolur, sabit NPC'ler (kafe, bank, telefon) görülmediği an gizlenir; " +
+             "ek doğanlar (finaleExtra) da benzer olur.")]
+    [SerializeField] private bool onlyLookalikes = true;
+    [Tooltip("onlyLookalikes: oyuncuya bundan yakın sabit NPC'ler (kalabalık dışı) görülmediği an gizlenir (m).")]
+    [SerializeField] private float bystanderRadius = 40f;
 
     private bool finale;
+    private readonly List<NpcAgent> outsiders = new List<NpcAgent>();
+    private readonly List<GameObject> bystanders = new List<GameObject>();
+    private readonly HashSet<NpcAgent> arrived = new HashSet<NpcAgent>();
     private bool frozen;
     private Vector3 finaleCenter;
     private NavMeshPath finalePath;
@@ -218,10 +227,9 @@ public class NpcCrowd : MonoBehaviour
     private readonly List<CrowdSlot> crowdSlots = new List<CrowdSlot>();
     private readonly HashSet<NpcAgent> lookalikes = new HashSet<NpcAgent>();
     private readonly HashSet<NpcAgent> joiners = new HashSet<NpcAgent>();
-    private int ringArrived;
 
     /// <summary>Kalabalığın çoğu yerini aldı (final kamerası bunu bekler).</summary>
-    public bool RingFormed => joiners.Count == 0 || ringArrived >= Mathf.CeilToInt(Mathf.Min(joiners.Count, crowdSlots.Count) * 0.8f);
+    public bool RingFormed => joiners.Count == 0 || arrived.Count >= Mathf.CeilToInt(Mathf.Min(joiners.Count, crowdSlots.Count) * 0.88f);
 
     /// <summary>Finalin son anı: herkes olduğu pozda donar.</summary>
     public bool Frozen => frozen;
@@ -413,19 +421,30 @@ public class NpcCrowd : MonoBehaviour
         finaleCenter = center;
         finalePath = new NavMeshPath();
         // Uzaktakiler (görünmezler) kalabalığa yürüyüp gelmeye çalışmaz, yerler yakındakilere ve yeni doğanlara kalır.
+        // Sadece benzerler modunda sokaktaki eski NPC'ler hiç katılmaz: oyuncudan uzaklaşır, görülmeyince kaybolur.
         foreach (NpcAgent agent in agents)
         {
             Vector3 d = agent.transform.position - center;
             d.y = 0f;
-            if (d.sqrMagnitude < joinDistance * joinDistance)
+            if (onlyLookalikes)
+                outsiders.Add(agent);
+            else if (d.sqrMagnitude < joinDistance * joinDistance)
                 joiners.Add(agent);
             agent.Interrupt();
         }
 
-        BuildCrowdSlots(center, ringCount + finaleExtra + joiners.Count + 8);
-
         Camera cam = playerCamera != null ? playerCamera : Camera.main;
-        SpawnRing(center, cam);
+        if (onlyLookalikes)
+        {
+            CollectBystanders(center);
+            SpawnRing(center, cam, ringCount + finaleExtra);
+            BuildCrowdSlots(center, lookalikes.Count + 6);
+            StartCoroutine(ClearOutsiders());
+            return;
+        }
+
+        BuildCrowdSlots(center, ringCount + finaleExtra + joiners.Count + 8);
+        SpawnRing(center, cam, ringCount);
 
         int spawned = 0;
         for (int attempt = 0; attempt < finaleExtra * 8 && spawned < finaleExtra; attempt++)
@@ -453,17 +472,17 @@ public class NpcCrowd : MonoBehaviour
 
     // Oyuncuya benzeyen kadınlar görüş dışında, oyuncunun cadde boyunca önünde/arkasında doğar, her biri halkada bir
     // yere yürür ve ona dönük durur. Halkanın içi boş kalır: final kamerası karakteri tepeden, halkanın üstünden görür.
-    private void SpawnRing(Vector3 center, Camera cam)
+    private void SpawnRing(Vector3 center, Camera cam, int count)
     {
-        if (ringCount <= 0 || ringProfile < 0 || ringProfile >= profiles.Length || profiles[ringProfile].prefab == null)
+        if (count <= 0 || ringProfile < 0 || ringProfile >= profiles.Length || profiles[ringProfile].prefab == null)
             return;
 
         NpcProfile profile = profiles[ringProfile];
         int placed = 0;
-        for (int attempt = 0; attempt < ringCount * 20 && placed < ringCount; attempt++)
+        for (int attempt = 0; attempt < count * 20 && placed < count; attempt++)
         {
             // Yer bulunamazsa bant giderek genişler.
-            float widen = attempt / (float)(ringCount * 10);
+            float widen = attempt / (float)(count * 10);
             float side = Random.value < 0.5f ? -1f : 1f;
             Vector3 p = new Vector3(Random.Range(finaleLaneX.x, finaleLaneX.y), center.y,
                 center.z + side * Random.Range(ringSpawnBand.x, ringSpawnBand.y * (1f + widen)));
@@ -614,30 +633,36 @@ public class NpcCrowd : MonoBehaviour
     /// Yürürken: önündeki daha içteki bir yer boşsa ona geçer. Uzaktan iç yer kapan NPC'ler final donana kadar
     /// yetişemiyordu, oyuncunun dibi boş kalıyordu; artık o yerleri oraya ilk varan doldurur.
     /// </summary>
-    public bool TryUpgradeSlot(NpcAgent npc, out Goal goal)
+    public bool TryUpgradeSlot(NpcAgent npc, out Goal goal, bool settled = false)
     {
         goal = default;
-        if (frozen)
+        if (frozen || crowdSlots.Count == 0)
             return false;
         int current = OwnedSlot(npc);
-        if (current < 0)
-            return false;
         Vector3 from = npc.transform.position;
-        float currentDistance = Vector3.Distance(from, crowdSlots[current].point);
+        // Yerini bırakmış (varamayıp olduğu yerde duran) NPC'nin "sırası" merkeze uzaklığıdır.
+        Vector3 toCenter = from - finaleCenter;
+        toCenter.y = 0f;
+        float currentKey = current >= 0 ? crowdSlots[current].key : toCenter.magnitude + 0.3f;
+        float currentDistance = current >= 0 ? Vector3.Distance(from, crowdSlots[current].point) : 0f;
+        // Yerleşmiş olan sadece dibindeki (adım mesafesindeki) boş iç yere geçer; yürüyen yolunun üstündekine.
+        float reach = settled ? 1.7f : currentDistance + 0.6f;
         int best = -1;
-        float bestKey = crowdSlots[current].key - 0.35f;
-        for (int i = 0; i < current; i++)
+        float bestKey = currentKey - 0.3f;
+        int limit = current >= 0 ? current : crowdSlots.Count;
+        for (int i = 0; i < limit; i++)
         {
             if (crowdSlots[i].owner != null || crowdSlots[i].key >= bestKey)
                 continue;
-            if (Vector3.Distance(from, crowdSlots[i].point) > currentDistance + 0.6f)
+            if (Vector3.Distance(from, crowdSlots[i].point) > reach)
                 continue;
             best = i;
             bestKey = crowdSlots[i].key;
         }
         if (best < 0)
             return false;
-        SetOwner(current, null);
+        if (current >= 0)
+            SetOwner(current, null);
         SetOwner(best, npc);
         goal = SlotGoal(best);
         return true;
@@ -687,7 +712,69 @@ public class NpcCrowd : MonoBehaviour
     public void NotifyRingArrived(NpcAgent npc)
     {
         if (joiners.Contains(npc))
-            ringArrived++;
+            arrived.Add(npc);
+    }
+
+    // Sadece benzerler: oyuncunun çevresindeki sabit NPC'ler (kafe, bank, telefon, çalgıcı...) ve sokaktan kalan
+    // kalabalık NPC'leri kamera görmediği an kaldırılır; görünürken kaybolmazlar (birden yok olmasınlar).
+    private void CollectBystanders(Vector3 center)
+    {
+        bystanders.Clear();
+        foreach (Animator a in FindObjectsByType<Animator>(FindObjectsSortMode.None))
+        {
+            if (a.transform.IsChildOf(transform) || (player != null && a.transform.IsChildOf(player)))
+                continue;
+            if (a.GetComponentInParent<NpcAgent>() != null)
+                continue;
+            Vector3 d = a.transform.position - center;
+            d.y = 0f;
+            if (d.sqrMagnitude < bystanderRadius * bystanderRadius && a.GetComponentInChildren<SkinnedMeshRenderer>() != null)
+                bystanders.Add(a.gameObject);
+        }
+    }
+
+    private IEnumerator ClearOutsiders()
+    {
+        var wait = new WaitForSeconds(0.25f);
+        while (!frozen && (outsiders.Count > 0 || bystanders.Count > 0))
+        {
+            Camera cam = playerCamera != null ? playerCamera : Camera.main;
+            for (int i = outsiders.Count - 1; i >= 0; i--)
+            {
+                NpcAgent npc = outsiders[i];
+                if (npc == null) { outsiders.RemoveAt(i); continue; }
+                if (cam != null && InView(cam, npc.transform.position))
+                    continue;
+                agents.Remove(npc);
+                outsiders.RemoveAt(i);
+                Destroy(npc.gameObject);
+            }
+            for (int i = bystanders.Count - 1; i >= 0; i--)
+            {
+                GameObject go = bystanders[i];
+                if (go == null) { bystanders.RemoveAt(i); continue; }
+                if (cam != null && InView(cam, go.transform.position))
+                    continue;
+                go.SetActive(false);
+                bystanders.RemoveAt(i);
+            }
+            yield return wait;
+        }
+    }
+
+    // Kalabalığa katılmayan eski NPC: oyuncudan uzaklaşır (görüş dışına çıkınca kaldırılır).
+    private Vector3 AwayPoint(Vector3 from)
+    {
+        Vector3 dir = from - finaleCenter;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.01f)
+            dir = Vector3.forward;
+        dir.x = 0f;
+        dir = dir.sqrMagnitude < 0.01f ? Vector3.forward : dir.normalized;
+        Vector3 p = new Vector3(from.x, from.y, Mathf.Clamp(finaleCenter.z + dir.z * 35f, finaleLaneZ.x, finaleLaneZ.y));
+        if (NavMesh.SamplePosition(p, out NavMeshHit hit, 3f, NavMesh.AllAreas))
+            return hit.position;
+        return p;
     }
 
     private static bool InView(Camera cam, Vector3 position)
@@ -724,6 +811,8 @@ public class NpcCrowd : MonoBehaviour
             int slot = joiners.Contains(npc) ? ClaimSlot(npc) : -1;
             if (slot >= 0)
                 return SlotGoal(slot);
+            if (outsiders.Contains(npc))
+                return new Goal { kind = GoalKind.Wander, point = AwayPoint(from) };
             return new Goal { kind = GoalKind.Wander, point = FinalePoint() };
         }
 
@@ -934,7 +1023,9 @@ public class NpcCrowd : MonoBehaviour
     {
         agents.Remove(npc);
         Destroy(npc.gameObject);
-        StartCoroutine(RespawnLater());
+        // Finalde yerine yenisi gelmez (gelen sıradan NPC benzerlerin kalabalığına karışırdı).
+        if (!finale)
+            StartCoroutine(RespawnLater());
     }
 
     private IEnumerator RespawnLater()
