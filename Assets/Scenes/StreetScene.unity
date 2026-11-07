@@ -31370,8 +31370,8 @@ MonoBehaviour:
   finaleLaneX: {x: -4.5, y: 4.5}
   finaleLaneZ: {x: 3, y: 118}
   ringCount: 26
-  ringRadius: 1.15
-  innerJitter: 1.1
+  ringRadius: 0.95
+  innerJitter: 0.7
   crowdSpacing: {x: 0.58, y: 0.86}
   crowdLaneX: {x: -7.4, y: 7.4}
   edgeRaggedness: 1.6

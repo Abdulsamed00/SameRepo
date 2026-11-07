@@ -279,11 +279,39 @@ public class NpcAgent : MonoBehaviour
     private IEnumerator Ring(Vector3 point, Quaternion rotation, bool talk)
     {
         for (int i = 0; i < 3 && !frozen && (transform.position - point).sqrMagnitude > 0.4f * 0.4f; i++)
-            yield return WalkTo(point);
+        {
+            if (!agent.enabled || !agent.isOnNavMesh || !agent.SetDestination(point))
+                break;
+            float timeout = Vector3.Distance(transform.position, point) / Mathf.Max(agent.speed, 0.1f) * 2f + 8f;
+            float check = 0.5f;
+            while (timeout > 0f && !frozen)
+            {
+                if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.05f)
+                    break;
+                // Yolda daha içte boş bir yer varsa ona geçer (oyuncunun dibi boş kalmasın).
+                check -= Time.deltaTime;
+                if (check <= 0f)
+                {
+                    check = 0.5f;
+                    if (crowd.TryUpgradeSlot(this, out NpcCrowd.Goal better))
+                    {
+                        point = better.point;
+                        rotation = better.rotation;
+                        talk = better.talk;
+                        agent.SetDestination(point);
+                    }
+                }
+                timeout -= Time.deltaTime;
+                yield return null;
+            }
+        }
         if (frozen)
             yield break;
 
-        Vector3 stand = (transform.position - point).sqrMagnitude > 1f ? transform.position : point;
+        bool reached = (transform.position - point).sqrMagnitude <= 1f;
+        if (!reached)
+            crowd.ReleaseSlot(this);
+        Vector3 stand = reached ? point : transform.position;
         busy = true;
         walking = false;
         animator.speed = Random.Range(0.85f, 1.1f);
