@@ -229,8 +229,8 @@ public class PlanarMirror : MonoBehaviour
     // %60'ın altına inince küçülür.
     private void EnsureTexture(Vector2 pixels)
     {
-        float scale = Mathf.Min(resolutionScale, MaxResolutionScale);
-        int cap = Mathf.Min(maxTextureHeight, MaxTextureCap);
+        float scale = Mathf.Min(resolutionScale, MaxResolutionScale) * GameSettings.MirrorQuality;
+        int cap = Mathf.RoundToInt(Mathf.Min(maxTextureHeight, MaxTextureCap) * GameSettings.MirrorQuality);
         int needW = Mathf.Clamp(Mathf.CeilToInt(pixels.x * scale / 32f) * 32, 32, cap);
         int needH = Mathf.Clamp(Mathf.CeilToInt(pixels.y * scale / 32f) * 32, 32, cap);
         if (texture != null)

@@ -1672,6 +1672,7 @@ Transform:
   - {fileID: 1281218093}
   - {fileID: 115908299}
   - {fileID: 1633426179}
+  - {fileID: 1001923204}
   m_Father: {fileID: 1337342090}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &50276736
@@ -33402,6 +33403,103 @@ Transform:
   - {fileID: 1599464434}
   m_Father: {fileID: 2101604659}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1001923203
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1001923204}
+  - component: {fileID: 1001923205}
+  m_Layer: 0
+  m_Name: Gunduz_Koridor_Dolgu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1001923204
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1001923203}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.5, y: 3.05, z: -2.9}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 49273571}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!108 &1001923205
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1001923203}
+  m_Enabled: 1
+  serializedVersion: 12
+  m_Type: 3
+  m_Color: {r: 1, g: 0.95, b: 0.88, a: 1}
+  m_Intensity: 0.3
+  m_Range: 10
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 21.80208
+  m_CookieSize2D: {x: 0.5, y: 0.5}
+  m_Shadows:
+    m_Type: 2
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 2
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 12.6, y: 1.8}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!1001 &1004249179
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -36082,7 +36180,7 @@ Transform:
   m_GameObject: {fileID: 1088029074}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.9848078, z: -0, w: -0.17364821}
-  m_LocalPosition: {x: 1.02, y: 0.9216001, z: -3.7}
+  m_LocalPosition: {x: -3.098681, y: 0.5421541, z: 2.0114658}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -42284,6 +42382,7 @@ MonoBehaviour:
   - {fileID: 1009771846}
   glowRenderers:
   - {fileID: 698852718}
+  offBulbMaterial: {fileID: 0}
   onByDefault: 1
 --- !u!1 &1282661163
 GameObject:
@@ -44782,6 +44881,7 @@ MonoBehaviour:
   - {fileID: 995002167}
   - {fileID: 1664336102}
   - {fileID: 1539898708}
+  offBulbMaterial: {fileID: 0}
   onByDefault: 1
 --- !u!1001 &1351272419
 PrefabInstance:
@@ -44891,15 +44991,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 5fe91e66a6e59b5459b263e0409efd89, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.887
+      value: 0.00000074130884
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5fe91e66a6e59b5459b263e0409efd89, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.125
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5fe91e66a6e59b5459b263e0409efd89, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.901
+      value: -0.000002036729
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5fe91e66a6e59b5459b263e0409efd89, type: 3}
       propertyPath: m_LocalRotation.w
@@ -47189,20 +47289,20 @@ MonoBehaviour:
     e00: 1
     e01: 0
     e02: 0
-    e03: 0.5
+    e03: 0.11000061
     e10: 0
     e11: 1
     e12: 0
-    e13: -2.8874
+    e13: -5.9361997
     e20: 0
     e21: 0
     e22: 1
-    e23: 1.2000003
+    e23: -6.7499995
     e30: 0
     e31: 0
     e32: 0
     e33: 1
-  cachedHashCode: 1451863071
+  cachedHashCode: 2094287911
   fillEmptySpaces: 0
 --- !u!43 &1414052528
 Mesh:
@@ -55160,6 +55260,7 @@ GameObject:
   - component: {fileID: 1633426179}
   - component: {fileID: 1633426181}
   - component: {fileID: 1633426180}
+  - component: {fileID: 1633426182}
   m_Layer: 0
   m_Name: Isik_Poz_Gunduz
   m_TagString: Untagged
@@ -55261,6 +55362,35 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &1633426182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1633426178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1001 &1634662772
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -57450,6 +57580,7 @@ MonoBehaviour:
   - {fileID: 1771048749}
   - {fileID: 1227156083}
   - {fileID: 1167308508}
+  offBulbMaterial: {fileID: 0}
   onByDefault: 1
 --- !u!1 &1690119002
 GameObject:
@@ -64569,6 +64700,8 @@ MonoBehaviour:
   profileOffset: {x: -0.42, y: 0.1}
   zoomInDuration: 1.1
   zoomHold: 2
+  revealHold: 3.5
+  revealLookDown: 0.035
   zoomOutDuration: 0.9
   zoomFovStart: 34
   zoomFovEnd: 26
@@ -66545,6 +66678,7 @@ MonoBehaviour:
   - {fileID: 1079948111}
   - {fileID: 882902524}
   - {fileID: 1231671516}
+  offBulbMaterial: {fileID: 0}
   onByDefault: 0
 --- !u!1 &1956550360
 GameObject:
@@ -70163,7 +70297,7 @@ MonoBehaviour:
   cameraPoint: {fileID: 1931082951}
   cameraFov: 40
   clickSound: {fileID: 8300000, guid: 9f85a9b2b4d273f4c91de67c78cd33ff, type: 3}
-  menuMusic: {fileID: 8300000, guid: 1f884d146ab359649a463ed6a1247420, type: 3}
+  menuMusic: {fileID: 8300000, guid: 4a5b4a07fe642254a9801f37b5ab200f, type: 3}
   menuMusicVolume: 0.5
   background: {fileID: 0}
   uiFadeDuration: 0.5

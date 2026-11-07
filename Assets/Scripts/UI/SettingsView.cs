@@ -24,6 +24,7 @@ public class SettingsView : MonoBehaviour
     private const float ChoiceRight = 932f;   // ekranda x = 1076
 
     private static readonly string[] OffOn = { "Kapalı", "Açık" };
+    private static readonly string[] QualityNames = { "Düşük", "Orta", "Yüksek" };
 
     private abstract class Row
     {
@@ -266,6 +267,11 @@ public class SettingsView : MonoBehaviour
             i => $"{GameSettings.Resolutions[i].x} × {GameSettings.Resolutions[i].y}",
             () => GameSettings.ResolutionIndex, GameSettings.SetResolutionIndex);
         AddSlider("Parlaklık", () => GameSettings.Brightness, GameSettings.SetBrightness);
+        AddChoice("Grafik kalitesi", () => Mathf.Min(3, QualitySettings.names.Length), i => QualityNames[Mathf.Min(i, 2)],
+            () => GameSettings.Quality, GameSettings.SetQuality);
+        AddChoice("Render ölçeği", () => GameSettings.RenderScaleSteps, i => $"%{50 + 10 * i}",
+            () => GameSettings.RenderScaleStep, GameSettings.SetRenderScaleStep);
+        AddChoice("Görsel efektler", () => 2, i => OffOn[i], () => GameSettings.VisualEffects ? 1 : 0, i => GameSettings.SetVisualEffects(i == 1));
         AddChoice("Dikey senkronizasyon", () => 2, i => OffOn[i], () => GameSettings.VSync ? 1 : 0, i => GameSettings.SetVSync(i == 1));
     }
 

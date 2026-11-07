@@ -301,7 +301,9 @@ public class NpcCrowd : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < population; i++)
+        // Grafik kalitesi düştükçe kalabalık azalır (Düşük %50, Orta %75).
+        int count = Mathf.Max(1, Mathf.RoundToInt(population * GameSettings.NpcFactor));
+        for (int i = 0; i < count; i++)
             SpawnInitial();
     }
 

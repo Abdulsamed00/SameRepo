@@ -19,6 +19,13 @@ public class CategoryVolume : MonoBehaviour
         baseVolume = source.volume;
     }
 
+    /// <summary>Koddan eklenince kategoriyi belirler (ShopScene ikili sahne olduğu için bileşen sahnede elle eklenemedi).</summary>
+    public void SetCategory(AudioCategory value)
+    {
+        category = value;
+        Apply();
+    }
+
     private void OnEnable()
     {
         GameSettings.Changed += Apply;

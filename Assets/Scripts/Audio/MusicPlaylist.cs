@@ -17,6 +17,11 @@ public class MusicPlaylist : MonoBehaviour
         source = GetComponent<AudioSource>();
         source.loop = false;
         source.playOnAwake = false;
+        // Mağaza müziği "Müzik" ayarına bağlı olsun (sahnede CategoryVolume yoksa ekle).
+        CategoryVolume category = GetComponent<CategoryVolume>();
+        if (category == null)
+            category = gameObject.AddComponent<CategoryVolume>();
+        category.SetCategory(AudioCategory.Music);
     }
 
     private void Update()
