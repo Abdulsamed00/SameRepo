@@ -1,7 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Reklam panosundaki afiş yüzeyi: o günün ürününün (<see cref="GameDay.Product"/>) afişini gösterir.
+/// Reklam panosundaki afiş yüzeyi: o günün ürününün (<see cref="GameDay.Product"/>) afişini, kuaför/klinik gününde
+/// ürün alındıktan sonra o hizmetin afişini gösterir (<see cref="PosterSet.PickToday"/>).
 /// Afiş hiç kırpılmaz ve esnetilmez: pano (üst obje, afişin arkasındaki yüzey) ilk boyutunu aşmadan afişin oranına
 /// getirilir, merkezi yerinde kalır. Yataydaki afişlerin oranı ürüne göre değiştiği için boyut her gün yeniden hesaplanır.
 /// </summary>
@@ -11,11 +12,6 @@ public class DailyPoster : MonoBehaviour
     private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
 
     [SerializeField] private PosterSet posters;
-    [Header("Kuaför ve klinik günleri")]
-    [Tooltip("Kuaför gününde (GameDay.Index 1) dikey panolarda gösterilen afiş.")]
-    [SerializeField] private Texture2D salonPoster;
-    [Tooltip("Klinik gününde (GameDay.Index 3) dikey panolarda gösterilen afiş.")]
-    [SerializeField] private Texture2D clinicPoster;
     [Tooltip("Aynı yöndeki afişlerden hangisi (komşu panolar farklı afiş göstersin diye sırayla verilir).")]
     [SerializeField] private int index;
 
@@ -35,10 +31,17 @@ public class DailyPoster : MonoBehaviour
     private void OnEnable()
     {
         GameDay.Changed += Apply;
+        PlayerPurchases.Purchased += OnPurchased;
         Apply();
     }
 
-    private void OnDisable() => GameDay.Changed -= Apply;
+    private void OnDisable()
+    {
+        GameDay.Changed -= Apply;
+        PlayerPurchases.Purchased -= OnPurchased;
+    }
+
+    private void OnPurchased(ProductType _) => Apply();
 
     private void Apply()
     {
@@ -46,17 +49,7 @@ public class DailyPoster : MonoBehaviour
             return;
 
         float boardAspect = maxSize.x / maxSize.y;
-        Texture2D image = null;
-        // O günün mekânı (kuaför/klinik) dikey panolarda, ikiden birinde kendi afişiyle tanıtılır.
-        if (boardAspect < 1f && index % 2 == 0)
-        {
-            if (GameDay.Index == DayRoutine.SalonDay)
-                image = salonPoster;
-            else if (GameDay.Index == DayRoutine.ClinicDay)
-                image = clinicPoster;
-        }
-        if (image == null)
-            image = posters.Pick(GameDay.Product, boardAspect, index);
+        Texture2D image = posters.PickToday(boardAspect, index);
         if (image == null)
             return;
 
