@@ -100,6 +100,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6697281663977252741, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 6fa03114f74660d47a38db69e26f12d1, type: 2}
     - target: {fileID: 6734931530170869177, guid: 6019d6bd2f67f974ab18df49e1cfd4a5, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0.057916895
@@ -159,3 +163,11 @@ MonoBehaviour:
     show:
     - Glasses
     hide: []
+  originalHair: TopuzSac
+  dyedHair: BlondeHair
+  blendShapeNames:
+  - burun
+  - dudak
+  surgeryWeight: 100
+  badNoseWeight: -70
+  noseShape: burun
