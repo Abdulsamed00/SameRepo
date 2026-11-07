@@ -1,11 +1,11 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 /// <summary>
 /// Masadaki cüzdan (05.11): sabah F ile alınır, el uzanır, cüzdan cebe girer (görünmez olur). Alınmadan evden
 /// çıkılmaz (<see cref="HouseExitLock"/>): "dışarı çıkıyorum" kararını bu verir. Gece eve dönünce yine masadadır.
-/// Alınmayı beklerken (sabah, henüz alınmadı) yavaşça parlar: gövde sıcak bir tonla yanıp söner ve çevresine hafif
-/// ışık verir (oyuncunun gözü masaya gitsin; kapıdan önce hatırlatma).
+/// Alınmayı beklerken (sabah, henüz alınmadı) çevresindeki beyaz kenar (Shader Graph outline) nabız gibi parlar
+/// (oyuncunun gözü masaya gitsin; kapıdan önce hatırlatma). Renkli ışık ve emission yok (07.11, kullanıcı isteği).
 /// </summary>
 public class Wallet : Interactable
 {
@@ -14,19 +14,24 @@ public class Wallet : Interactable
     [SerializeField] private string takePrompt = "Cüzdanı al";
     [SerializeField] private AudioClip takeSound;
 
-    [Header("Parıltı")]
-    [SerializeField] private Color glowColor = new Color(1f, 0.78f, 0.35f);
-    [SerializeField] private float glowStrength = 0.5f;
+    [Header("Parlama")]
     [SerializeField] private float pulseSpeed = 2.2f;
-    [SerializeField] private float lightIntensity = 0.6f;
-    [SerializeField] private float lightRange = 1.1f;
 
-    private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
+    [Header("Beyaz kenar (outline)")]
+    [Tooltip("Shader Graph 'Same/Outline' malzemesi (Assets/Shaders/Outline/Cuzdan_Outline.mat): gövdeye ikinci malzeme " +
+             "olarak eklenir, cüzdanın çevresinde beyaz, bloom alan bir kenar çizer.")]
+    [SerializeField] private Material outlineMaterial;
+    [Tooltip("Kenar parlaklığı (HDR çarpanı; bloom bunun üstünü yayar).")]
+    [SerializeField] private float outlineIntensity = 3f;
+    [Tooltip("Kenar kalınlığı (m).")]
+    [SerializeField] private float outlineWidth = 0.0035f;
+
+    private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
+    private static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
 
     private Renderer[] renderers;
     private Collider[] colliders;
-    private Material[] glowMaterials;
-    private Light glowLight;
+    private Material outline;
     private bool taking;
     private float glow;
 
@@ -39,33 +44,24 @@ public class Wallet : Interactable
         renderers = GetComponentsInChildren<Renderer>(true);
         colliders = GetComponentsInChildren<Collider>(true);
 
-        // Malzeme kopyaları (asset'e dokunmadan emission açılır).
-        var list = new System.Collections.Generic.List<Material>();
-        foreach (Renderer r in renderers)
+        // Kenar: en büyük parçaya (gövde) ikinci malzeme. Toplamalı saydam; renk siyahken görünmez.
+        if (outlineMaterial != null)
         {
-            foreach (Material m in r.materials)
+            Renderer body = null;
+            foreach (Renderer r in renderers)
             {
-                m.EnableKeyword("_EMISSION");
-                m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
-                m.SetColor(EmissionId, Color.black);
-                list.Add(m);
+                if (body == null || r.bounds.size.sqrMagnitude > body.bounds.size.sqrMagnitude)
+                    body = r;
+            }
+            if (body != null)
+            {
+                outline = new Material(outlineMaterial);
+                outline.SetColor(OutlineColorId, Color.black);
+                outline.SetFloat(OutlineWidthId, outlineWidth);
+                var mats = new System.Collections.Generic.List<Material>(body.materials) { outline };
+                body.materials = mats.ToArray();
             }
         }
-        glowMaterials = list.ToArray();
-
-        GameObject lightObject = new GameObject("Parilti");
-        lightObject.transform.SetParent(transform, false);
-        lightObject.transform.localPosition = new Vector3(0f, 0.4f, 0f);
-        glowLight = lightObject.AddComponent<Light>();
-        glowLight.type = LightType.Point;
-        glowLight.color = glowColor;
-        glowLight.range = lightRange;
-        glowLight.intensity = 0f;
-        glowLight.shadows = LightShadows.None;
-#if UNITY_EDITOR
-        glowLight.lightmapBakeType = LightmapBakeType.Realtime;
-#endif
-        glowLight.enabled = false;
     }
 
     private void Start() => SetVisible(OnTable);
@@ -84,21 +80,17 @@ public class Wallet : Interactable
         glow = Mathf.MoveTowards(glow, waiting ? 1f : 0f, 2f * Time.unscaledDeltaTime);
         if (glow <= 0f)
         {
-            if (glowLight.enabled)
-            {
-                glowLight.enabled = false;
-                foreach (Material m in glowMaterials)
-                    m.SetColor(EmissionId, Color.black);
-            }
+            if (outline != null)
+                outline.SetColor(OutlineColorId, Color.black);
             return;
         }
 
         float pulse = 0.55f + 0.45f * Mathf.Sin(Time.time * pulseSpeed);
-        Color emission = glowColor * (glowStrength * pulse * glow);
-        foreach (Material m in glowMaterials)
-            m.SetColor(EmissionId, emission);
-        glowLight.enabled = true;
-        glowLight.intensity = lightIntensity * pulse * glow;
+        if (outline != null)
+        {
+            float v = outlineIntensity * (0.45f + 0.55f * pulse) * glow;
+            outline.SetColor(OutlineColorId, new Color(v, v, v, 1f));
+        }
     }
 
     public override bool CanInteract(PlayerInteractor interactor) =>

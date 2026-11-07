@@ -84,7 +84,10 @@ public class PlanarMirror : MonoBehaviour
         data.requiresColorTexture = false;
         // FPS: yansıma kamerası sahneyi bir kez daha çizer; gölge haritası geçişleri (ve alt ışıkları) en pahalı kısım,
         // aynada gölge farkı pek seçilmiyor.
-        data.renderShadows = false;
+        // Gölgesiz çizim ev aynasında gündüz güneşi ve gece lambalarını duvarların ötesine sızdırıp yansımayı aşırı
+        // parlak yapıyordu (07.11): gölge sadece evdeki yakın aynada (sharpDistance 0) açık; mağaza aynalarında
+        // ışıklar zaten gölgesiz, kapalı kalır.
+        data.renderShadows = sharpDistance <= 0f;
     }
 
     // Sahnede serileştirilmiş eski değerler (1.5 / 2048) aynaya bakınca FPS düşürüyordu: tavan koddan uygulanır.

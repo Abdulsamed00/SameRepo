@@ -31453,26 +31453,28 @@ MonoBehaviour:
   flowSpotAhead: 18
   respawnDelay: {x: 2, y: 6}
   hiddenDistance: 35
-  finaleExtra: 75
+  finaleExtra: 80
   finaleRadius: 9
   finaleClearance: 1.6
   finaleSpawnBand: {x: 9, y: 24}
   finaleLaneX: {x: -4.5, y: 4.5}
   finaleLaneZ: {x: 3, y: 118}
-  ringCount: 26
-  ringRadius: 0.95
-  innerJitter: 0.7
+  ringCount: 40
+  ringRadius: 0.75
+  innerJitter: 0.45
   crowdSpacing: {x: 0.58, y: 0.86}
   crowdLaneX: {x: -7.4, y: 7.4}
   edgeRaggedness: 1.6
   facingJitter: 18
   lookAwayChance: 0.12
   talkChance: 0.1
-  ringSpawnBand: {x: 7, y: 16}
+  ringSpawnBand: {x: 6, y: 20}
   ringWalkSpeed: 1.5
   ringProfile: 1
   ringLook: BlondeHair
   joinDistance: 28
+  onlyLookalikes: 1
+  bystanderRadius: 40
 --- !u!1 &466555560
 GameObject:
   m_ObjectHideFlags: 0
@@ -76389,13 +76391,14 @@ MonoBehaviour:
   lookHeight: 1.2
   finalFieldOfView: 50
   holdDuration: 1.5
-  maxRingWait: 12
+  maxRingWait: 16
   waitOrbitSpeed: 3
-  craneDuration: 9
-  craneHeight: 14
-  craneFront: 3.5
-  craneOrbit: 35
-  craneFieldOfView: 42
+  craneDuration: 12
+  craneHeight: 7.5
+  craneBack: 7
+  craneLookAhead: 2.5
+  craneLookHeight: 0.8
+  craneFieldOfView: 45
   silenceDuration: 2.2
   letterbox: 0.11
   fadeToBlackDuration: 2.5

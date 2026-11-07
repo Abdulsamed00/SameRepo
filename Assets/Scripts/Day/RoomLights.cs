@@ -18,6 +18,7 @@ public class RoomLights : MonoBehaviour
 
     private static readonly Dictionary<string, bool> choices = new Dictionary<string, bool>();
     private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
     private bool applied;
     private bool appliedOn;
@@ -65,6 +66,9 @@ public class RoomLights : MonoBehaviour
             {
                 r.GetPropertyBlock(block);
                 block.SetColor(EmissionId, Color.black);
+                // Unlit ampulde renk = parlama; Lit abajur/avizede albedo siyaha dönmesin.
+                if (r.sharedMaterial != null && r.sharedMaterial.shader.name.Contains("Unlit"))
+                    block.SetColor(BaseColorId, Color.black);
             }
             r.SetPropertyBlock(block);
         }
