@@ -44,7 +44,7 @@ public class SceneFade : MonoBehaviour
     // Beyaz ayakkabı akşam ışığında (sıcak güneş + bake + post'un sıcak beyaz dengesi) ten rengi/sarı çıkıyordu.
     // Albedo her zaman bu renkle çarpılıp ışığın sıcaklığı dengelenir (HDR çarpan, B > 1). Eskiden solma oranıyla
     // ölçekleniyordu; ilk günlerde solma düşük olduğundan ayakkabı dolapta ve üstünde sarı kalıyordu (01.11, ölçüldü).
-    private static readonly Color CoolTint = new Color(0.85f, 1.1f, 1.5f, 1f);
+    private static readonly Color CoolTint = new Color(1f, 1f, 1f, 1f); // 08.11: buz mavisi çıkıyordu (eski 0.85, 1.1, 1.5), NPC ayakkabılarıyla aynı ton istendi
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
     /// <summary>

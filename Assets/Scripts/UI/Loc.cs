@@ -191,6 +191,8 @@ public static class Loc
         { "SATIŞ FİŞİ", "RECEIPT" },
         { "Mağaza · Kasa 02", "Store · Register 02" },
         { "1 AD", "1 PC" },
+        { "KUAFÖR", "HAIR SALON" },
+        { "ESTETİK", "AESTHETICS" },
         { "TOPLAM ADET", "TOTAL ITEMS" },
         { "Yine bekleriz.", "Thank you, come again." },
     };

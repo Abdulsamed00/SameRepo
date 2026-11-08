@@ -133,6 +133,7 @@ public class MirrorPose : Interactable
         // Kamera eğilince ışın aynaya bakmayabilir; çıkış için F her durumda aynaya gitsin.
         interactor.Zone = this;
         controller.Frozen = true;
+        body.PrepareForPose();
         if (cc != null)
             cc.enabled = false;
 

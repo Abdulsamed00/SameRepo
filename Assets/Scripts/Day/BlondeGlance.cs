@@ -11,16 +11,16 @@ public class BlondeGlance : MonoBehaviour
     [Tooltip("Hangi günde çalışır (0'dan: 1 = 2. gün).")]
     [SerializeField] private int dayIndex = 1;
     [SerializeField] private string hairPart = "BlondeHair";
-    [SerializeField] private Vector2 range = new Vector2(1.5f, 13f);
+    [SerializeField] private Vector2 range = new Vector2(1.5f, 9f);
     [Tooltip("Görüş yönüne göre en fazla kaç derecedeki kadın fark edilir.")]
-    [SerializeField] private float noticeAngle = 80f;
+    [SerializeField] private float noticeAngle = 50f;
     [Tooltip("Bakış gövdenin önünden bu kadar ayrılırsa bakış biter.")]
     [SerializeField] private float maxAngle = 115f;
     [Tooltip("İki bakış arası bekleme (sn).")]
-    [SerializeField] private Vector2 cooldown = new Vector2(9f, 16f);
+    [SerializeField] private Vector2 cooldown = new Vector2(22f, 38f);
     [SerializeField] private float turnTime = 0.9f;
     [Tooltip("Kadını izleme süresi (sn).")]
-    [SerializeField] private Vector2 holdTime = new Vector2(2.5f, 3.5f);
+    [SerializeField] private Vector2 holdTime = new Vector2(2f, 2.8f);
     [SerializeField] private float returnTime = 1.6f;
     [SerializeField] private float headHeight = 1.5f;
     [Tooltip("Bakışın yürüyen kadına yetişme hızı (büyük = sert).")]
@@ -29,6 +29,9 @@ public class BlondeGlance : MonoBehaviour
     [SerializeField] private float holdFollowSharpness = 16f;
     [Tooltip("Bakış sürerken yürüme hızı çarpanı (karakter durmaz, yavaşlar).")]
     [SerializeField] private float walkSlowdown = 0.45f;
+    [Tooltip("Bir sarışına kitlenildiği an çalan ses (WOW).")]
+    [SerializeField] private AudioClip wowSound;
+    [SerializeField, Range(0f, 1f)] private float wowVolume = 1f;
 
     private FirstPersonController player;
     private Transform view;
@@ -112,18 +115,14 @@ public class BlondeGlance : MonoBehaviour
         wait = Random.Range(cooldown.x, cooldown.y);
     }
 
-    // Sadece yatay (sağ-sol) dönüş (08.11): eskiden kafaya tam nişan alınıyordu; CameraRoot yukarı/aşağı eğikken
-    // bakış eğik eksende dönüp kamerayı yana yatırıyordu (çapraz görüntü). Dönüş dünya dikeyi etrafında, eğim aynı kalır.
+    // Nişan her zaman kadının kafasına gelir (08.11: havaya bakılırken de yukarı/aşağı dahil), ama kamera yana yatmaz:
+    // hedef dünya dikeyine göre (roll sıfır) kurulur. Eskiden CameraRoot eğikken eğik eksende dönüp çapraz görüntü oluyordu.
     private Quaternion LookAtTarget()
     {
         Vector3 to = HeadPoint() - view.position;
-        Vector3 forward = view.parent.forward;
-        to.y = 0f;
-        forward.y = 0f;
-        if (to.sqrMagnitude < 1e-4f || forward.sqrMagnitude < 1e-4f)
+        if (to.sqrMagnitude < 1e-4f)
             return Quaternion.identity;
-        float yaw = Vector3.SignedAngle(forward, to, Vector3.up);
-        Quaternion world = Quaternion.AngleAxis(yaw, Vector3.up) * view.parent.rotation;
+        Quaternion world = Quaternion.LookRotation(to, Vector3.up);
         return Quaternion.Inverse(view.parent.rotation) * world;
     }
 
@@ -188,5 +187,8 @@ public class BlondeGlance : MonoBehaviour
             lastLook = Quaternion.identity;
         target = best;
         holdLeft = Random.Range(holdTime.x, holdTime.y);
+        // Kitlenme sesi (08.11, kullanıcı isteği).
+        if (wowSound != null)
+            GameAudio.Play2D(wowSound, wowVolume);
     }
 }

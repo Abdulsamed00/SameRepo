@@ -40,6 +40,32 @@ public class PosterSet : ScriptableObject
     }
 
     /// <summary>
+    /// Panolar karışık (08.11, kullanıcı: "reklam panoları karışık olsun, her şeyden"): her pano kendi tohumuna göre beş
+    /// ürünün ve kuaför/klinik afişlerinin arasından birini gösterir. Kuaför/klinik gününde ürün alındıktan sonra
+    /// panoların üçte biri o hizmetin afişi olur (oyuncu oraya yönlensin).
+    /// </summary>
+    public Texture2D PickMixed(float boardAspect, int seed)
+    {
+        seed = Mathf.Abs(seed);
+        if (DayRoutine.BoughtToday && seed % 3 == 0)
+        {
+            Texture2D[] beauty = GameDay.Index == DayRoutine.SalonDay ? salonImages
+                : GameDay.Index == DayRoutine.ClinicDay ? clinicImages : null;
+            Texture2D image = Pick(beauty, boardAspect, seed / 3);
+            if (image != null)
+                return image;
+        }
+
+        ProductType[] products = (ProductType[])Enum.GetValues(typeof(ProductType));
+        int slots = products.Length + 2;
+        int slot = (seed * 7 + seed / 5) % slots;
+        Texture2D picked = slot < products.Length
+            ? Pick(products[slot], boardAspect, seed / slots)
+            : Pick(slot == products.Length ? salonImages : clinicImages, boardAspect, seed / slots);
+        return picked != null ? picked : Pick(GameDay.Product, boardAspect, seed);
+    }
+
+    /// <summary>
     /// Pano oranına (genişlik / yükseklik) uyan afişlerden <paramref name="index"/>'incisi. Aynı yönde (yatay/dikey)
     /// afiş yoksa ürünün tüm afişleri arasından seçilir.
     /// </summary>

@@ -43,13 +43,21 @@ public class DailyPoster : MonoBehaviour
 
     private void OnPurchased(ProductType _) => Apply();
 
+    // Panolar sadece oyunun sonunda (beş ürün de alınınca) karışık olur, önceki günlerde günün afişi (08.11).
+    // Konumdan türeyen sabit tohum: her pano farklı, oyun boyunca aynı afişi gösterir.
+    private int Seed()
+    {
+        Vector3 p = transform.position;
+        return Mathf.RoundToInt(p.x * 3.1f) * 31 + Mathf.RoundToInt(p.z * 1.7f) * 17 + Mathf.RoundToInt(p.y) * 5 + index;
+    }
+
     private void Apply()
     {
         if (posters == null)
             return;
 
         float boardAspect = maxSize.x / maxSize.y;
-        Texture2D image = posters.PickToday(boardAspect, index);
+        Texture2D image = PlayerPurchases.OwnsAll ? posters.PickMixed(boardAspect, Seed()) : posters.PickToday(boardAspect, index);
         if (image == null)
             return;
 

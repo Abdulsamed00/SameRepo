@@ -371,7 +371,7 @@ public class FinalSequence : MonoBehaviour
         // ScreenFader perdesinin (short.MaxValue) altında kalır, yükleme geçişi bunun üstünden kararır.
         bool skipped = false;
         AudioSource music = StartEndMusic();
-        CreditsView view = CreditsView.Create(canvas.transform, 0.6f, clickSound, () => skipped = true, quote, quoteAuthor);
+        CreditsView view = CreditsView.Create(canvas.transform, 0.6f, clickSound, () => skipped = true, quote, quoteAuthor, "Ana menüye dön");
         view.Group.alpha = 0f;
         Cursor.visible = false;
 
