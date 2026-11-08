@@ -239,9 +239,10 @@ public class PickupItem : Interactable
         if (!IsHeld || Time.time < attachTime || settling)
             return;
 
-        Vector3 targetPosition = holdPoint.TransformPoint(holdPositionOffset) + holdPoint.up * -HoldLowering;
-        Quaternion targetRotation = holdPoint.rotation * Quaternion.Euler(holdEulerOffset);
-        ApplyWalkSway(ref targetPosition, ref targetRotation);
+        HoldFrame(out Vector3 framePosition, out Quaternion frameRotation);
+        Vector3 targetPosition = framePosition + frameRotation * (holdPositionOffset + Vector3.down * HoldLowering);
+        Quaternion targetRotation = frameRotation * Quaternion.Euler(holdEulerOffset);
+        ApplyWalkSway(frameRotation, ref targetPosition, ref targetRotation);
 
         // Ele ulaştıktan sonra yumuşatma olmadan takip eder, yoksa hızlı el hareketinde geride kalıyor.
         if (attached || (transform.position - targetPosition).sqrMagnitude < 0.0004f)
@@ -261,11 +262,34 @@ public class PickupItem : Interactable
             Quaternion.Slerp(transform.rotation, targetRotation, t));
     }
 
+    // Tutma noktası kameranın çocuğuysa (mağaza ürünleri) eşya kameranın sadece yatay dönüşünü izler (08.11, kullanıcı
+    // isteği): aşağı/yukarı bakınca eşya da kamerayla dönüp karakterin gövdesine giriyordu. Artık eşya göğüs önünde
+    // sabit yükseklikte kalır, bakışla sadece kafa oynar. Ele bağlı tutuşta (kumanda) noktanın kendisi kullanılır.
+    private void HoldFrame(out Vector3 position, out Quaternion rotation)
+    {
+        Transform camera = holdPoint.parent;
+        if (camera == null || camera.GetComponent<Camera>() == null)
+        {
+            position = holdPoint.position;
+            rotation = holdPoint.rotation;
+            return;
+        }
+
+        Vector3 forward = camera.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 1e-6f)
+            forward = camera.up.y > 0f ? -camera.up : camera.up;
+        forward.y = 0f;
+        Quaternion level = Quaternion.LookRotation(forward.normalized, Vector3.up);
+        rotation = level * holdPoint.localRotation;
+        position = camera.position + level * holdPoint.localPosition;
+    }
+
     private FirstPersonController walker;
 
     // Yürürken eşya kamerayla aynı sallandığı için ekranda sabit görünüyordu: kameranın sallanmasına ters yönde
     // (daha geç/ağır bir nesne gibi) ek konum ve eğilme verilir. Kamera eksenlerinde uygulanır.
-    private void ApplyWalkSway(ref Vector3 position, ref Quaternion rotation)
+    private void ApplyWalkSway(Quaternion frame, ref Vector3 position, ref Quaternion rotation)
     {
         if (holder == null)
             return;
@@ -279,9 +303,9 @@ public class PickupItem : Interactable
             return;
 
         Vector3 local = new Vector3(-bob.x * walkSwayPosition, -bob.y * walkSwayPosition, 0f);
-        position += holdPoint.TransformVector(local);
-        Quaternion sway = Quaternion.AngleAxis(bob.x * walkSwayRoll, holdPoint.forward)
-                          * Quaternion.AngleAxis(-bob.y * walkSwayPitch, holdPoint.right);
+        position += frame * local;
+        Quaternion sway = Quaternion.AngleAxis(bob.x * walkSwayRoll, frame * Vector3.forward)
+                          * Quaternion.AngleAxis(-bob.y * walkSwayPitch, frame * Vector3.right);
         rotation = sway * rotation;
     }
 

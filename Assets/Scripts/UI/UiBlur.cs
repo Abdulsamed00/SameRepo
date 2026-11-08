@@ -24,15 +24,35 @@ public static class UiBlur
             RenderTexture.ReleaseTemporary(current);
             current = next;
         }
+        // Ekran görüntüsünün alfa'sı URP'de her zaman 1 değil (gece, parlak/karanlık bölgelerde düşebiliyor):
+        // bulanık görüntü yarı saydam kalıp arkadaki canlı sahneyi ("parlama") gösteriyordu. En küçük boyutta
+        // (birkaç bin piksel) alfa 1'e sabitlenir, sonra büyütülür.
+        Texture2D small = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+        RenderTexture previous = RenderTexture.active;
+        RenderTexture.active = current;
+        small.ReadPixels(new Rect(0, 0, w, h), 0, 0, false);
+        RenderTexture.active = previous;
+        Color32[] pixels = small.GetPixels32();
+        for (int i = 0; i < pixels.Length; i++)
+            pixels[i].a = 255;
+        small.SetPixels32(pixels);
+        small.Apply(false);
+        RenderTexture.ReleaseTemporary(current);
+
+        Texture upSource = small;
+        current = null;
         for (int i = 0; i < 3; i++)
         {
             w *= 2;
             h *= 2;
             RenderTexture next = Temp(w, h);
-            Graphics.Blit(current, next);
-            RenderTexture.ReleaseTemporary(current);
+            Graphics.Blit(upSource, next);
+            if (current != null)
+                RenderTexture.ReleaseTemporary(current);
             current = next;
+            upSource = current;
         }
+        UnityEngine.Object.Destroy(small);
 
         RenderTexture result = new RenderTexture(w * 2, h * 2, 0) { name = "Bulanik_Arkaplan", filterMode = FilterMode.Bilinear };
         Graphics.Blit(current, result);

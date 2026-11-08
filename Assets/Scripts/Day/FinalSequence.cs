@@ -3,8 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// Oyun sonu (GDD): beş ürün de alınıp giyilmiş, son poz verilmiş, oyuncu evden sokağa çıkmıştır
-/// (<see cref="DayRoutine.FinalReady"/>). Ana caddeye çıkınca kontrol alınır, karakter kendiliğinden caddenin
-/// ortasına yürür ve caddeye (mağazaya doğru) döner; kalabalık (hepsi aynı ürünlerle) onun çevresine toplanır
+/// (<see cref="DayRoutine.FinalReady"/>). Oyuncu caddenin orta çizgisine kendi yürüyerek varınca kontrol alınır,
+/// karakter son birkaç santimi tamamlayıp caddeye (mağazaya doğru) döner; kalabalık (hepsi aynı ürünlerle) onun çevresine toplanır
 /// (<see cref="NpcCrowd.BeginFinale"/>). Görünüm birinci şahıstan üçüncü şahsa geçer: kamera kafadan
 /// ayrılıp karakterin önüne ve yukarısına çıkar, ona tepeden bakar. Sonra ekran kararır, özlü sözlü jenerik akar,
 /// ana menüye dönülür ve oyun sıfırlanır. StreetScene'de bir objeye eklenir; final hazır değilse kendini kapatır.
@@ -12,8 +12,11 @@ using UnityEngine;
 public class FinalSequence : MonoBehaviour
 {
     [Header("Başlangıç")]
-    [Tooltip("Oyuncu doğduğu yerden bu kadar uzaklaşınca (ara sokaktan ana caddeye çıkınca) final başlar (m).")]
-    [SerializeField] private float triggerDistance = 8f;
+    [Tooltip("Oyuncu caddenin orta çizgisine (streetCenterX) kendi yürüyerek bu kadar yaklaşınca final başlar (m). " +
+             "08.11'e kadar ara sokaktan 8 m çıkınca kontrol alınıp karakter ortaya kendiliğinden yürütülüyordu.")]
+    [SerializeField] private float centerTolerance = 0.6f;
+    [Tooltip("Final sadece caddenin bu bölümünde (dünya z, min-max) tetiklenir.")]
+    [SerializeField] private Vector2 triggerZ = new Vector2(3f, 118f);
 
     [Header("Caddenin ortasına yürüme")]
     [Tooltip("Caddenin orta çizgisi (dünya x).")]
@@ -72,7 +75,6 @@ public class FinalSequence : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float endMusicVolume = 0.6f;
 
     private FirstPersonController player;
-    private Vector3 startPosition;
     private bool started;
 
     private void Start()
@@ -83,8 +85,20 @@ public class FinalSequence : MonoBehaviour
             return;
         }
         player = FindFirstObjectByType<FirstPersonController>();
-        if (player != null)
-            startPosition = player.transform.position;
+    }
+
+    /// <summary>Test: final şartları sağlanmadan finali başlatır (Play'de bileşenin sağ tık menüsünden).</summary>
+    [ContextMenu("Finali başlat (test)")]
+    public void StartForTest()
+    {
+        if (started || !Application.isPlaying)
+            return;
+        player = FindFirstObjectByType<FirstPersonController>();
+        if (player == null)
+            return;
+        enabled = true;
+        started = true;
+        StartCoroutine(Run());
     }
 
     private void Update()
@@ -92,9 +106,9 @@ public class FinalSequence : MonoBehaviour
         if (started || player == null)
             return;
 
-        Vector3 offset = player.transform.position - startPosition;
-        offset.y = 0f;
-        if (offset.magnitude >= triggerDistance)
+        // Oyuncu caddenin ortasına kendisi yürür; orta çizgiye varınca kontrol alınır.
+        Vector3 p = player.transform.position;
+        if (Mathf.Abs(p.x - streetCenterX) <= centerTolerance && p.z >= triggerZ.x && p.z <= triggerZ.y)
         {
             started = true;
             StartCoroutine(Run());
@@ -110,9 +124,13 @@ public class FinalSequence : MonoBehaviour
         // Kalabalık (hepsi oyuncu gibi giyinmiş) caddenin ortasına, karakterin çevresine toplanır.
         NpcCrowd crowd = FindFirstObjectByType<NpcCrowd>();
         if (crowd != null)
-            crowd.BeginFinale(new Vector3(streetCenterX, player.transform.position.y, player.transform.position.z));
+            crowd.BeginFinale(new Vector3(streetCenterX, player.transform.position.y, player.transform.position.z),
+                player.transform.position);
         StartCoroutine(Letterbox());
         yield return WalkToCenter();
+        // Yolu boş tutulan kalabalık artık karakterin arkasını da kapatabilir.
+        if (crowd != null)
+            crowd.PlayerArrived(player.transform.position);
         yield return new WaitForSeconds(stopDelay);
         player.Frozen = true;
 
@@ -128,7 +146,15 @@ public class FinalSequence : MonoBehaviour
             Orbit(cam.transform, orbitSpeed * Time.deltaTime);
             yield return null;
         }
-        yield return Crane(cam, orbitSpeed);
+        // Kendini kaybetme: kalabalık oyuncuyla birlikte mağazaya döner, kamera yükselirken odağı yanındaki bir kopyaya
+        // kayar. Son karede ortadaki o değildir; aynı yöne bakan aynı insanların arasında karakter seçilemez.
+        Transform decoy = null;
+        if (crowd != null)
+        {
+            crowd.Conform(finalFacing);
+            decoy = crowd.PickDecoy(player.transform.position, finalFacing);
+        }
+        yield return Crane(cam, orbitSpeed, decoy);
 
         // Son an: herkes olduğu pozda donar, ses tamamen kesilir.
         if (crowd != null)
@@ -242,11 +268,13 @@ public class FinalSequence : MonoBehaviour
     // arkasına geçer; bakış karakterden önündeki caddeye kayar, hafif eğik kalır. Konum, yükseklik, bakış ve FOV
     // smootherstep ile, yatay açı Hermite eğrisiyle (başta bekleme hızı, sonda 0) ilerler: başta ve sonda sarsıntı yok.
     // Bu sırada sokağın sesi yavaş yavaş kısılır.
-    private IEnumerator Crane(Camera cam, float startYawSpeed)
+    private IEnumerator Crane(Camera cam, float startYawSpeed, Transform decoy)
     {
         Transform camTransform = cam.transform;
         Transform target = player.transform;
-        Vector3 pivot = target.position;
+        Vector3 playerPivot = target.position;
+        Vector3 pivot = playerPivot;
+        Vector3 decoyPivot = decoy != null ? new Vector3(decoy.position.x, playerPivot.y, decoy.position.z) : playerPivot;
         Vector3 forward = target.forward;
         forward.y = 0f;
         forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
@@ -278,6 +306,12 @@ public class FinalSequence : MonoBehaviour
             float k2 = k * k, k3 = k2 * k;
             float yaw = (2f * k3 - 3f * k2 + 1f) * startYaw + (k3 - 2f * k2 + k) * m0 + (-2f * k3 + 3f * k2) * endYaw;
             float yawRad = yaw * Mathf.Deg2Rad;
+            // Odak oyuncudan kopyaya: kamera kalabalığın üstüne çıkıp karakter küçüldükten sonra (ortadan sona doğru)
+            // kayar, göz fark etmez. Bakış noktası da onunla gider.
+            float drift = SmootherStep(Mathf.InverseLerp(0.25f, 0.85f, k));
+            pivot = Vector3.Lerp(playerPivot, decoyPivot, drift);
+            startFocus = playerPivot + Vector3.up * lookHeight;
+            endFocus = pivot + forward * craneLookAhead + Vector3.up * craneLookHeight;
             float distance = Mathf.Lerp(startDistance, craneBack, s);
             float height = Mathf.Lerp(startHeight, craneHeight, rise);
             camTransform.position = pivot + new Vector3(Mathf.Sin(yawRad) * distance, height, Mathf.Cos(yawRad) * distance);

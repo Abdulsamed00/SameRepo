@@ -209,6 +209,23 @@ public class NpcCrowd : MonoBehaviour
     [Tooltip("onlyLookalikes: oyuncuya bundan yakın sabit NPC'ler (kalabalık dışı) görülmediği an gizlenir (m).")]
     [SerializeField] private float bystanderRadius = 40f;
 
+    [Header("Final: Kendini Kaybetme")]
+    [Tooltip("Kalabalığın en iç sırası oyuncunun kendi modelinin birebir kopyası (aynı yüz, saç, ürünler, aynı animasyon): " +
+             "kamera hareket edince oyuncu kendini ayırt edemesin. Dış sıralar benzer kadın NPC'ler. 0 = kapalı.")]
+    [SerializeField] private int playerCopyCount = 40;
+    [Tooltip("Herkes mağazaya döndüğünde bakış sapması (derece).")]
+    [SerializeField] private float conformJitter = 5f;
+    [Tooltip("Mağazaya dönüş kalabalığa yayılır: her biri bu kadar gecikmeyle (sn, min-max) döner.")]
+    [SerializeField] private Vector2 conformDelay = new Vector2(0f, 2.2f);
+
+    private GameObject copyTemplate;
+    private NpcProfile copyProfile;
+    private readonly HashSet<NpcAgent> copies = new HashSet<NpcAgent>();
+    // En içteki bu kadar yer oyuncu kopyalarına ayrılır (oyuncunun dibi onlarla dolsun).
+    private int reservedInner;
+    private bool conforming;
+    private Quaternion conformRotation;
+
     private bool finale;
     private readonly List<NpcAgent> outsiders = new List<NpcAgent>();
     private readonly List<GameObject> bystanders = new List<GameObject>();
@@ -222,7 +239,23 @@ public class NpcCrowd : MonoBehaviour
         public Vector3 point;
         public float key;
         public NpcAgent owner;
+        /// <summary>Yerine varamayıp yakınında duran NPC: bu yere başkası gelirse içine girerdi.</summary>
+        public NpcAgent blocker;
+        /// <summary>Oyuncu tam merkeze varamayıp bu yerin dibinde durdu: NPC gelirse karakterin içine girerdi.</summary>
+        public bool nearPlayer;
+
+        public bool Free => owner == null && blocker == null && !nearPlayer;
     }
+
+    // Oyuncunun ortaya yürüdüğü yol (ara sokaktan çıktığı yer → merkez) bu kadar geniş boş tutulur (m, yarı genişlik).
+    private const float PathClearance = 0.8f;
+    // Duran NPC'nin bu kadar yakınındaki boş yerler kapanır (m).
+    private const float BlockRadius = 0.55f;
+    // Doğan NPC'ler arası en az mesafe (m): üst üste doğanlar birbirini itip titriyordu.
+    private const float SpawnSpacing = 0.8f;
+    private readonly List<Vector3> finaleSpawns = new List<Vector3>();
+    private Vector3 finalePathStart;
+    private bool playerArrived;
 
     private readonly List<CrowdSlot> crowdSlots = new List<CrowdSlot>();
     private readonly HashSet<NpcAgent> lookalikes = new HashSet<NpcAgent>();
@@ -328,6 +361,8 @@ public class NpcCrowd : MonoBehaviour
         NpcProfile profile = forced ?? PickProfile();
         GameObject go = Instantiate(profile.prefab, position, rotation, transform);
         go.name = profile.prefab.name;
+        if (!go.activeSelf)
+            go.SetActive(true);
 
         // Prefab'daki tek animasyonlu eski bileşenler kalabalıkta kullanılmaz.
         foreach (var old in go.GetComponents<NpcAnimationPlayer>())
@@ -415,13 +450,20 @@ public class NpcCrowd : MonoBehaviour
     /// kadar NPC doğar. Son ürün alındığı için hepsi oyuncuyla aynı giyinir (<see cref="NpcFashion"/>): oyuncu kendine
     /// benzeyenlerin kalabalığında kalır.
     /// </summary>
-    public void BeginFinale(Vector3 center)
+    public void BeginFinale(Vector3 center) => BeginFinale(center, center);
+
+    /// <param name="playerPosition">Oyuncunun final başladığı yer: buradan merkeze uzanan yol, oyuncu varana kadar
+    /// (<see cref="PlayerArrived"/>) boş tutulur. Yoksa erken gelen NPC'ler yolunu kesiyor, karakter kalabalığa takılıp
+    /// ortaya varamıyordu (kalabalık da yanlış yerin çevresinde toplanmış oluyordu).</param>
+    public void BeginFinale(Vector3 center, Vector3 playerPosition)
     {
         if (finale || wanderPoints.Count == 0)
             return;
         finale = true;
         finaleCenter = center;
+        finalePathStart = playerPosition;
         finalePath = new NavMeshPath();
+        finaleSpawns.Clear();
         // Uzaktakiler (görünmezler) kalabalığa yürüyüp gelmeye çalışmaz, yerler yakındakilere ve yeni doğanlara kalır.
         // Sadece benzerler modunda sokaktaki eski NPC'ler hiç katılmaz: oyuncudan uzaklaşır, görülmeyince kaybolur.
         foreach (NpcAgent agent in agents)
@@ -439,7 +481,13 @@ public class NpcCrowd : MonoBehaviour
         if (onlyLookalikes)
         {
             CollectBystanders(center);
-            SpawnRing(center, cam, ringCount + finaleExtra);
+            int total = ringCount + finaleExtra;
+            // Önce oyuncunun kopyaları, en yakın bantta (iç sıraları onlar alır), sonra benzer kadınlar.
+            int copyCount = Mathf.Min(playerCopyCount, total);
+            if (copyCount > 0 && BuildCopyProfile())
+                SpawnRing(center, cam, copyCount, copyProfile, new Vector2(ringSpawnBand.x, ringSpawnBand.x + 7f), true);
+            reservedInner = copies.Count;
+            SpawnRing(center, cam, total - copies.Count);
             BuildCrowdSlots(center, lookalikes.Count + 6);
             StartCoroutine(ClearOutsiders());
             return;
@@ -456,7 +504,7 @@ public class NpcCrowd : MonoBehaviour
                 center.z + side * Random.Range(finaleSpawnBand.x, finaleSpawnBand.y));
             if (p.z < finaleLaneZ.x || p.z > finaleLaneZ.y || (cam != null && InView(cam, p)))
                 continue;
-            if (!NavMesh.SamplePosition(p, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
+            if (!NavMesh.SamplePosition(p, out NavMeshHit hit, 1.5f, NavMesh.AllAreas) || TooCloseToSpawn(hit.position))
                 continue;
             // Caddeye bağlı olmayan adacıklar (binanın kapı basamakları) elenir: orada doğan NPC yerinden kıpırdamıyordu.
             if (!NavMesh.CalculatePath(hit.position, center, NavMesh.AllAreas, finalePath)
@@ -465,6 +513,7 @@ public class NpcCrowd : MonoBehaviour
             Vector3 toCenter = center - hit.position;
             toCenter.y = 0f;
             NpcAgent npc = Spawn(hit.position, Quaternion.LookRotation(toCenter), null);
+            finaleSpawns.Add(hit.position);
             npc.GoalLimit = int.MaxValue;
             npc.SetSpeed(Random.Range(1.2f, 1.6f));
             joiners.Add(npc);
@@ -478,8 +527,14 @@ public class NpcCrowd : MonoBehaviour
     {
         if (count <= 0 || ringProfile < 0 || ringProfile >= profiles.Length || profiles[ringProfile].prefab == null)
             return;
+        SpawnRing(center, cam, count, profiles[ringProfile], ringSpawnBand, false);
+    }
 
-        NpcProfile profile = profiles[ringProfile];
+    private void SpawnRing(Vector3 center, Camera cam, int count, NpcProfile profile, Vector2 band, bool playerCopy)
+    {
+        if (count <= 0 || profile == null || profile.prefab == null)
+            return;
+        Vector2 ringSpawnBand = band;
         int placed = 0;
         for (int attempt = 0; attempt < count * 20 && placed < count; attempt++)
         {
@@ -487,10 +542,11 @@ public class NpcCrowd : MonoBehaviour
             float widen = attempt / (float)(count * 10);
             float side = Random.value < 0.5f ? -1f : 1f;
             Vector3 p = new Vector3(Random.Range(finaleLaneX.x, finaleLaneX.y), center.y,
-                center.z + side * Random.Range(ringSpawnBand.x, ringSpawnBand.y * (1f + widen)));
-            if (p.z < finaleLaneZ.x || p.z > finaleLaneZ.y || (cam != null && InView(cam, p) && widen < 1f))
+                center.z + side * Random.Range(ringSpawnBand.x, ringSpawnBand.y * (1f + 2f * widen)));
+            // Görüş içinde hiç doğmaz (eskiden bant genişleyince gözün önünde beliriyordu); bant giderek uzar.
+            if (p.z < finaleLaneZ.x || p.z > finaleLaneZ.y || (cam != null && InView(cam, p)))
                 continue;
-            if (!NavMesh.SamplePosition(p, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)
+            if (!NavMesh.SamplePosition(p, out NavMeshHit hit, 1.5f, NavMesh.AllAreas) || TooCloseToSpawn(hit.position)
                 || !NavMesh.CalculatePath(hit.position, center, NavMesh.AllAreas, finalePath)
                 || finalePath.status != NavMeshPathStatus.PathComplete)
                 continue;
@@ -498,9 +554,24 @@ public class NpcCrowd : MonoBehaviour
             Vector3 toCenter = center - hit.position;
             toCenter.y = 0f;
             NpcAgent npc = Spawn(hit.position, Quaternion.LookRotation(toCenter), null, profile);
+            finaleSpawns.Add(hit.position);
             npc.GoalLimit = int.MaxValue;
             npc.SetSpeed(ringWalkSpeed * Random.Range(0.9f, 1.15f));
-            SetLook(npc.transform, profile, ringLook);
+            if (playerCopy)
+            {
+                copies.Add(npc);
+            }
+            else
+            {
+                SetLook(npc.transform, profile, ringLook);
+                // Oyuncu solmaz (Reklam katmanı); benzerleri solarsa kalabalıkta renkli tek kişi olarak seçiliyordu.
+                SceneFade.MarkExempt(npc.gameObject);
+                foreach (SkinnedMeshRenderer r in npc.GetComponentsInChildren<SkinnedMeshRenderer>())
+                {
+                    if (r.name.Contains("Shoe"))
+                        SceneFade.MarkExempt(r.gameObject, true);
+                }
+            }
             lookalikes.Add(npc);
             joiners.Add(npc);
             placed++;
@@ -568,7 +639,7 @@ public class NpcCrowd : MonoBehaviour
         float bestCost = float.MaxValue;
         for (int i = 0; i < crowdSlots.Count; i++)
         {
-            if (crowdSlots[i].owner != null)
+            if (!crowdSlots[i].Free || !MayTake(npc, i))
                 continue;
             if (lookalike && i >= innerLimit && best >= 0)
                 break;
@@ -591,9 +662,15 @@ public class NpcCrowd : MonoBehaviour
         return best;
     }
 
+    // İç yerler (oyuncunun dibi) oyuncu kopyalarına ayrılır: oyuncunun yanında Kız NPC modeli durunca karakter
+    // farklı yüzü/bedeniyle seçiliyordu.
+    private bool MayTake(NpcAgent npc, int slot) => slot >= reservedInner || copies.Count == 0 || copies.Contains(npc);
+
     private Goal SlotGoal(int slot)
     {
         Vector3 p = crowdSlots[slot].point;
+        if (conforming)
+            return new Goal { kind = GoalKind.Ring, point = p, rotation = ConformRotation() };
         Vector3 look = finaleCenter - p;
         look.y = 0f;
         bool inner = slot < ringCount;
@@ -648,13 +725,14 @@ public class NpcCrowd : MonoBehaviour
         float currentKey = current >= 0 ? crowdSlots[current].key : toCenter.magnitude + 0.3f;
         float currentDistance = current >= 0 ? Vector3.Distance(from, crowdSlots[current].point) : 0f;
         // Yerleşmiş olan sadece dibindeki (adım mesafesindeki) boş iç yere geçer; yürüyen yolunun üstündekine.
-        float reach = settled ? 1.7f : currentDistance + 0.6f;
+        // Yerleşmişin adımı kısa: uzun adımda iki kişinin arasından sıyrılıp onları itiyordu.
+        float reach = settled ? 1.25f : currentDistance + 0.6f;
         int best = -1;
         float bestKey = currentKey - 0.3f;
         int limit = current >= 0 ? current : crowdSlots.Count;
         for (int i = 0; i < limit; i++)
         {
-            if (crowdSlots[i].owner != null || crowdSlots[i].key >= bestKey)
+            if (!crowdSlots[i].Free || crowdSlots[i].key >= bestKey || !MayTake(npc, i))
                 continue;
             if (Vector3.Distance(from, crowdSlots[i].point) > reach)
                 continue;
@@ -665,17 +743,118 @@ public class NpcCrowd : MonoBehaviour
             return false;
         if (current >= 0)
             SetOwner(current, null);
+        ClearBlocks(npc);
         SetOwner(best, npc);
         goal = SlotGoal(best);
         return true;
     }
 
-    /// <summary>Yerine varamayan NPC olduğu yerde durur; yeri başkası doldurabilsin diye bırakılır.</summary>
+    /// <summary>
+    /// Yerine varamayan NPC olduğu yerde durur: yeri bırakılır, ama durduğu noktanın dibindeki boş yerler (bıraktığı
+    /// dahil) kapanır; yoksa o yeri sonradan alan NPC duranın içine yürüyordu. Dibinde boş bir yer varsa onu sahiplenir
+    /// (kalabalığın parçası sayılır, sonra içeri adım atabilir).
+    /// </summary>
+    public void SettleWhereStanding(NpcAgent npc, Vector3 position)
+    {
+        ReleaseSlot(npc);
+        int nearest = -1;
+        float nearestD = float.MaxValue;
+        for (int i = 0; i < crowdSlots.Count; i++)
+        {
+            CrowdSlot s = crowdSlots[i];
+            if (s.owner != null || s.blocker != null)
+                continue;
+            Vector3 d = s.point - position;
+            d.y = 0f;
+            if (d.sqrMagnitude > BlockRadius * BlockRadius)
+                continue;
+            s.blocker = npc;
+            crowdSlots[i] = s;
+            if (d.sqrMagnitude < nearestD && !s.nearPlayer)
+            {
+                nearestD = d.sqrMagnitude;
+                nearest = i;
+            }
+        }
+        if (nearest >= 0)
+        {
+            CrowdSlot s = crowdSlots[nearest];
+            s.blocker = null;
+            s.owner = npc;
+            crowdSlots[nearest] = s;
+        }
+    }
+
+    /// <summary>Yerini bırakır (kapattığı yerler de açılır).</summary>
     public void ReleaseSlot(NpcAgent npc)
     {
         int slot = OwnedSlot(npc);
         if (slot >= 0)
             SetOwner(slot, null);
+        ClearBlocks(npc);
+    }
+
+    private void ClearBlocks(NpcAgent npc)
+    {
+        for (int i = 0; i < crowdSlots.Count; i++)
+        {
+            if (crowdSlots[i].blocker != npc)
+                continue;
+            CrowdSlot s = crowdSlots[i];
+            s.blocker = null;
+            crowdSlots[i] = s;
+        }
+    }
+
+    /// <summary>Oyuncu caddenin ortasına vardı: yolunu bekleyen NPC'ler yerlerine geçer, kalabalık arkasını da kapatır.
+    /// Oyuncu takılıp tam merkeze varamadıysa dibindeki yerler kapalı kalır (NPC'ler karakterin içine girmesin).</summary>
+    public void PlayerArrived(Vector3 playerPosition)
+    {
+        if (!finale || playerArrived)
+            return;
+        playerArrived = true;
+        // Karakterin kapsülü (0.3) + NPC gövdesi (0.25) + pay.
+        const float keep = 0.6f;
+        for (int i = 0; i < crowdSlots.Count; i++)
+        {
+            CrowdSlot s = crowdSlots[i];
+            Vector3 d = s.point - playerPosition;
+            d.y = 0f;
+            s.nearPlayer = d.sqrMagnitude < keep * keep;
+            crowdSlots[i] = s;
+        }
+    }
+
+    /// <summary>
+    /// Oyuncu henüz ortaya yürürken bu yer onun önündeki yolun üstünde mi: öyleyse NPC yerine geçmez, yakınında bekler
+    /// (yol verir). Eskiden erken gelen NPC'ler yolu kesiyor, karakter kalabalığa takılıp ortaya varamıyordu.
+    /// </summary>
+    public bool WaitForPlayer(Vector3 slotPoint) => finale && !frozen && OnPlayerPath(slotPoint);
+
+    private bool OnPlayerPath(Vector3 p)
+    {
+        if (playerArrived)
+            return false;
+        // Yolun oyuncunun geçtiği kısmı serbest: sadece önünde kalan kısmı.
+        Vector3 from = player != null ? player.position : finalePathStart;
+        Vector2 a = new Vector2(from.x, from.z);
+        Vector2 b = new Vector2(finaleCenter.x, finaleCenter.z);
+        Vector2 q = new Vector2(p.x, p.z);
+        Vector2 ab = b - a;
+        float t = ab.sqrMagnitude > 0.0001f ? Mathf.Clamp01(Vector2.Dot(q - a, ab) / ab.sqrMagnitude) : 0f;
+        return (q - (a + ab * t)).sqrMagnitude < PathClearance * PathClearance;
+    }
+
+    private bool TooCloseToSpawn(Vector3 p)
+    {
+        foreach (Vector3 s in finaleSpawns)
+        {
+            Vector3 d = s - p;
+            d.y = 0f;
+            if (d.sqrMagnitude < SpawnSpacing * SpawnSpacing)
+                return true;
+        }
+        return false;
     }
 
     /// <summary>Finalin son anı: kalabalık (ve yürüyenler) olduğu pozda donar.</summary>
@@ -708,6 +887,141 @@ public class NpcCrowd : MonoBehaviour
                 }
             }
         }
+    }
+
+    // Oyuncunun görünen modelinin (Animator'lı gövde kökü) o anki hâlinin kopyası: giydiği ürünler, saçı, yüz
+    // blendshape'leri, ayakkabı ton bloğu, solmayan katman. Script'leri sökülür, NPC kadın controller'ını alır (oyuncuyla
+    // aynı idle ve yürüme klipleri). Kopya pasif bir kabın altında yapılır ki oyuncu script'lerinin Awake'i çalışmasın.
+    private bool BuildCopyProfile()
+    {
+        if (copyProfile != null)
+            return true;
+        if (player == null || ringProfile < 0 || ringProfile >= profiles.Length || profiles[ringProfile].prefab == null)
+            return false;
+        Animator source = null;
+        foreach (Animator a in player.GetComponentsInChildren<Animator>())
+        {
+            if (a.isHuman)
+            {
+                source = a;
+                break;
+            }
+        }
+        Animator womenAnimator = profiles[ringProfile].prefab.GetComponent<Animator>();
+        if (source == null || womenAnimator == null)
+            return false;
+
+        var holder = new GameObject("Oyuncu_Kopyasi_Sablon");
+        holder.transform.SetParent(transform, false);
+        holder.SetActive(false);
+        copyTemplate = Instantiate(source.gameObject, holder.transform);
+        copyTemplate.name = "Oyuncu_Kopyasi";
+        copyTemplate.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+        // Renderer'lar aynı sırada: ayakkabının soğuk ton bloğu gibi property block'lar taşınır.
+        SkinnedMeshRenderer[] from = source.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+        SkinnedMeshRenderer[] to = copyTemplate.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+        var block = new MaterialPropertyBlock();
+        for (int i = 0; i < from.Length && i < to.Length; i++)
+        {
+            if (!from[i].HasPropertyBlock())
+                continue;
+            from[i].GetPropertyBlock(block);
+            to[i].SetPropertyBlock(block);
+        }
+
+        foreach (MonoBehaviour b in copyTemplate.GetComponentsInChildren<MonoBehaviour>(true))
+            DestroyImmediate(b);
+        int exempt = LayerMask.NameToLayer("Reklam");
+        foreach (SkinnedMeshRenderer r in copyTemplate.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            // Birinci şahıs için üretilen kafasız gövde kopyası (asıl gövde kafalı).
+            if (r.name.EndsWith("_Kafasiz"))
+            {
+                DestroyImmediate(r.gameObject);
+                continue;
+            }
+            r.forceRenderingOff = false;
+            r.enabled = true;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            r.updateWhenOffscreen = false;
+            if (exempt >= 0)
+                r.gameObject.layer = exempt;
+        }
+
+        Animator copyAnimator = copyTemplate.GetComponent<Animator>();
+        copyAnimator.runtimeAnimatorController = womenAnimator.runtimeAnimatorController;
+        copyAnimator.applyRootMotion = false;
+
+        NpcProfile women = profiles[ringProfile];
+        copyProfile = new NpcProfile
+        {
+            prefab = copyTemplate,
+            weight = 0f,
+            idleState = women.idleState,
+            walkState = women.walkState,
+            sitState = women.sitState,
+            talkState = women.talkState,
+            walkClipSpeed = women.walkClipSpeed,
+            outfit = null
+        };
+        return true;
+    }
+
+    /// <summary>
+    /// Kalabalık (ve yürüyüp gelenler) oyuncuyla aynı yöne, mağazaya döner; dönüş kalabalığa dalga gibi yayılır.
+    /// Herkes oyuncuya bakarken bakışlar ortadakini işaret ediyordu; aynı yöne bakan aynı insanların arasında oyuncu
+    /// kendini ayırt edemez.
+    /// </summary>
+    public void Conform(Vector3 direction)
+    {
+        direction.y = 0f;
+        if (!finale || direction.sqrMagnitude < 0.001f)
+            return;
+        conforming = true;
+        conformRotation = Quaternion.LookRotation(direction.normalized);
+        foreach (NpcAgent npc in joiners)
+        {
+            if (npc == null)
+                continue;
+            // Dönüş merkezden dışa doğru yayılır (yakındakiler önce), üstüne biraz rastgele.
+            Vector3 d = npc.transform.position - finaleCenter;
+            d.y = 0f;
+            float delay = Mathf.Lerp(conformDelay.x, conformDelay.y, Mathf.Clamp01(d.magnitude / 8f) * 0.7f + Random.value * 0.3f);
+            npc.Conform(ConformRotation(), delay);
+        }
+    }
+
+    private Quaternion ConformRotation() => Quaternion.Euler(0f, Random.Range(-conformJitter, conformJitter), 0f) * conformRotation;
+
+    /// <summary>
+    /// Final kamerasının oyuncudan kayacağı kişi: oyuncunun yanındaki (1.4-3 m) yerleşmiş bir kopya, tercihen yanda
+    /// (önünde/arkasında değil). Kamera yükselirken odağı fark ettirmeden ona geçer; son karede ortadaki oyuncu değildir.
+    /// </summary>
+    public Transform PickDecoy(Vector3 playerPosition, Vector3 forward)
+    {
+        forward.y = 0f;
+        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        Transform best = null;
+        float bestScore = float.MaxValue;
+        foreach (NpcAgent npc in copies.Count > 0 ? copies : lookalikes)
+        {
+            if (npc == null || !npc.AtSpot)
+                continue;
+            Vector3 d = npc.transform.position - playerPosition;
+            d.y = 0f;
+            float m = d.magnitude;
+            if (m < 1.4f || m > 3f)
+                continue;
+            float side = Mathf.Abs(Vector3.Dot(d / m, forward));
+            float score = side + Mathf.Abs(m - 2f) * 0.3f + Random.value * 0.4f;
+            if (score < bestScore)
+            {
+                bestScore = score;
+                best = npc.transform;
+            }
+        }
+        return best;
     }
 
     /// <summary>Halkadaki NPC yerine vardı.</summary>
