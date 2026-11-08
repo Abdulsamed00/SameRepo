@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// 2. gün, saç boyanana kadar: yakından geçen sarışın kadınlara oyuncunun kafası bir anda döner, kısa süre onu izler,
-/// sonra yavaşça geri gelir. Kontrol oyuncudadır: yürüme ve fare çalışır, dönüş kameranın bakışına eklenir;
+/// sonra yavaşça geri gelir. Bakış sürerken fare kilitli, karakter yavaşlayarak yürümeye devam eder; dönüş sadece yataydır;
 /// kadın gövdenin çok arkasında kalırsa bakış kendiliğinden biter.
 /// Kamera kökün (CameraRoot) altında olduğu için yerel dönüşü boştur, bakış oraya yazılır. Kafa IK'sı kamerayı izler.
 /// </summary>
@@ -17,7 +17,7 @@ public class BlondeGlance : MonoBehaviour
     [Tooltip("Bakış gövdenin önünden bu kadar ayrılırsa bakış biter.")]
     [SerializeField] private float maxAngle = 115f;
     [Tooltip("İki bakış arası bekleme (sn).")]
-    [SerializeField] private Vector2 cooldown = new Vector2(5f, 11f);
+    [SerializeField] private Vector2 cooldown = new Vector2(9f, 16f);
     [SerializeField] private float turnTime = 0.9f;
     [Tooltip("Kadını izleme süresi (sn).")]
     [SerializeField] private Vector2 holdTime = new Vector2(2.5f, 3.5f);
@@ -27,6 +27,8 @@ public class BlondeGlance : MonoBehaviour
     [SerializeField] private float followSharpness = 3f;
     [Tooltip("Kilitlendikten sonra takip sıkılığı: nişan (ekran ortası) kadının kafasında kalır.")]
     [SerializeField] private float holdFollowSharpness = 16f;
+    [Tooltip("Bakış sürerken yürüme hızı çarpanı (karakter durmaz, yavaşlar).")]
+    [SerializeField] private float walkSlowdown = 0.45f;
 
     private FirstPersonController player;
     private Transform view;
@@ -53,23 +55,10 @@ public class BlondeGlance : MonoBehaviour
     private void OnDisable()
     {
         if (player != null)
+        {
             player.LookLocked = false;
-        SetMovementLock(false);
-    }
-
-    // Bakış sürerken karakter durur (07.11, kullanıcı isteği): kafa dönüp kadına bakarken yürüyemez, bakış bitip
-    // kamera geri gelince kontrol oyuncuya döner.
-    private bool movementLocked;
-
-    private void SetMovementLock(bool locked)
-    {
-        if (player == null || locked == movementLocked)
-            return;
-        movementLocked = locked;
-        if (locked)
-            player.LockMovement();
-        else
-            player.UnlockMovement();
+            player.SpeedFactor = 1f;
+        }
     }
 
     private void LateUpdate()
@@ -79,7 +68,8 @@ public class BlondeGlance : MonoBehaviour
 
         // Kilitlenirken ve bakış sürerken fare bakışı kapalı (05.11, kullanıcı isteği).
         player.LookLocked = target != null || weight > 0f;
-        SetMovementLock(target != null || weight > 0f);
+        // Bakış sürerken karakter durmaz, yavaşlar (08.11, kullanıcı isteği; 07.11-08.11 arası tamamen duruyordu).
+        player.SpeedFactor = Mathf.Lerp(1f, walkSlowdown, Mathf.SmoothStep(0f, 1f, weight));
 
         if (target == null && weight <= 0f)
         {
@@ -122,10 +112,19 @@ public class BlondeGlance : MonoBehaviour
         wait = Random.Range(cooldown.x, cooldown.y);
     }
 
+    // Sadece yatay (sağ-sol) dönüş (08.11): eskiden kafaya tam nişan alınıyordu; CameraRoot yukarı/aşağı eğikken
+    // bakış eğik eksende dönüp kamerayı yana yatırıyordu (çapraz görüntü). Dönüş dünya dikeyi etrafında, eğim aynı kalır.
     private Quaternion LookAtTarget()
     {
         Vector3 to = HeadPoint() - view.position;
-        return Quaternion.Inverse(view.parent.rotation) * Quaternion.LookRotation(to, view.parent.up);
+        Vector3 forward = view.parent.forward;
+        to.y = 0f;
+        forward.y = 0f;
+        if (to.sqrMagnitude < 1e-4f || forward.sqrMagnitude < 1e-4f)
+            return Quaternion.identity;
+        float yaw = Vector3.SignedAngle(forward, to, Vector3.up);
+        Quaternion world = Quaternion.AngleAxis(yaw, Vector3.up) * view.parent.rotation;
+        return Quaternion.Inverse(view.parent.rotation) * world;
     }
 
     // Nişan kadının kafasının tam ortasına gelsin: kafa kemiği (yoksa sabit yükseklik).

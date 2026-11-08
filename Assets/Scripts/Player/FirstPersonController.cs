@@ -10,8 +10,6 @@ public class FirstPersonController : MonoBehaviour
     [Header("Hareket")]
     [Tooltip("Yürüme klibi doğal hızında ~1.4 m/s; çok yükseltilirse animasyon aşırı hızlı oynar.")]
     [SerializeField] private float walkSpeed = 2f;
-    [Tooltip("Yürüme hızıyla aynıysa Shift hızı değiştirmez (sadece FOV kick ve adım ritmi değişir).")]
-    [SerializeField] private float runSpeed = 3f;
     [Tooltip("Koşarken baş sallanması ritmine eklenen hız çarpanı.")]
     [Range(0f, 1f)] [SerializeField] private float runstepLengthen = 0.7f;
     [Tooltip("Yerdeyken aşağı itme hızı: rampa ve basamak inerken zemine yapışık kalır.")]
@@ -80,6 +78,8 @@ public class FirstPersonController : MonoBehaviour
     public bool MovementLocked => movementLocks > 0;
     public void LockMovement() => movementLocks++;
     public void UnlockMovement() => movementLocks = Mathf.Max(0, movementLocks - 1);
+    /// <summary>Yürüme hızı çarpanı (1 = normal). Script'ler oyuncuyu durdurmadan yavaşlatmak için kullanır.</summary>
+    public float SpeedFactor { get; set; } = 1f;
 
     /// <summary>Oyuncunun input action asset'i (duraklatma girdiyi buradan kapatır).</summary>
     public InputActionAsset InputActions => inputActions;
@@ -109,7 +109,6 @@ public class FirstPersonController : MonoBehaviour
     private Camera playerCamera;
     private InputAction moveAction;
     private InputAction lookAction;
-    private InputAction sprintAction;
 
     private Quaternion targetBodyRotation;
     private Quaternion targetCameraRotation;
@@ -153,14 +152,12 @@ public class FirstPersonController : MonoBehaviour
         InputActionMap playerMap = inputActions.FindActionMap("Player", true);
         moveAction = playerMap.FindAction("Move", true);
         lookAction = playerMap.FindAction("Look", true);
-        sprintAction = playerMap.FindAction("Sprint", true);
     }
 
     private void OnEnable()
     {
         moveAction.Enable();
         lookAction.Enable();
-        sprintAction.Enable();
         // İmleç kilitlenirken gelen ilk fare delta'sı kamerayı aşağı çekiyordu.
         framesToSkip = 3;
         if (lockCursor)
@@ -174,7 +171,6 @@ public class FirstPersonController : MonoBehaviour
     {
         moveAction.Disable();
         lookAction.Disable();
-        sprintAction.Disable();
         if (lockCursor)
         {
             Cursor.lockState = CursorLockMode.None;
@@ -266,8 +262,9 @@ public class FirstPersonController : MonoBehaviour
     private bool Move()
     {
         Vector2 input = movementLocks > 0 ? Vector2.zero : moveAction.ReadValue<Vector2>();
-        bool sprinting = sprintAction.IsPressed() && input.y > 0f;
-        float speed = sprinting ? runSpeed : walkSpeed;
+        // Koşma kaldırıldı (08.11, kullanıcı isteği): hep yürüme hızı. SpeedFactor ile yavaşlatılabilir (sarışın bakışı).
+        bool sprinting = false;
+        float speed = walkSpeed * SpeedFactor;
         Vector3 wishDir = Vector3.ClampMagnitude(transform.right * input.x + transform.forward * input.y, 1f);
 
         horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, wishDir * speed, acceleration * Time.deltaTime * speed);

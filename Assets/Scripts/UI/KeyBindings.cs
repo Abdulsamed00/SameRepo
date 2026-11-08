@@ -37,7 +37,6 @@ public static class KeyBindings
         new Entry("Geri git", "Move", "down"),
         new Entry("Sola git", "Move", "left"),
         new Entry("Sağa git", "Move", "right"),
-        new Entry("Koş", "Sprint"),
         new Entry("Etkileşim", "Interact"),
         new Entry("Otur / ürünü al", "Sit"),
         new Entry("Bırak", "Drop"),

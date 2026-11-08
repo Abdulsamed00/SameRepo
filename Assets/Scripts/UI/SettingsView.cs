@@ -191,7 +191,8 @@ public class SettingsView : MonoBehaviour
 
         AddTab("Ses", v => v.BuildAudio(), GameSettings.ResetAudio);
         AddTab("Kontroller", v => v.BuildControls(), GameSettings.ResetControls);
-        AddTab("Görüntü", v => v.BuildDisplay(), GameSettings.ResetDisplay);
+        // 8 satır: 87 px'te son satır alttaki ESC/R ipuçlarının üstüne biniyordu.
+        AddTab("Görüntü", v => v.BuildDisplay(), GameSettings.ResetDisplay, 72f);
         AddTab("Tuşlar", v => v.BuildKeys(), KeyBindings.ResetAll, 66f);
 
         rowsRoot = UiKit.CreateRect("Satirlar", content);

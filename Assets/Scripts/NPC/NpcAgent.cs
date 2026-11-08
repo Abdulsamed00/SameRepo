@@ -15,6 +15,8 @@ public class NpcAgent : MonoBehaviour
     private const float WalkStopSpeed = 0.1f;
     private const float CrossFade = 0.25f;
     private const float AlignTime = 0.6f;
+    // Finalde yerine bu kadar yakın kalan NPC son adımı kayarak tamamlar (m).
+    private const float MaxSlide = 0.4f;
     // Ignore Raycast (NPC gövdeleri) hariç.
     private const int GroundMask = ~(1 << 2);
 
@@ -286,10 +288,42 @@ public class NpcAgent : MonoBehaviour
                     break;
                 float timeout = Vector3.Distance(transform.position, point) / Mathf.Max(agent.speed, 0.1f) * 2f + 8f;
                 float check = 0.5f;
+                // Kalabalığa dayanıp yerinde yürüyen (itişen, yürü/dur arasında titreyen) NPC vazgeçer.
+                Vector3 stuckFrom = transform.position;
+                float stuckTimer = 0f;
+                bool stuck = false;
                 while (timeout > 0f && !frozen)
                 {
                     if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.05f)
                         break;
+                    if (!agent.pathPending && agent.pathStatus == NavMeshPathStatus.PathInvalid)
+                        break;
+                    // Yeri oyuncunun ortaya yürüdüğü yolun üstündeyse yakınında durup yol verir, geçince devam eder.
+                    Vector3 toPoint = point - transform.position;
+                    toPoint.y = 0f;
+                    bool hold = toPoint.sqrMagnitude < 1.5f * 1.5f && crowd.WaitForPlayer(point);
+                    if (agent.isStopped != hold)
+                        agent.isStopped = hold;
+                    if (hold)
+                    {
+                        stuckFrom = transform.position;
+                        stuckTimer = 0f;
+                        yield return null;
+                        continue;
+                    }
+                    stuckTimer += Time.deltaTime;
+                    if (stuckTimer > 1.5f)
+                    {
+                        Vector3 moved = transform.position - stuckFrom;
+                        moved.y = 0f;
+                        if (moved.sqrMagnitude < 0.25f * 0.25f)
+                        {
+                            stuck = true;
+                            break;
+                        }
+                        stuckFrom = transform.position;
+                        stuckTimer = 0f;
+                    }
                     // Yolda daha içte boş bir yer varsa ona geçer (oyuncunun dibi boş kalmasın).
                     check -= Time.deltaTime;
                     if (check <= 0f)
@@ -306,13 +340,20 @@ public class NpcAgent : MonoBehaviour
                     timeout -= Time.deltaTime;
                     yield return null;
                 }
+                // Sıkışınca aynı yere tekrar tekrar yüklenmez: olduğu yerde kalır.
+                if (stuck)
+                    break;
             }
             if (frozen)
                 yield break;
 
-            bool reached = (transform.position - point).sqrMagnitude <= 1f;
+            // Yerine yakınsa son adımı kayarak atar; uzaksa (eskiden 1 m'ye kadar) idle'da kayıp yanındakinin içine
+            // giriyordu: artık olduğu yerde durur, durduğu yerin dibindeki boş yerler kapanır.
+            Vector3 offset = transform.position - point;
+            offset.y = 0f;
+            bool reached = offset.sqrMagnitude <= MaxSlide * MaxSlide && !Occupied(point);
             if (!reached)
-                crowd.ReleaseSlot(this);
+                crowd.SettleWhereStanding(this, transform.position);
             Vector3 stand = reached ? point : transform.position;
             if (agent.enabled && agent.isOnNavMesh)
                 agent.ResetPath();
@@ -322,6 +363,13 @@ public class NpcAgent : MonoBehaviour
             agent.enabled = false;
             obstacle.enabled = true;
             crowd.NotifyRingArrived(this);
+            // Herkes mağazaya dönmüşken varan da ona katılır.
+            if (conformPending && Time.time >= conformAt)
+            {
+                rotation = conformRotation;
+                talk = false;
+                conformPending = false;
+            }
             // Herkes aynı karede aynı idle'ı oynamasın.
             currentState = null;
             animator.CrossFadeInFixedTime(talk ? profile.talkState : profile.idleState, CrossFade, 0, Random.value * 3f);
@@ -337,6 +385,17 @@ public class NpcAgent : MonoBehaviour
             {
                 for (float w = Random.Range(0.6f, 1.4f); w > 0f && !frozen; w -= Time.deltaTime)
                     yield return null;
+                if (!frozen && conformPending && Time.time >= conformAt)
+                {
+                    conformPending = false;
+                    if (talk)
+                    {
+                        talk = false;
+                        Play(profile.idleState);
+                    }
+                    yield return TurnInPlace(conformRotation, Random.Range(1.1f, 1.6f));
+                    continue;
+                }
                 if (!frozen)
                     move = crowd.TryUpgradeSlot(this, out step, true);
             }
@@ -356,6 +415,47 @@ public class NpcAgent : MonoBehaviour
     }
 
     private bool frozen;
+    private static readonly Collider[] overlapBuffer = new Collider[8];
+
+    // Final: herkes mağazaya döner (NpcCrowd.Conform). Yerleşmiş olan gecikmesi dolunca yerinde döner, yürüyen
+    // vardığında bu yöne bakar.
+    private bool conformPending;
+    private Quaternion conformRotation;
+    private float conformAt;
+
+    public void Conform(Quaternion rotation, float delay)
+    {
+        conformPending = true;
+        conformRotation = rotation;
+        conformAt = Time.time + delay;
+    }
+
+    // Yerinde ağır ağır döner (dönme klibi yok; yavaş olunca ayak kayması göze batmıyor).
+    private IEnumerator TurnInPlace(Quaternion rotation, float duration)
+    {
+        Quaternion from = transform.rotation;
+        for (float t = 0f; t < duration && !frozen; t += Time.deltaTime)
+        {
+            transform.rotation = Quaternion.Slerp(from, rotation, Mathf.SmoothStep(0f, 1f, t / duration));
+            yield return null;
+        }
+        if (!frozen)
+            transform.rotation = rotation;
+    }
+
+    // Yerde zaten başka bir NPC duruyor mu (yerine varamayıp dibinde kalmış biri): kayarak onun içine girmesin.
+    private bool Occupied(Vector3 point)
+    {
+        int n = Physics.OverlapCapsuleNonAlloc(point + Vector3.up * 0.5f, point + Vector3.up * 1.4f, 0.2f, overlapBuffer,
+            1 << 2, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < n; i++)
+        {
+            NpcAgent other = overlapBuffer[i].GetComponentInParent<NpcAgent>();
+            if (other != null && other != this)
+                return true;
+        }
+        return false;
+    }
 
     /// <summary>Finalin son anı: olduğu pozda donar (yürüyorsa da durur).</summary>
     public void Freeze()
