@@ -151,6 +151,26 @@ public class Television : MonoBehaviour
             videoPlayer.Play();
         }
 
+        // Sadece son günün sabahı (her şey alındı, son gün eve gelinip uyunduktan sonra) TV kapalıdır (08.11, kullanıcı isteği).
+        bool shouldOff = DayRoutine.FinalMorning;
+        if (shouldOff != tvOff)
+        {
+            tvOff = shouldOff;
+            audioSource.mute = tvOff;
+            if (tvOff)
+            {
+                if (!preparing)
+                    videoPlayer.Stop();
+                SetScreen(false);
+                if (tvLight != null)
+                    tvLight.enabled = false;
+            }
+            else
+                restartPending = true;
+        }
+        if (tvOff)
+            return;
+
         // Gün/ürün değişince (satın alma, uyku) reklam değişir.
         if ((!hasCurrent || current.product != DayRoutine.TvProduct) && TryGetAd(DayRoutine.TvProduct, out Ad ad))
             Play(ad);
@@ -177,6 +197,7 @@ public class Television : MonoBehaviour
     /// Ses: dinleyici ile ekran arasındaki engeller (duvar, kapı, uzun mobilya; alçak mobilya sayılmaz, kanepeden
     /// sehpa yüzünden boğuklaşmasın) sesi kısar ve boğuklaştırır; uyku çarpanı da burada uygulanır.
     /// </summary>
+    private bool tvOff;
     private float menuFactor; // 0'dan başlar: menü açılırken ilk karelerde ses kaçmasın
 
     private void UpdateSound()
@@ -278,6 +299,8 @@ public class Television : MonoBehaviour
 
     private void StartPlayback()
     {
+        if (tvOff)
+            return;
         SetScreen(true);
         videoPlayer.Play();
     }

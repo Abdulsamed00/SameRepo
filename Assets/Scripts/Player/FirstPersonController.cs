@@ -215,7 +215,8 @@ public class FirstPersonController : MonoBehaviour
     private void Look()
     {
         Vector2 rawDelta = lookAction.ReadValue<Vector2>();
-        if (LookLocked)
+        // Alma/bırakma ve kapı/dolap açıp kapama sürerken (hareket kilidi) sağa sola bakılamaz (08.11, kullanıcı isteği).
+        if (LookLocked || movementLocks > 0)
             return;
         if (framesToSkip > 0)
         {

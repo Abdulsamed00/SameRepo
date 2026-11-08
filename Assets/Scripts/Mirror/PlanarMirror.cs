@@ -20,6 +20,8 @@ public class PlanarMirror : MonoBehaviour
     [SerializeField] private Material material;
     [Tooltip("Ayna camı yansımayı biraz soluk ve soğuk gösterir.")]
     [SerializeField] private Color tint = new Color(0.9f, 0.92f, 0.93f);
+    [Tooltip("Sabah (gündüz) yansıma parlaklık çarpanı: gündüz iç mekan loş olduğu için ayna karanlık kalıyordu (08.11).")]
+    [SerializeField] private float dayGain = 1f;
 
     [Header("Yansıma")]
     [Tooltip("Doku yüksekliği = ekran yüksekliği x bu (pozda cam ekranın neredeyse tamamını kaplıyor).")]
@@ -150,7 +152,7 @@ public class PlanarMirror : MonoBehaviour
         shownSt = st;
         block.SetTexture(BaseMapId, rt);
         block.SetVector(BaseMapStId, st);
-        block.SetColor(BaseColorId, tint);
+        block.SetColor(BaseColorId, dayGain != 1f && !DayRoutine.NightFell ? tint * dayGain : tint);
         surfaceRenderer.SetPropertyBlock(block);
     }
 

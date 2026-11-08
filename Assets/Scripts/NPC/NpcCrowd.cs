@@ -1044,9 +1044,18 @@ public class NpcCrowd : MonoBehaviour
                 continue;
             Vector3 d = a.transform.position - center;
             d.y = 0f;
-            if (d.sqrMagnitude < bystanderRadius * bystanderRadius && a.GetComponentInChildren<SkinnedMeshRenderer>() != null)
+            // Final kalabalığında erkek görünmez (08.11): erkekler uzakta da olsa toplanır.
+            if ((d.sqrMagnitude < bystanderRadius * bystanderRadius || IsMale(a.gameObject))
+                && a.GetComponentInChildren<SkinnedMeshRenderer>() != null)
                 bystanders.Add(a.gameObject);
         }
+    }
+
+    // Erkek NPC (prefab/obje adından): erkek, çalgıcı, kasiyer erkek.
+    private static bool IsMale(GameObject go)
+    {
+        string n = go.name;
+        return n.Contains("Man") || n.Contains("Erkek") || n.Contains("Calgici") || n.Contains("Muzisyen");
     }
 
     private IEnumerator ClearOutsiders()
@@ -1059,7 +1068,8 @@ public class NpcCrowd : MonoBehaviour
             {
                 NpcAgent npc = outsiders[i];
                 if (npc == null) { outsiders.RemoveAt(i); continue; }
-                if (cam != null && InView(cam, npc.transform.position))
+                bool farMale = IsMale(npc.gameObject) && (npc.transform.position - finaleCenter).sqrMagnitude > 20f * 20f;
+                if (!farMale && cam != null && InView(cam, npc.transform.position))
                     continue;
                 agents.Remove(npc);
                 outsiders.RemoveAt(i);
@@ -1069,7 +1079,8 @@ public class NpcCrowd : MonoBehaviour
             {
                 GameObject go = bystanders[i];
                 if (go == null) { bystanders.RemoveAt(i); continue; }
-                if (cam != null && InView(cam, go.transform.position))
+                bool farMale = IsMale(go) && (go.transform.position - finaleCenter).sqrMagnitude > 20f * 20f;
+                if (!farMale && cam != null && InView(cam, go.transform.position))
                     continue;
                 go.SetActive(false);
                 bystanders.RemoveAt(i);
