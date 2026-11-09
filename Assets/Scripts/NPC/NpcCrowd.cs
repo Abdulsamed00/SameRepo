@@ -97,7 +97,7 @@ public class NpcCrowd : MonoBehaviour
         {
             idleState = "Man_Idle",
             walkState = "Man_Walk",
-            sitState = "Man_Sit_Talk",
+            sitState = "Bench_Sit",
             walkClipSpeed = 1.55f,
             outfit = new[]
             {
@@ -112,7 +112,7 @@ public class NpcCrowd : MonoBehaviour
         {
             idleState = "Women_Idle",
             walkState = "Women_Walking",
-            sitState = "Women_Sit_Talk",
+            sitState = "Bench_Sit",
             walkClipSpeed = 1.0f,
             outfit = new[]
             {
