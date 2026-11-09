@@ -39034,7 +39034,7 @@ MonoBehaviour:
       options:
       - Glasses
       emptyChance: 0.8
-  population: 30
+  population: 45
   wanderRoots:
   - {fileID: 1064652262}
   - {fileID: 326125718}
