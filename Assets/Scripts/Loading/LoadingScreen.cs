@@ -72,23 +72,18 @@ public class LoadingScreen : MonoBehaviour
         bg.texture = background;
         bg.color = background != null ? Color.white : UiKit.Dim;
         bg.raycastTarget = false;
-        UiKit.Stretch(bg.rectTransform);
-        // Ekran oranına uymayan görsel (açılış görseli 2.36:1) esnetilmez, ortadan kırpılarak ekranı doldurur.
+        // Ekran oranı ne olursa olsun görsel esnetilmez: ekranı örtecek şekilde (taşan kısım kırpılır) büyütülür.
+        RectTransform bgRect = bg.rectTransform;
+        bgRect.anchorMin = bgRect.anchorMax = bgRect.pivot = new Vector2(0.5f, 0.5f);
+        bgRect.anchoredPosition = Vector2.zero;
         if (background != null)
         {
-            float imageAspect = background.width / (float)background.height;
-            float screenAspect = 16f / 9f;
-            if (imageAspect > screenAspect + 0.01f)
-            {
-                float w = screenAspect / imageAspect;
-                bg.uvRect = new Rect((1f - w) * 0.5f, 0f, w, 1f);
-            }
-            else if (imageAspect < screenAspect - 0.01f)
-            {
-                float h = imageAspect / screenAspect;
-                bg.uvRect = new Rect(0f, (1f - h) * 0.5f, 1f, h);
-            }
+            AspectRatioFitter fit = bg.gameObject.AddComponent<AspectRatioFitter>();
+            fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            fit.aspectRatio = background.width / (float)background.height;
         }
+        else
+            UiKit.Stretch(bgRect);
         UiKit.CreateFullscreen("Karartma", root, UiKit.WithAlpha(UiKit.Dim, opening ? 0.2f : 0.5f));
 
         TextMeshProUGUI logo = UiKit.CreateText("Logo", root, "SAME", UiKit.FontKind.Light, opening ? 56f : 39f, 55f, UiKit.White,
