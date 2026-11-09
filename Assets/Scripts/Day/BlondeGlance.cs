@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// 2. gün, saç boyanana kadar: yakından geçen sarışın kadınlara oyuncunun kafası bir anda döner, kısa süre onu izler,
@@ -28,7 +28,9 @@ public class BlondeGlance : MonoBehaviour
     [Tooltip("Kilitlendikten sonra takip sıkılığı: nişan (ekran ortası) kadının kafasında kalır.")]
     [SerializeField] private float holdFollowSharpness = 16f;
     [Tooltip("Bakış sürerken yürüme hızı çarpanı (karakter durmaz, yavaşlar).")]
-    [SerializeField] private float walkSlowdown = 0.45f;
+    [SerializeField] private float walkSlowdown = 0.7f;
+    [Tooltip("Oyun boyunca en fazla kaç kez sarışına bakılır (08.11, kullanıcı: \"max 5 kere\"). Yeni oyunda sıfırlanır.")]
+    [SerializeField] private int maxGlances = 5;
     [Tooltip("Bir sarışına kitlenildiği an çalan ses (WOW).")]
     [SerializeField] private AudioClip wowSound;
     [SerializeField, Range(0f, 1f)] private float wowVolume = 1f;
@@ -44,6 +46,10 @@ public class BlondeGlance : MonoBehaviour
     private float holdLeft;
     private float wait = 3f;
     private float scanWait;
+
+    // Bu oyunda kaç kez bakıldı (sahneler arası korunur; DayRoutine.ResetAll sıfırlar).
+    private static int glanceCount;
+    public static void ResetCount() => glanceCount = 0;
 
     private bool Active =>
         GameDay.Index == dayIndex && !PlayerLook.HairDyed && !player.Frozen && player.InputEnabled && !PauseMenu.IsPaused;
@@ -78,7 +84,7 @@ public class BlondeGlance : MonoBehaviour
         {
             view.localRotation = Quaternion.identity;
             wait -= Time.deltaTime;
-            if (Active && wait <= 0f)
+            if (Active && wait <= 0f && glanceCount < maxGlances)
                 FindTarget();
             return;
         }
@@ -187,6 +193,7 @@ public class BlondeGlance : MonoBehaviour
             lastLook = Quaternion.identity;
         target = best;
         holdLeft = Random.Range(holdTime.x, holdTime.y);
+        glanceCount++;
         // Kitlenme sesi (08.11, kullanıcı isteği).
         if (wowSound != null)
             GameAudio.Play2D(wowSound, wowVolume);

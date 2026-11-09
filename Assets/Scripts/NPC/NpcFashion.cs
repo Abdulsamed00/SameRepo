@@ -42,6 +42,18 @@ public static class NpcFashion
         return InShare(npc, ProductCount, BlondeShares[Mathf.Clamp(GameDay.Index, 0, BlondeShares.Length - 1)]);
     }
 
+    // Estetikli (küçük burun, dolgun dudak) kadın oranı, güne göre (09.11, kullanıcı: "estetiği o mantıkta NPC kadınlara da yap"):
+    // sarışınlık gibi: klinik günü (4. gün, Index 3) sokakta göze batar, sonra çoğalır.
+    private static readonly float[] SurgeryShares = { 0.1f, 0.2f, 0.35f, 0.6f, 0.8f };
+
+    /// <summary>Bu kadın NPC bugün estetikli mi. Son ürün de alınınca herkes.</summary>
+    public static bool HasSurgery(NpcDailyOutfit npc)
+    {
+        if (PlayerPurchases.OwnsAll)
+            return true;
+        return InShare(npc, ProductCount + 1, SurgeryShares[Mathf.Clamp(GameDay.Index, 0, SurgeryShares.Length - 1)]);
+    }
+
     public static void Register(NpcDailyOutfit npc)
     {
         if (!groups.TryGetValue(npc.Group, out List<NpcDailyOutfit> list))

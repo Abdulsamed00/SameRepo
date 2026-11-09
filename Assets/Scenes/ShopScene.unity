@@ -3380,7 +3380,7 @@ Transform:
   m_GameObject: {fileID: 121857341}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.4, y: 0.030791014, z: 0.05}
+  m_LocalPosition: {x: -0.39999962, y: -0.023208987, z: -0.10000038}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -19937,7 +19937,7 @@ MonoBehaviour:
     weight: 1
     idleState: Man_Idle
     walkState: Man_Walk
-    sitState: Man_Sit_Talk
+    sitState: Bench_Sit
     talkState: Standing_Talk
     walkClipSpeed: 1.55
     outfit:
@@ -19974,7 +19974,7 @@ MonoBehaviour:
     weight: 1.5
     idleState: Women_Idle
     walkState: Women_Walking
-    sitState: Women_Sit_Talk
+    sitState: Bench_Sit
     talkState: Standing_Talk
     walkClipSpeed: 1
     outfit:
@@ -50341,7 +50341,7 @@ Transform:
   m_GameObject: {fileID: 1785665270}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.4, y: 0.030791014, z: 0.05}
+  m_LocalPosition: {x: 0.39999962, y: -0.023208987, z: -0.10000038}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

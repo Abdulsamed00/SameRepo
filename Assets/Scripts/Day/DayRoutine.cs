@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 /// <summary>
@@ -163,6 +163,7 @@ public static class DayRoutine
         FinalMorning = false;
         MorningMirrorSeen = false;
         PlayerLook.Reset();
+        BlondeGlance.ResetCount();
         PlayerPurchases.Reset();
         PlayerOutfit.Reset();
         GameDay.Reset();
