@@ -34,7 +34,7 @@ public class BeautyVisit : Interactable
     private bool busy;
 
     private bool Done => service == Service.Hair ? PlayerLook.HairDyed : PlayerLook.SurgeryDone;
-    private bool Pending => GameDay.Index == dayIndex && !Done;
+    public bool Pending => GameDay.Index == dayIndex && !Done;
 
     public override string Prompt => DayRoutine.BoughtToday ? base.Prompt : buyFirstPrompt;
 
@@ -50,12 +50,6 @@ public class BeautyVisit : Interactable
 
     private void Update()
     {
-        if (Pending && homeZone != null)
-        {
-            homeZone.Locked = DayRoutine.BoughtToday;
-            homeZone.LockedPrompt = homeLockedPrompt;
-        }
-
         if (interactor == null)
             interactor = FindFirstObjectByType<PlayerInteractor>();
         if (interactor == null || !interactor.isActiveAndEnabled)

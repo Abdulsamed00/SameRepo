@@ -25,6 +25,9 @@ public class SceneDoor : Openable
     // Sahne geçişi sadece F ile tetiklenir, kapıya yürümek yetmez.
     protected override bool CanAutoPush => false;
 
+    // F'ye basınca hemen sahne geçişi başlar (oyuncu donar); yoldan çekilme beklenmez.
+    protected override bool RepositionBeforeMove => false;
+
     public override void Interact(PlayerInteractor interactor)
     {
         if (triggered || Locked)

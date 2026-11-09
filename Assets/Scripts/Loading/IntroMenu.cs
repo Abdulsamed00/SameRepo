@@ -298,7 +298,7 @@ public class IntroMenu : MonoBehaviour
         {
             Destroy(view.gameObject);
             SetFrontVisible(true);
-        });
+        }, null, null, "Geri");
     }
 
     public void OnQuitClicked()

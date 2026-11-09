@@ -837,7 +837,10 @@ public class PlayerBody : MonoBehaviour
             return;
         Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
         // Dönüşün bir kısmını gövdenin üstü alır, boyun tek başına bükülmesin.
-        animator.SetLookAtWeight(weight, 0.2f, 1f, 0f, headLookClamp);
+        // Eşya taşırken (08.11 "dik dursun", 09.11 "hafif aşağı eğiliyor") gövde bakışa eşlik etmez, sadece kafa döner:
+        // eşyaya bakmak için aşağı bakınca bakış IK'sının gövde payı (0.2) belden öne eğiyordu.
+        float bodyWeight = carryRight != null || carryLeft != null ? 0f : 0.2f;
+        animator.SetLookAtWeight(weight, bodyWeight, 1f, 0f, headLookClamp);
         // Üçüncü şahısta (final) kamera karakterin gözü değil, karaktere bakıyor: kafa onu izlerse öne eğiliyordu.
         // O zaman gövdenin baktığı yöne, ufka bakar.
         Vector3 direction = thirdPerson ? animator.transform.forward : playerCamera.transform.forward;

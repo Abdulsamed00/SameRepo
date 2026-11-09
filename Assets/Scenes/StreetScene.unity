@@ -49575,6 +49575,7 @@ GameObject:
   - component: {fileID: 577768844}
   - component: {fileID: 577768843}
   - component: {fileID: 577768845}
+  - component: {fileID: 577768846}
   m_Layer: 0
   m_Name: Gecis_Ev
   m_TagString: Untagged
@@ -49644,6 +49645,19 @@ MonoBehaviour:
   spawnId: Ev_Koridor_Kapi
   requireLeaveFirst: 1
   lockedPrompt: "Kap\u0131 kilitli"
+--- !u!114 &577768846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 577768841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d556dd222bb1da4db82746797e8f44a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StreetHomeLock
+  homeZone: {fileID: 0}
 --- !u!1 &577899047
 GameObject:
   m_ObjectHideFlags: 0
