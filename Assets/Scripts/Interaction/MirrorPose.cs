@@ -109,8 +109,29 @@ public class MirrorPose : Interactable
             return false;
         if (posingPlayer != null)
             return posingPlayer == interactor;
+        // Gece, ayna odasının ışığı kapalıyken poz verilmez (09.11, kullanıcı isteği; bildirim de çıkmaz).
+        if (DayRoutine.NightFell && !RoomLit)
+            return false;
         PlayerSitController sitter = interactor.GetComponent<PlayerSitController>();
         return sitter == null || !sitter.IsSeated;
+    }
+
+    [Tooltip("Ayna odasının ışık kimliği (RoomLights.RoomId). Gece bu oda aydınlık değilse poz verilmez.")]
+    [SerializeField] private string roomId = "Yatak";
+    private RoomLights roomLights;
+
+    private bool RoomLit
+    {
+        get
+        {
+            if (roomLights == null)
+            {
+                foreach (RoomLights room in FindObjectsByType<RoomLights>(FindObjectsSortMode.None))
+                    if (room.RoomId == roomId)
+                        roomLights = room;
+            }
+            return roomLights == null || roomLights.IsOn;
+        }
     }
 
     public override void Interact(PlayerInteractor interactor)

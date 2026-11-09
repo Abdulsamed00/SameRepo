@@ -44,7 +44,19 @@ public class NpcAgent : MonoBehaviour
     private bool interrupted;
 
     /// <summary>O anki hedefi bırakıp kalabalıktan yenisini ister (noktadaysa kalkar).</summary>
-    public void Interrupt() => interrupted = true;
+    public void Interrupt()
+    {
+        interrupted = true;
+        SetAvoidanceRadius(0.3f);
+    }
+
+    public const float WalkAvoidanceRadius = 0.5f;
+
+    public void SetAvoidanceRadius(float radius)
+    {
+        if (agent != null)
+            agent.radius = radius;
+    }
 
     public void Init(NpcCrowd owner, NpcProfile npcProfile, float speed)
     {
@@ -59,7 +71,10 @@ public class NpcAgent : MonoBehaviour
         agent.speed = speed;
         agent.angularSpeed = 300f;
         agent.acceleration = 4f;
-        agent.radius = 0.3f;
+        // Ajan yarıçapı sadece NPC'ler arası kaçınmayı belirler (yol haritası ajan tipinden): 0.3'teyken yürüyenler
+        // omuz omuza geçiyordu (09.11, "dip dibe yürüyorlar"); 0.5 = kök arası en az ~1 m. Final kalabalığı sıkışık
+        // dursun diye oradaki NPC'lerde 0.3'e iner (SetAvoidanceRadius).
+        agent.radius = WalkAvoidanceRadius;
         agent.height = 1.8f;
         agent.stoppingDistance = 0.15f;
         agent.autoBraking = true;

@@ -515,6 +515,7 @@ public class NpcCrowd : MonoBehaviour
             NpcAgent npc = Spawn(hit.position, Quaternion.LookRotation(toCenter), null);
             finaleSpawns.Add(hit.position);
             npc.GoalLimit = int.MaxValue;
+            npc.SetAvoidanceRadius(0.3f);
             npc.SetSpeed(Random.Range(1.2f, 1.6f));
             joiners.Add(npc);
             spawned++;
@@ -556,6 +557,7 @@ public class NpcCrowd : MonoBehaviour
             NpcAgent npc = Spawn(hit.position, Quaternion.LookRotation(toCenter), null, profile);
             finaleSpawns.Add(hit.position);
             npc.GoalLimit = int.MaxValue;
+            npc.SetAvoidanceRadius(0.3f);
             npc.SetSpeed(ringWalkSpeed * Random.Range(0.9f, 1.15f));
             if (playerCopy)
             {
