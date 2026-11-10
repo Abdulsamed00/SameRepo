@@ -26,8 +26,7 @@ public class PickupItem : Interactable
     [Tooltip("El noktasına göre konum farkı.")]
     [SerializeField] private Vector3 holdPositionOffset;
     [Tooltip("El noktasına göre dönüş farkı (derece).")]
-    [SerializeField] private Vector3 holdEulerOffset;
-    [SerializeField] private float followSharpness = 18f;
+    [SerializeField] private Vector3 holdEulerOffset;    [SerializeField] private float followSharpness = 18f;
 
     /// <summary>Eşyanın tutma noktasına göre ek aşağı kayması (m).</summary>
     protected virtual float HoldLowering => 0f;
@@ -84,10 +83,28 @@ public class PickupItem : Interactable
     {
         right = gripA;
         left = gripB;
-        if (gripA == null || gripB == null || holdPoint == null)
+        holdFlipped = false;
+        LateGrip = false;
+        if (gripA == null || holdPoint == null)
             return;
 
-        Quaternion held = holdPoint.rotation * Quaternion.Euler(holdEulerOffset);
+        // Eşyanın raftaki duruşu ile eldeki duruşu arasındaki yatay açı. Arkasından/yanından alınınca eşya kameraya
+        // gelirken 90-180° dönüyor, eller birbirinin ve eşyanın içinden geçiyordu (10.11, kullanıcı: "pantolonu tersten
+        // ve yandan alırken eller buglanıyor"). İki elle tutulanlar arkası dönük de tutulabilir: hangisi rafa daha yakınsa
+        // o seçilir (en fazla 90°). Yine de 45°'den çok dönecekse eller rafa uzanmaz, eşya ellere gelince tutarlar.
+        HoldFrame(holdPoint, out _, out Quaternion frame);
+        Quaternion held = frame * Quaternion.Euler(holdEulerOffset);
+        float yaw = YawBetween(transform.rotation, held);
+        if (gripB != null && Mathf.Abs(yaw) > 90f)
+        {
+            holdFlipped = true;
+            held = Quaternion.AngleAxis(180f, Vector3.up) * held;
+            yaw = YawBetween(transform.rotation, held);
+        }
+        LateGrip = Mathf.Abs(yaw) > 45f;
+        if (gripB == null)
+            return;
+
         Quaternion shelf = transform.rotation;
         Vector3 a = held * Quaternion.Inverse(shelf) * (gripA.position - transform.position);
         Vector3 b = held * Quaternion.Inverse(shelf) * (gripB.position - transform.position);
@@ -95,6 +112,67 @@ public class PickupItem : Interactable
         {
             right = gripB;
             left = gripA;
+        }
+    }
+
+    // Eşya elde arkası dönük (dikey eksende 180°) tutuluyor: raftan arkasından alındı.
+    private bool holdFlipped;
+
+    // Ele bağlı tutuşta (gözlük) elin önde durması için IK hedefi ve onu hesaplatan kameradaki tutma noktası.
+    private Transform handAnchor;
+    private Transform cameraHoldPoint;
+
+    /// <summary>
+    /// Ele bağlı tutuşta (HoldInHand + gripA) sağ elin alma animasyonundan sonra durduğu IK hedefi: kameranın önünde,
+    /// tutuş noktasının kameradaki pozu. <see cref="UpdateHeldPose"/> her karede günceller.
+    /// </summary>
+    public Transform HandAnchor(Transform cameraHold)
+    {
+        cameraHoldPoint = cameraHold;
+        if (handAnchor == null)
+            handAnchor = new GameObject(name + "_El_Hedefi").transform;
+        return handAnchor;
+    }
+
+    /// <summary>Raftaki duruş eldekinden çok farklı (yandan alındı): eller rafa uzanmaz, eşya ellere gelince tutarlar.</summary>
+    public bool LateGrip { get; private set; }
+
+    // İki dönüş arasındaki dikey eksen etrafındaki açı (eşyanın en yatay ekseniyle ölçülür; yatık pantolonda ileri ekseni dik).
+    private static float YawBetween(Quaternion from, Quaternion to)
+    {
+        Vector3 axis = Vector3.forward;
+        Vector3 f = Vector3.ProjectOnPlane(from * Vector3.forward, Vector3.up);
+        Vector3 r = Vector3.ProjectOnPlane(from * Vector3.right, Vector3.up);
+        if (r.sqrMagnitude > f.sqrMagnitude)
+            axis = Vector3.right;
+        Vector3 a = Vector3.ProjectOnPlane(from * axis, Vector3.up);
+        Vector3 b = Vector3.ProjectOnPlane(to * axis, Vector3.up);
+        if (a.sqrMagnitude < 1e-6f || b.sqrMagnitude < 1e-6f)
+            return 0f;
+        return Vector3.SignedAngle(a, b, Vector3.up);
+    }
+
+    // Tutuşların ortası (eşyanın yerel uzayında): arkası dönük tutarken eşya bu nokta etrafında çevrilir, eller aynı yerde kalır.
+    private Vector3 GripCenterLocal()
+    {
+        if (gripA == null)
+            return Vector3.zero;
+        // Ölçeksiz (dönüş uzayında) ofset: eşyanın ölçeği dahil.
+        Quaternion inv = Quaternion.Inverse(transform.rotation);
+        Vector3 a = inv * (gripA.position - transform.position);
+        return gripB == null ? a : (a + inv * (gripB.position - transform.position)) * 0.5f;
+    }
+
+    /// <summary>Yerine dönerken eşya 45°'den çok dönecek: eller onunla gitmez, hemen bırakır (yoksa birbirinin içinden geçer).</summary>
+    public bool BigTurnHome
+    {
+        get
+        {
+            if (!returnToStartOnDrop)
+                return false;
+            Transform parent = transform.parent;
+            Quaternion home = parent != null ? parent.rotation * startLocalRotation : startLocalRotation;
+            return Mathf.Abs(YawBetween(transform.rotation, home)) > 45f;
         }
     }
 
@@ -279,9 +357,41 @@ public class PickupItem : Interactable
         if (!IsHeld || Time.time < attachTime || settling)
             return;
 
-        HoldFrame(out Vector3 framePosition, out Quaternion frameRotation);
-        Vector3 targetPosition = framePosition + frameRotation * (holdPositionOffset + Vector3.down * HoldLowering);
-        Quaternion targetRotation = frameRotation * Quaternion.Euler(holdEulerOffset);
+        HoldFrame(holdPoint, out Vector3 framePosition, out Quaternion frameRotation);
+        Vector3 targetPosition;
+        Quaternion targetRotation;
+        if (HoldInHand && gripA != null)
+        {
+            // Elin önde durduğu yer (IK hedefi): eşya kameradaki tutma noktasında olsaydı tutuş noktasının pozu.
+            // Bilek bu pozda düz (başparmak yukarı, avuç içe), el sarkıp eşyayı bacağa sokmaz.
+            if (handAnchor != null && cameraHoldPoint != null)
+            {
+                HoldFrame(cameraHoldPoint, out Vector3 camFramePos, out Quaternion camFrameRot);
+                Quaternion camRot = camFrameRot * Quaternion.Euler(holdEulerOffset);
+                Vector3 camPos = camFramePos + camFrameRot * (holdPositionOffset + Vector3.down * HoldLowering);
+                Quaternion inv = Quaternion.Inverse(transform.rotation);
+                handAnchor.SetPositionAndRotation(camPos + camRot * (inv * (gripA.position - transform.position)),
+                    camRot * (inv * gripA.rotation));
+            }
+            // Ele bağlı ve tutuş noktası var (gözlük, 10.11): tutuş noktası avuca oturur (PlayerBody.ApplyHandGrip'teki
+            // eksen kuralıyla: avuç noktasının başparmak ekseni etrafında 180° çevrilmişi). El hedefe oturunca eşya
+            // kameradaki tasarlanmış pozunda görünür; el yetişmezse avuçta kalır, havada durmaz.
+            Quaternion gripLocalRot = Quaternion.Inverse(transform.rotation) * gripA.rotation;
+            targetRotation = holdPoint.rotation * Quaternion.AngleAxis(180f, Vector3.forward) * Quaternion.Inverse(gripLocalRot);
+            targetPosition = holdPoint.position - targetRotation * GripCenterLocal();
+        }
+        else
+        {
+            targetPosition = framePosition + frameRotation * (holdPositionOffset + Vector3.down * HoldLowering);
+            targetRotation = frameRotation * Quaternion.Euler(holdEulerOffset);
+        }
+        if (holdFlipped)
+        {
+            // Tutuşların ortası etrafında dikey eksende 180°: eller aynı noktada kalır, eşyanın arkası öne gelir.
+            Vector3 grip = targetPosition + targetRotation * GripCenterLocal();
+            targetRotation = Quaternion.AngleAxis(180f, Vector3.up) * targetRotation;
+            targetPosition = grip - targetRotation * GripCenterLocal();
+        }
         ApplyWalkSway(frameRotation, ref targetPosition, ref targetRotation);
         ApplyClearance(ref targetPosition, targetRotation);
 
@@ -306,7 +416,7 @@ public class PickupItem : Interactable
     // Tutma noktası kameranın çocuğuysa (mağaza ürünleri) eşya kameranın sadece yatay dönüşünü izler (08.11, kullanıcı
     // isteği): aşağı/yukarı bakınca eşya da kamerayla dönüp karakterin gövdesine giriyordu. Artık eşya göğüs önünde
     // sabit yükseklikte kalır, bakışla sadece kafa oynar. Ele bağlı tutuşta (kumanda) noktanın kendisi kullanılır.
-    private void HoldFrame(out Vector3 position, out Quaternion rotation)
+    private static void HoldFrame(Transform holdPoint, out Vector3 position, out Quaternion rotation)
     {
         Transform camera = holdPoint.parent;
         if (camera == null || camera.GetComponent<Camera>() == null)

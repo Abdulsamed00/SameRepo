@@ -691,13 +691,15 @@ public class PlayerBody : MonoBehaviour
     /// eşya nereye giderse oraya eşlik eder (IK, kapıdaki gibi). Sadece sağ verilirse tek el.
     /// </summary>
     /// <returns>Ellerin tutuş noktalarına ulaşma süresi (sn); eşya bundan sonra kameranın önüne gelmeli.</returns>
-    public float BeginCarry(Transform right, Transform left, System.Action syncItem = null, bool leftJoinsLate = false)
+    /// <param name="startDelay">Eller bu kadar sn sonra uzanmaya başlar (eşya önce kameranın önüne gelir).</param>
+    public float BeginCarry(Transform right, Transform left, System.Action syncItem = null, bool leftJoinsLate = false,
+        float startDelay = 0f)
     {
         carryLeftJoinsLate = leftJoinsLate && left != null;
         carrySync = syncItem;
         carryRight = right;
         carryLeft = left;
-        carryStart = Time.time;
+        carryStart = Time.time + startDelay;
         carryReach = carryReachTime;
         carryEndTime = -1f;
         putDownEndTime = -1f;

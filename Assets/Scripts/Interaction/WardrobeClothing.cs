@@ -59,7 +59,16 @@ public class WardrobeClothing : Interactable
     private float yaw;
     private bool busy;
 
+    /// <summary>Dolap sesi (kıyafet alma/bırakma); <see cref="OutfitChange"/> da kullanır.</summary>
+    public static AudioClip SharedHandleSound { get; private set; }
+
     public ProductType Product => product;
+
+    /// <summary>Dolapta asılı (alındı, giyilmedi).</summary>
+    public bool Hanging => Available;
+
+    /// <summary>Şu an inceleniyor (kameranın önünde).</summary>
+    public bool Inspecting => inspector != null;
 
     /// <summary>Alındı ve henüz giyilmedi: dolapta asılı.</summary>
     private bool Available => PlayerPurchases.Owns(product) && !PlayerOutfit.IsWorn(product);
@@ -72,10 +81,16 @@ public class WardrobeClothing : Interactable
         InputActionMap playerMap = inputActions.FindActionMap("Player", true);
         lookAction = playerMap.FindAction("Look", true);
         dropAction = playerMap.FindAction("Drop", true);
+        if (SharedHandleSound == null)
+            SharedHandleSound = handleSound;
         homePosition = model.localPosition;
         homeRotation = model.localRotation;
         homeScale = model.localScale;
         homeLossyScale = model.lossyScale;
+        // İnce, çift yüzlü kıyafet kendi gölgesini alınca (özellikle incelerken) kollar saydam/benekli görünüyordu (10.11):
+        // gölge almaz (atmaya devam eder).
+        foreach (Renderer r in model.GetComponentsInChildren<Renderer>(true))
+            r.receiveShadows = false;
         System.Collections.Generic.List<Transform> found = new System.Collections.Generic.List<Transform>();
         foreach (Transform t in model.GetComponentsInChildren<Transform>(true))
             if (t != model && t.name == hangerName)
@@ -97,7 +112,9 @@ public class WardrobeClothing : Interactable
         if (inspector != null)
             return inspector == interactor;
         PlayerSitController sitter = interactor.GetComponent<PlayerSitController>();
-        return Available && !interactor.IsHolding && (sitter == null || !sitter.IsSeated);
+        // Sadece günün yeni ürünü tek tek incelenip giyilir; öncekiler sabah tek seferde giyilir (OutfitChange).
+        return Available && product == GameDay.Product && !DayRoutine.WornToday && !interactor.IsHolding
+               && (sitter == null || !sitter.IsSeated);
     }
 
     public override void Interact(PlayerInteractor interactor)
@@ -140,6 +157,7 @@ public class WardrobeClothing : Interactable
             yield break;
 
         busy = true;
+        ShoppingBag.Put(); // poşet dolabın önünde bırakılır, kıyafet çıkar
         inspector = interactor;
         view = cam.transform;
         yaw = 0f;
@@ -241,7 +259,9 @@ public class WardrobeClothing : Interactable
         const float lookAhead = 5f;
         float free = lookAhead;
         RaycastHit[] hits = Physics.SphereCastAll(view.position, Mathf.Min(radius * 0.5f, 0.3f), view.forward, lookAhead,
-            ~0, QueryTriggerInteraction.Ignore);
+            // Ignore Raycast sayılmaz: dolabın önündeki görünmez giriş engeli (Dolap/Giris_Engeli, 10.11) kameranın
+            // dibinde kalıp kıyafeti en küçük ölçeğe ve 0.3 m'ye çekiyordu.
+            ~(1 << 2), QueryTriggerInteraction.Ignore);
         foreach (RaycastHit hit in hits)
         {
             Transform t = hit.collider.transform;

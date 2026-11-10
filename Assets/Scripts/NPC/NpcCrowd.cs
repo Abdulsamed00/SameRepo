@@ -328,6 +328,8 @@ public class NpcCrowd : MonoBehaviour
             }
         }
 
+        AddBodiesToStaticNpcs();
+
         if (wanderPoints.Count == 0 || totalWeight <= 0f)
         {
             Debug.LogWarning($"{name}: gezinme noktası ya da NPC prefab'ı yok, kalabalık kapalı.");
@@ -338,6 +340,29 @@ public class NpcCrowd : MonoBehaviour
         int count = Mathf.Max(1, Mathf.RoundToInt(population * GameSettings.NpcFactor));
         for (int i = 0; i < count; i++)
             SpawnInitial();
+    }
+
+    // Sahnedeki sabit NPC'lerin (kafe, sohbet, telefon, kasiyer...) çoğunda collider yoktu, oyuncu içlerinden geçiyordu
+    // (10.11). Kökte collider'ı olmayan her animatörlü NPC'ye Ignore Raycast katmanında (etkileşim ışınını kesmez) kapsül eklenir.
+    private void AddBodiesToStaticNpcs()
+    {
+        var seen = new HashSet<Transform>();
+        foreach (NpcAnimationPlayer a in FindObjectsByType<NpcAnimationPlayer>(FindObjectsSortMode.None))
+            AddBody(a.transform, seen);
+        foreach (NpcDailyOutfit o in FindObjectsByType<NpcDailyOutfit>(FindObjectsSortMode.None))
+            AddBody(o.transform, seen);
+    }
+
+    private static void AddBody(Transform root, HashSet<Transform> seen)
+    {
+        if (!seen.Add(root) || root.GetComponent<NpcAgent>() != null || root.GetComponent<Collider>() != null
+            || root.GetComponentInChildren<Animator>() == null)
+            return;
+        var c = root.gameObject.AddComponent<CapsuleCollider>();
+        c.center = new Vector3(0f, 0.9f, 0f);
+        c.height = 1.75f;
+        c.radius = 0.28f;
+        root.gameObject.layer = 2;
     }
 
     private void SpawnInitial()

@@ -120,21 +120,50 @@ public class NpcIk : MonoBehaviour
         }
     }
 
+    [Tooltip("Ayak parmağı ekleminin tabandan yüksekliği (m). Oturunca ayak ucu aşağı baktığı için bilek hesabı yetmiyor, " +
+             "parmak ucu kaldırıma 3-4 cm giriyordu (10.11).")]
+    [SerializeField] private float toeClearance = 0.025f;
+
     private void Ground(AvatarIKGoal goal, float bottom)
     {
         Vector3 ankle = animator.GetIKPosition(goal);
         float sole = ankle.y - bottom;
+        // Parmak ucunun bileğe göre yeri (önceki karenin kemiklerinden; IK sadece yukarı taşıdığı için geri besleme yok).
+        bool left = goal == AvatarIKGoal.LeftFoot;
+        Transform foot = animator.GetBoneTransform(left ? HumanBodyBones.LeftFoot : HumanBodyBones.RightFoot);
+        Transform toes = animator.GetBoneTransform(left ? HumanBodyBones.LeftToes : HumanBodyBones.RightToes);
+        float toeY = float.MaxValue;
+        Vector3 toePoint = ankle;
+        float targetLift = 0f;
+        if (foot != null && toes != null)
+        {
+            toePoint = ankle + (toes.position - foot.position);
+            toeY = toePoint.y - toeClearance;
+        }
         if (Physics.Raycast(ankle + Vector3.up * 0.25f, Vector3.down, out RaycastHit hit, 0.6f, GroundMask, QueryTriggerInteraction.Ignore)
             && !hit.collider.transform.IsChildOf(transform))
         {
-            float lift = hit.point.y + soleClearance - sole;
-            if (lift > 0f)
-            {
-                animator.SetIKPositionWeight(goal, 1f);
-                animator.SetIKPosition(goal, ankle + Vector3.up * lift);
-                return;
-            }
+            float ground = hit.point.y;
+            if (toeY < float.MaxValue && Physics.Raycast(toePoint + Vector3.up * 0.25f, Vector3.down, out RaycastHit toeHit, 0.6f, GroundMask, QueryTriggerInteraction.Ignore)
+                && !toeHit.collider.transform.IsChildOf(transform))
+                ground = Mathf.Max(ground, toeHit.point.y);
+            targetLift = Mathf.Clamp(Mathf.Max(ground + soleClearance - sole, toeY < float.MaxValue ? ground + soleClearance - toeY : 0f), 0f, 0.15f);
         }
-        animator.SetIKPositionWeight(goal, 0f);
+        // Yumuşatma (10.11, "kadın NPC'lerin dizleri kaldırımda titriyor"): eskiden kaldırma ve ağırlık her kare 0/1 arası
+        // sıçrıyordu (basan ayağın tabanı eşiğin iki yanında gidip gelince diz kırılıp titriyordu). Artık ayak başına
+        // yumuşatılmış kaldırma, ağırlık hep 1.
+        int i = left ? 0 : 1;
+        float k = 1f - Mathf.Exp(-(targetLift > smoothLift[i] ? 18f : 8f) * Time.deltaTime);
+        smoothLift[i] = Mathf.Lerp(smoothLift[i], targetLift, k);
+        if (smoothLift[i] < 0.0005f)
+        {
+            smoothLift[i] = 0f;
+            animator.SetIKPositionWeight(goal, 0f);
+            return;
+        }
+        animator.SetIKPositionWeight(goal, 1f);
+        animator.SetIKPosition(goal, ankle + Vector3.up * smoothLift[i]);
     }
+
+    private readonly float[] smoothLift = new float[2];
 }

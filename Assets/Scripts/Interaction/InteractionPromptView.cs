@@ -24,6 +24,7 @@ public class InteractionPromptView : MonoBehaviour
 
     private static readonly Vector2 CornerMargin = new Vector2(64f, 64f);
     private const float RowStep = 52f;
+    private const float CornerScale = 1.35f; // sol alt tuş kutuları (10.11: "biraz büyüt")
 
     /// <summary>Tuş kutusu (+ gizli yazı), sol alta hizalı.</summary>
     private class KeyLine
@@ -82,6 +83,7 @@ public class InteractionPromptView : MonoBehaviour
 
         RectTransform corner = UiKit.CreateRect("Sol_Alt", transform);
         UiKit.Place(corner, Vector2.zero, CornerMargin, Vector2.zero);
+        corner.localScale = Vector3.one * CornerScale;
 
         hint = CreateKeyLine("Ipucu", corner);
         hintGroup = hint.Root.gameObject.AddComponent<CanvasGroup>();

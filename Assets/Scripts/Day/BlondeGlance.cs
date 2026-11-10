@@ -35,6 +35,23 @@ public class BlondeGlance : MonoBehaviour
     [SerializeField] private AudioClip wowSound;
     [SerializeField, Range(0f, 1f)] private float wowVolume = 1f;
 
+    [Header("Saç parlaması (10.11, Shader Graph: Same/HairGlow)")]
+    [Tooltip("Boşsa Resources/Hair/Hair_Glow yüklenir.")]
+    [SerializeField] private Material glowMaterial;
+    [Tooltip("Kilitlenirken parlamanın tam açılma süresi (sn).")]
+    [SerializeField] private float glowRiseTime = 0.5f;
+    [Tooltip("Kilitlenme bitince parlamanın sönme süresi (sn).")]
+    [SerializeField] private float glowFadeTime = 0.35f;
+    [SerializeField, Range(0f, 4f)] private float glowStrength = 2.5f; // 10.11: "daha belirgin" (1 → 2.5)
+
+    private static readonly int GlowId = Shader.PropertyToID("_Glow");
+    private static readonly int HairMapId = Shader.PropertyToID("_HairMap");
+    private Transform glowOwner;
+    private Renderer glowRenderer;
+    private Material[] glowOriginal;
+    private Material glowInstance;
+    private float glowLevel;
+
     private FirstPersonController player;
     private Transform view;
     private NpcDailyOutfit[] women = new NpcDailyOutfit[0];
@@ -61,8 +78,77 @@ public class BlondeGlance : MonoBehaviour
             view = player.CameraRoot.GetComponentInChildren<Camera>().transform;
     }
 
+    // Kilitlenen kadının saçı: ikinci (additive) malzeme eklenir, kilit bitince kalkar.
+    private void UpdateGlow()
+    {
+        if (target != null && glowOwner != target)
+        {
+            EndGlow();
+            BeginGlow(target);
+        }
+
+        // Parlama ancak nişan kadının kafasına tam oturunca (dönüş tamamlanınca) başlar.
+        bool on = target != null && glowInstance != null && weight >= 0.98f;
+        glowLevel = on
+            ? Mathf.Min(1f, glowLevel + Time.deltaTime / Mathf.Max(0.01f, glowRiseTime))
+            : Mathf.Max(0f, glowLevel - Time.deltaTime / Mathf.Max(0.01f, glowFadeTime));
+
+        if (glowInstance != null)
+        {
+            if (glowRenderer == null || !glowRenderer.gameObject.activeInHierarchy)
+                EndGlow();
+            else
+                glowInstance.SetFloat(GlowId, Mathf.SmoothStep(0f, 1f, glowLevel) * glowStrength);
+        }
+
+        if (target == null && glowLevel <= 0f)
+            EndGlow();
+    }
+
+    private void BeginGlow(Transform npc)
+    {
+        if (glowMaterial == null)
+            glowMaterial = Resources.Load<Material>("Hair/Hair_Glow");
+        Transform hair = npc.Find(hairPart);
+        Renderer r = hair != null ? hair.GetComponent<Renderer>() : null;
+        if (r == null || glowMaterial == null)
+            return;
+
+        glowOwner = npc;
+        glowRenderer = r;
+        glowOriginal = r.sharedMaterials;
+        glowInstance = new Material(glowMaterial);
+        glowInstance.SetFloat(GlowId, 0f);
+        Material src = glowOriginal.Length > 0 ? glowOriginal[0] : null;
+        if (src != null)
+        {
+            Texture tex = src.HasProperty("_BaseMap") ? src.GetTexture("_BaseMap")
+                : src.HasProperty("_MainTex") ? src.GetTexture("_MainTex") : null;
+            if (tex != null)
+                glowInstance.SetTexture(HairMapId, tex);
+        }
+        var mats = new Material[glowOriginal.Length + 1];
+        glowOriginal.CopyTo(mats, 0);
+        mats[mats.Length - 1] = glowInstance;
+        r.sharedMaterials = mats;
+    }
+
+    private void EndGlow()
+    {
+        if (glowRenderer != null && glowOriginal != null)
+            glowRenderer.sharedMaterials = glowOriginal;
+        if (glowInstance != null)
+            Destroy(glowInstance);
+        glowInstance = null;
+        glowRenderer = null;
+        glowOriginal = null;
+        glowOwner = null;
+        glowLevel = 0f;
+    }
+
     private void OnDisable()
     {
+        EndGlow();
         if (player != null)
         {
             player.LookLocked = false;
@@ -74,6 +160,8 @@ public class BlondeGlance : MonoBehaviour
     {
         if (player == null || view == null || view.parent != player.CameraRoot)
             return;
+
+        UpdateGlow();
 
         // Kilitlenirken ve bakış sürerken fare bakışı kapalı (05.11, kullanıcı isteği).
         player.LookLocked = target != null || weight > 0f;

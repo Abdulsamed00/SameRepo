@@ -10424,37 +10424,6 @@ Transform:
   - {fileID: 2127745913}
   m_Father: {fileID: 135413217}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &110547201
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 110547202}
-  m_Layer: 0
-  m_Name: Dogma_AraSokak_Sag
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &110547202
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 110547201}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12, y: 0, z: 55}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 211529655}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &110589522
 GameObject:
   m_ObjectHideFlags: 0
@@ -15389,7 +15358,7 @@ Transform:
   m_GameObject: {fileID: 172022028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.00000047683716, y: 0, z: -0.9533386}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -18387,7 +18356,6 @@ Transform:
   - {fileID: 1832575798}
   - {fileID: 573882071}
   - {fileID: 473515170}
-  - {fileID: 110547202}
   - {fileID: 1279291454}
   - {fileID: 1552715439}
   m_Father: {fileID: 706046544}
@@ -21358,7 +21326,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &249423714
 Transform:
   m_ObjectHideFlags: 0
@@ -31909,6 +31877,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1143196413}
+  - {fileID: 2080905143}
   m_Father: {fileID: 38362169}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &380651116
@@ -39047,7 +39016,6 @@ MonoBehaviour:
   - {fileID: 1832575798}
   - {fileID: 573882071}
   - {fileID: 473515170}
-  - {fileID: 110547202}
   - {fileID: 1279291454}
   spotChance: 0.45
   wanderRange: 40
@@ -91593,7 +91561,7 @@ Transform:
   m_GameObject: {fileID: 1080898385}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1.550003}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -100934,7 +100902,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1218658252
 Transform:
   m_ObjectHideFlags: 0
@@ -127755,7 +127723,7 @@ Transform:
   m_GameObject: {fileID: 1537426220}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.00000011920929, y: 0, z: -1.4499999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -168550,6 +168518,10 @@ MonoBehaviour:
   maxGlances: 5
   wowSound: {fileID: 8300000, guid: cbc6357d45169fd48af188456bf03a12, type: 3}
   wowVolume: 1
+  glowMaterial: {fileID: 0}
+  glowRiseTime: 0.5
+  glowFadeTime: 0.35
+  glowStrength: 2.5
 --- !u!1001 &2039552938
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -172905,6 +172877,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1064652262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2080905142
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2080905143}
+  - component: {fileID: 2080905144}
+  m_Layer: 0
+  m_Name: Ara_Sokak_Engel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &2080905143
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2080905142}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0.7071068, z: -0, w: -0.7071068}
+  m_LocalPosition: {x: 0.00000047683716, y: 1.5, z: 5.7500005}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 379984086}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2080905144
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2080905142}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.5, y: 3, z: 4.2}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2081270095
 GameObject:
   m_ObjectHideFlags: 0

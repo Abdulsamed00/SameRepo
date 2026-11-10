@@ -122,10 +122,20 @@ public class PlayerInteractor : MonoBehaviour
             return;
 
         HeldItem = item;
-        if (body != null && item.HasGrips)
+        if (body != null && item.HasGrips && !item.HoldInHand)
         {
             // Tek/iki el IK: eller önce eşyanın durduğu yere uzanır, sonra eşya kameranın önüne gelir, eller tutuşta kalır.
             item.GetGrips(holdPoint, out Transform right, out Transform left);
+            if (item.LateGrip)
+            {
+                // Yandan alındı: eller rafa uzanırsa eşya dönerken içinden geçiyorlardı. Eşya önce kameranın önüne gelir,
+                // eller sonra tutar (10.11).
+                const float flight = 0.3f;
+                float grab = body.BeginCarry(right, left, item.UpdateHeldPose, false, flight);
+                item.OnPickedUp(this, holdPoint, 0f);
+                BusyFor(flight + grab + 0.5f);
+                return;
+            }
             bool oneHandFirst = item.ReachWithOneHand && left != null;
             float reach = body.BeginCarry(right, left, item.UpdateHeldPose, oneHandFirst);
             item.OnPickedUp(this, holdPoint, reach);
@@ -137,7 +147,13 @@ public class PlayerInteractor : MonoBehaviour
         bool inHand = body != null && item.HoldInHand;
         float reachTime = body != null ? body.PlayPickup(inHand ? item.transform.position : (Vector3?)null) : 0f;
         if (inHand)
+        {
             item.OnPickedUp(this, body.RightHandHold, reachTime);
+            // Tutuş noktası olan ele bağlı eşya (gözlük, 10.11): cüzdandaki gibi uzanıp alır, sonra el kolu sarkıtmadan
+            // kameranın önünde, bilek düz durur; eşya avuçta.
+            if (item.HasGrips)
+                body.BeginCarry(item.HandAnchor(holdPoint), null, item.UpdateHeldPose, false, reachTime);
+        }
         else
             item.OnPickedUp(this, holdPoint);
         BusyFor(reachTime + 0.4f);
@@ -197,16 +213,20 @@ public class PlayerInteractor : MonoBehaviour
         PickupItem item = HeldItem;
         HeldItem = null;
         Vector3 fallback = FindDropPosition(item.Radius);
-        if (body != null && item.HasGrips)
+        if (body != null && item.HasGrips && !item.HoldInHand)
         {
             // Eşya elde tutuluyormuş gibi yerine kayar, eller onunla gider, sonra bırakır.
+            bool turns = item.BigTurnHome;
             item.OnDropped(fallback, animate ? 0.05f : 0f);
-            body.EndCarry(animate ? 0.45f : 0f);
+            body.EndCarry(animate && !turns ? 0.45f : 0f);
             if (animate)
                 BusyFor(0.45f + 0.5f);
             return;
         }
 
+        // Elin önde durduğu IK (gözlük) bırakırken kalkar, bırakma animasyonu eli yere götürür.
+        if (body != null && item.HasGrips && item.HoldInHand)
+            body.EndCarry(0f);
         float releaseTime = animate && body != null && item.HoldInHand
             ? body.PlayPutDown(item.DropPosition(fallback))
             : 0f;

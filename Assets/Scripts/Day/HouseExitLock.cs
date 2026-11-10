@@ -17,7 +17,8 @@ public class HouseExitLock : MonoBehaviour
     {
         if (DayRoutine.FinalReady)
         {
-            door.Locked = false;
+            door.Locked = DayRoutine.DressPending;
+            door.LockedPrompt = "";
             return;
         }
 
@@ -35,7 +36,7 @@ public class HouseExitLock : MonoBehaviour
             return;
         }
 
-        door.Locked = DayRoutine.MorningMirrorPending || !DayRoutine.WalletTaken;
+        door.Locked = DayRoutine.MorningMirrorPending || !DayRoutine.WalletTaken || DayRoutine.DressPending;
         door.LockedPrompt = "";
     }
 }

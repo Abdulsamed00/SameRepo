@@ -26,5 +26,7 @@ public class Checkout : Interactable
         GameAudio.Play2D(purchaseSound);
         // Satın alınan ürün poşete girdi sayılır; sahneden kalkar.
         product.gameObject.SetActive(false);
+        // Eve götürmek üzere eline poşet gelir.
+        ShoppingBag.Give();
     }
 }
