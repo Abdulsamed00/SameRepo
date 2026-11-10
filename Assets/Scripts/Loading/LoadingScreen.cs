@@ -23,6 +23,10 @@ public class LoadingScreen : MonoBehaviour
     {
         string target = string.IsNullOrEmpty(SceneLoader.TargetScene) ? fallbackScene : SceneLoader.TargetScene;
 
+        // Yükleme ekranında fare görünmesin; hedef sahne (IntroMenu, FirstPersonController) imleci kendi ister.
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
         Build(target);
         SetProgress(0f);
         yield return null;

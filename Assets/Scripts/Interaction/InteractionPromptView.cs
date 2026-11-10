@@ -4,8 +4,9 @@ using UnityEngine.UI;
 
 /// <summary>
 /// <see cref="PlayerInteractor"/> durumunu ekrana yansıtır (UI paketi, oyun içi): ortada her zaman <c>Nokta</c>,
-/// etkileşilebilir bir şeye bakınca <c>Halka</c> ve altında tuş kutusu + bildirim ("E  Dolabı aç"), ürünlerde üstte
-/// nesne adı. Elde eşya varken / otururken / incelerken ekranın altında ikinci satır ("G  Bırak").
+/// etkileşilebilir bir şeye bakınca <c>Halka</c>. 10.11'den beri (kullanıcı: "UI'da yazan tüm yazılar kalkacak, UI elementi
+/// sol altta çıkacak") yazı yok: sadece tuş kutuları sol altta; altta ipucu tuşu (elde eşya: G, otururken: E...), üstünde
+/// bakılan şeyin etkileşim tuşu. Yazılar (bildirim, nesne adı) kurulur ama gizlidir.
 /// Sadece gösterir, oyun mantığı içermez. Arayüz Awake'te koddan kurulur.
 /// </summary>
 public class InteractionPromptView : MonoBehaviour
@@ -16,16 +17,16 @@ public class InteractionPromptView : MonoBehaviour
     private PlayerSitController sitter;
     private Image dot;
     private CanvasGroup focusGroup;
-    private TextMeshProUGUI title;
     private KeyLine prompt;
+    private CanvasGroup promptGroup;
     private KeyLine hint;
     private CanvasGroup hintGroup;
-    private KeyLine seatedPrompt;
-    private CanvasGroup seatedPromptGroup;
-    private string lastTitle;
-    private int lastTitleVersion = -1;
 
-    /// <summary>Tuş kutusu + yazı, yatayda ortalı.</summary>
+    private static readonly Vector2 CornerMargin = new Vector2(64f, 64f);
+    private const float RowStep = 52f;
+    private const float CornerScale = 1.35f; // sol alt tuş kutuları (10.11: "biraz büyüt")
+
+    /// <summary>Tuş kutusu (+ gizli yazı), sol alta hizalı.</summary>
     private class KeyLine
     {
         public RectTransform Root;
@@ -46,7 +47,6 @@ public class InteractionPromptView : MonoBehaviour
             version = Loc.Version;
             UiKit.SetKeyLabel(Cap, CapText, key);
             Text.text = Loc.T(label);
-            Text.rectTransform.sizeDelta = new Vector2(Text.GetPreferredValues(Text.text).x, 36f);
             LayoutRebuilder.ForceRebuildLayoutImmediate(Root);
         }
     }
@@ -81,41 +81,36 @@ public class InteractionPromptView : MonoBehaviour
         Image ring = UiKit.CreateImage("Halka", focus, Color.white, UiKit.Sprite("Halka"));
         UiKit.Place(ring.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(60f, 60f));
 
-        title = UiKit.CreateText("Nesne_Adi", focus, "", UiKit.FontKind.SemiBold, 16.5f, 22f, UiKit.Secondary,
-            TextAlignmentOptions.Center);
-        UiKit.Place(title.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -50f), new Vector2(600f, 24f));
+        RectTransform corner = UiKit.CreateRect("Sol_Alt", transform);
+        UiKit.Place(corner, Vector2.zero, CornerMargin, Vector2.zero);
+        corner.localScale = Vector3.one * CornerScale;
 
-        prompt = CreateKeyLine("Bildirim", focus, UiKit.FontKind.Medium, UiKit.White);
-
-        RectTransform bottom = UiKit.CreateRect("Alt", transform);
-        UiKit.Place(bottom, new Vector2(0.5f, 0f), new Vector2(0f, 108f), Vector2.zero);
-        hintGroup = bottom.gameObject.AddComponent<CanvasGroup>();
+        hint = CreateKeyLine("Ipucu", corner);
+        hintGroup = hint.Root.gameObject.AddComponent<CanvasGroup>();
         hintGroup.alpha = 0f;
-        hint = CreateKeyLine("Ipucu", bottom, UiKit.FontKind.Regular, UiKit.Unselected);
 
-        // Otururken etkileşim bildirimi (TV'yi aç/kapat) ekranın ortasında değil, ipucunun üstünde çıkar.
-        seatedPrompt = CreateKeyLine("Oturma_Bildirimi", bottom, UiKit.FontKind.Medium, UiKit.White);
-        seatedPrompt.Root.anchoredPosition = new Vector2(0f, 46f);
-        seatedPromptGroup = seatedPrompt.Root.gameObject.AddComponent<CanvasGroup>();
-        seatedPromptGroup.alpha = 0f;
+        prompt = CreateKeyLine("Bildirim", corner);
+        promptGroup = prompt.Root.gameObject.AddComponent<CanvasGroup>();
+        promptGroup.alpha = 0f;
     }
 
-    private static KeyLine CreateKeyLine(string name, Transform parent, UiKit.FontKind kind, Color color)
+    private static KeyLine CreateKeyLine(string name, Transform parent)
     {
         RectTransform root = UiKit.CreateRect(name, parent);
         HorizontalLayoutGroup layout = root.gameObject.AddComponent<HorizontalLayoutGroup>();
         layout.spacing = 16f;
-        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childAlignment = TextAnchor.LowerLeft;
         layout.childControlWidth = layout.childControlHeight = false;
         layout.childForceExpandWidth = layout.childForceExpandHeight = false;
         ContentSizeFitter fitter = root.gameObject.AddComponent<ContentSizeFitter>();
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        UiKit.Place(root, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(10f, 36f));
+        UiKit.Place(root, Vector2.zero, Vector2.zero, new Vector2(10f, 36f));
 
         KeyLine line = new KeyLine { Root = root };
         line.Cap = UiKit.CreateKeyCap(root, "F", out line.CapText);
-        line.Text = UiKit.CreateText("Yazi", root, "", kind, 22.5f, 0f, color, TextAlignmentOptions.MidlineLeft);
+        line.Text = UiKit.CreateText("Yazi", root, "", UiKit.FontKind.Medium, 22.5f, 0f, UiKit.White, TextAlignmentOptions.MidlineLeft);
+        line.Text.gameObject.SetActive(false);
         return line;
     }
 
@@ -126,24 +121,6 @@ public class InteractionPromptView : MonoBehaviour
 
         bool seated = sitter != null && sitter.IsSeated;
         Interactable focused = active ? interactor.Focused : null;
-        if (focused != null && seated)
-            seatedPrompt.Set(interactor.KeyLabelFor(focused.Key), focused.Prompt);
-        seatedPromptGroup.alpha = Mathf.MoveTowards(seatedPromptGroup.alpha, focused != null && seated ? 1f : 0f,
-            Time.unscaledDeltaTime / fadeDuration);
-        if (focused != null && !seated)
-        {
-            string newTitle = focused.Title;
-            if (newTitle != lastTitle || lastTitleVersion != Loc.Version)
-            {
-                lastTitle = newTitle;
-                lastTitleVersion = Loc.Version;
-                title.text = Loc.T(newTitle) ?? "";
-            }
-            // Etkileşim satırı ortanın 42 px altında; nesne adı varsa onun altında.
-            bool hasTitle = !string.IsNullOrEmpty(newTitle);
-            prompt.Root.anchoredPosition = new Vector2(0f, hasTitle ? -88f : -61f);
-            prompt.Set(interactor.KeyLabelFor(focused.Key), focused.Prompt);
-        }
         focusGroup.alpha = Mathf.MoveTowards(focusGroup.alpha, focused != null && !seated ? 1f : 0f, Time.unscaledDeltaTime / fadeDuration);
 
         bool showHint = active && (!string.IsNullOrEmpty(interactor.Hint) || seated || interactor.CanDropHeld);
@@ -157,5 +134,12 @@ public class InteractionPromptView : MonoBehaviour
                 hint.Set(interactor.DropKeyLabel, "Bırak");
         }
         hintGroup.alpha = Mathf.MoveTowards(hintGroup.alpha, showHint ? 1f : 0f, Time.unscaledDeltaTime / fadeDuration);
+
+        if (focused != null)
+            prompt.Set(interactor.KeyLabelFor(focused.Key), focused.Prompt);
+        promptGroup.alpha = Mathf.MoveTowards(promptGroup.alpha, focused != null ? 1f : 0f, Time.unscaledDeltaTime / fadeDuration);
+        // İpucu görünürken etkileşim tuşu onun üstüne çıkar.
+        float promptY = hintGroup.alpha > 0.01f ? RowStep : 0f;
+        prompt.Root.anchoredPosition = new Vector2(0f, Mathf.MoveTowards(prompt.Root.anchoredPosition.y, promptY, Time.unscaledDeltaTime * RowStep / fadeDuration));
     }
 }

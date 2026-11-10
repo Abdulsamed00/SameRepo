@@ -328,6 +328,8 @@ public class NpcCrowd : MonoBehaviour
             }
         }
 
+        AddBodiesToStaticNpcs();
+
         if (wanderPoints.Count == 0 || totalWeight <= 0f)
         {
             Debug.LogWarning($"{name}: gezinme noktası ya da NPC prefab'ı yok, kalabalık kapalı.");
@@ -338,6 +340,29 @@ public class NpcCrowd : MonoBehaviour
         int count = Mathf.Max(1, Mathf.RoundToInt(population * GameSettings.NpcFactor));
         for (int i = 0; i < count; i++)
             SpawnInitial();
+    }
+
+    // Sahnedeki sabit NPC'lerin (kafe, sohbet, telefon, kasiyer...) çoğunda collider yoktu, oyuncu içlerinden geçiyordu
+    // (10.11). Kökte collider'ı olmayan her animatörlü NPC'ye Ignore Raycast katmanında (etkileşim ışınını kesmez) kapsül eklenir.
+    private void AddBodiesToStaticNpcs()
+    {
+        var seen = new HashSet<Transform>();
+        foreach (NpcAnimationPlayer a in FindObjectsByType<NpcAnimationPlayer>(FindObjectsSortMode.None))
+            AddBody(a.transform, seen);
+        foreach (NpcDailyOutfit o in FindObjectsByType<NpcDailyOutfit>(FindObjectsSortMode.None))
+            AddBody(o.transform, seen);
+    }
+
+    private static void AddBody(Transform root, HashSet<Transform> seen)
+    {
+        if (!seen.Add(root) || root.GetComponent<NpcAgent>() != null || root.GetComponent<Collider>() != null
+            || root.GetComponentInChildren<Animator>() == null)
+            return;
+        var c = root.gameObject.AddComponent<CapsuleCollider>();
+        c.center = new Vector3(0f, 0.9f, 0f);
+        c.height = 1.75f;
+        c.radius = 0.28f;
+        root.gameObject.layer = 2;
     }
 
     private void SpawnInitial()
@@ -1380,8 +1405,49 @@ public class NpcCrowd : MonoBehaviour
             return false;
         if ((position - player.position).sqrMagnitude > hiddenDistance * hiddenDistance)
             return false;
+        if ((position - player.position).sqrMagnitude < 10f * 10f)
+            return true;
         Vector3 v = playerCamera.WorldToViewportPoint(position + Vector3.up);
         bool inView = v.z > 0f && v.x > -0.1f && v.x < 1.1f && v.y > -0.1f && v.y < 1.1f;
-        return inView || (position - player.position).sqrMagnitude < 10f * 10f;
+        if (!inView)
+            return false;
+        // Binanın/köşenin arkasında kalan nokta görülmüyor sayılır (10.11): eskiden sadece görüş alanına bakılıyordu,
+        // ara sokağın köşesini dönmüş NPC de "görülüyor" sayılıp çıkışta bekliyor, çıkışlarda yığın oluşuyordu.
+        Vector3 eye = playerCamera.transform.position;
+        return !Physics.Linecast(eye, position + Vector3.up * 1.6f, OcclusionMask, QueryTriggerInteraction.Ignore)
+               || !Physics.Linecast(eye, position + Vector3.up * 0.9f, OcclusionMask, QueryTriggerInteraction.Ignore);
+    }
+
+    // Oyuncu ve NPC'ler (Ignore Raycast) görüşü kesmez.
+    private const int OcclusionMask = ~(1 << 2);
+
+    /// <summary>Akışta yön değiştirir (çıkışı görülen ve başka çıkış bulamayan NPC geri döner, çıkışta beklemez).</summary>
+    public void TurnAround(NpcAgent npc)
+    {
+        if (!streetFlow || routes == null || routes.Count == 0)
+            return;
+        npc.Heading = -npc.Heading;
+        npc.Route = NearestRoute(npc.transform.position, npc.Heading);
+    }
+
+    /// <summary>Verilen noktadan uzak olmayan, oyuncunun görmediği başka bir çıkış (yoksa null).</summary>
+    public Transform PickUnseenExit(Vector3 from, Vector3 except)
+    {
+        if (exits == null)
+            return null;
+        Transform pick = null;
+        float bestScore = float.MaxValue;
+        foreach (Transform e in exits)
+        {
+            if (e == null || (e.position - except).sqrMagnitude < 4f || IsSeen(e.position))
+                continue;
+            float score = Vector3.Distance(e.position, from) * Random.Range(0.8f, 1.2f);
+            if (score < bestScore && score < 80f)
+            {
+                bestScore = score;
+                pick = e;
+            }
+        }
+        return pick;
     }
 }

@@ -83,8 +83,26 @@ public class PlayerOutfitView : MonoBehaviour
     private void OnChanged(ProductType type)
     {
         foreach (Item item in items)
-            if (item.product == type)
+        {
+            if (item.product != type)
+                continue;
+            if (PlayerOutfit.IsWorn(type))
                 Apply(item);
+            else
+                Revert(item);
+        }
+    }
+
+    // Ürün çıkarılınca ilk günkü parçalar geri gelir (palto çıkınca tişört, pantolon çıkınca eşofman...).
+    private void Revert(Item item)
+    {
+        foreach (Transform t in GetComponentsInChildren<Transform>(true))
+        {
+            if (Array.IndexOf(item.show, t.name) >= 0)
+                t.gameObject.SetActive(false);
+            else if (Array.IndexOf(item.hide, t.name) >= 0)
+                t.gameObject.SetActive(true);
+        }
     }
 
     private void Apply(Item item)

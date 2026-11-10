@@ -60,8 +60,10 @@ public class Bed : Interactable
     {
         get
         {
-            if (!DayRoutine.NightFell || (!DayRoutine.Prologue && !DayRoutine.BoughtToday))
-                return notTiredPrompt;
+            // 10.11: arayüzde yazı olmadığı için "Henüz uykum yok" sadece işe yaramayan bir E tuşu gösteriyordu
+            // (kullanıcı: "yatağı kullanırken etkileşim UI'ı çıkıyor"): uyunamıyorsa yatak hiç odaklanmaz.
+            if (busy || !DayRoutine.NightFell || (!DayRoutine.Prologue && !DayRoutine.BoughtToday))
+                return "";
             if (!DayRoutine.CanSleep || LightOn)
                 return "";
             return sleepPrompt;

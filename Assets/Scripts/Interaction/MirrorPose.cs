@@ -96,7 +96,10 @@ public class MirrorPose : Interactable
         if (outline == null)
             return;
         // 4. gün sabahı, aynaya bakılana kadar çerçeve nabız gibi parlar (cüzdandaki gibi).
-        bool waiting = DayRoutine.MorningMirrorPending && posingPlayer == null && !PauseMenu.IsPaused;
+        // 10.11: günün sonunda da (kıyafet giyildi, poz verilmedi, yatak odası ışığı açık) aynı kenar yol gösterir.
+        bool posePending = DayRoutine.NightFell && !DayRoutine.Prologue && !DayRoutine.FinalMorning && DayRoutine.BoughtToday
+                           && DayRoutine.WornToday && !DayRoutine.PosedToday && RoomLit;
+        bool waiting = (DayRoutine.MorningMirrorPending || posePending) && posingPlayer == null && !PauseMenu.IsPaused;
         glow = Mathf.MoveTowards(glow, waiting ? 1f : 0f, 2f * Time.unscaledDeltaTime);
         float pulse = 0.55f + 0.45f * Mathf.Sin(Time.time * pulseSpeed);
         float v = outlineIntensity * (0.45f + 0.55f * pulse) * glow;
@@ -205,8 +208,29 @@ public class MirrorPose : Interactable
             body.PlayPose();
         }
         GameAudio.PlayAt(poseSound, surface.position);
+
+        // Animasyon bitmeden F ile çıkılamasın (10.11, kullanıcı: "animasyon bitmeden F'ye basınca iptal oluyor"):
+        // geçiş bitene kadar bekle, sonra klip döngüsüzse sonuna kadar, döngülüyse en az minPoseTime.
+        float waited = 0f;
+        Animator anim = body.GetComponent<Animator>();
+        while (anim != null && waited < 1f && (anim.IsInTransition(0) || waited < 0.1f))
+        {
+            waited += Time.deltaTime;
+            yield return null;
+        }
+        float hold = minPoseTime;
+        if (anim != null)
+        {
+            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
+            if (!state.loop)
+                hold = Mathf.Max(hold, state.length / Mathf.Max(0.01f, Mathf.Abs(state.speed * state.speedMultiplier)) * (1f - Mathf.Repeat(state.normalizedTime, 1f)));
+        }
+        yield return new WaitForSeconds(Mathf.Max(0f, hold - waited));
         busy = false;
     }
+
+    [Tooltip("Poz başladıktan sonra F ile bırakılabilmesi için en az geçmesi gereken süre (sn).")]
+    [SerializeField] private float minPoseTime = 2f;
 
     // Kamera göz noktasından karakterin yanına süzülür, burnu profilden yakın çeker, bekler, göze geri döner.
     private IEnumerator NoseCloseUp(FirstPersonController controller, PlayerBody body, float hold, float lookDown)

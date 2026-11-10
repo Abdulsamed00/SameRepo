@@ -67,7 +67,7 @@ public static class Loc
         string.IsNullOrEmpty(text) ? text : IsEnglish ? text.ToUpperInvariant() : text.ToUpper(TurkishCulture);
 
     /// <summary>Gün başlığı: "3. GÜN" / "DAY 3".</summary>
-    public static string DayTitle(int day) => IsEnglish ? $"DAY {day}" : $"{day}. GÜN";
+    public static string DayTitle(int day) => IsEnglish ? $"DAY {day}" : $"GÜN {day}";
 
     /// <summary>Fişteki gün satırı: "GÜN 3" / "DAY 3".</summary>
     public static string DayShort(int day) => IsEnglish ? $"DAY {day}" : $"GÜN {day}";
