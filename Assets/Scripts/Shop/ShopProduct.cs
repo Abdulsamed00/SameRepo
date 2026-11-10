@@ -17,8 +17,10 @@ public class ShopProduct : PickupItem
 
     public override InteractionKey Key => InteractionKey.Secondary;
 
-    // Ürünlerin tutma ofsetleri kameradaki tutma noktasına göre ayarlı; ele bağlanmazlar.
-    public override bool HoldInHand => false;
+    // Ürünlerin tutma ofsetleri kameradaki tutma noktasına göre ayarlı; ele bağlanmazlar. Gözlük hariç (10.11, kullanıcı:
+    // "gözlüğü alırken el çok bükülüyor, cüzdandaki gibi yap"): cüzdan gibi alma animasyonuyla alınır, tutuş noktası
+    // (Tutus_A) avuca oturur.
+    public override bool HoldInHand => product == ProductType.Gozluk;
 
     // Palto: tek elle alınır, iki elle tutulur ve bırakılır.
     public override bool ReachWithOneHand => product == ProductType.Palto;

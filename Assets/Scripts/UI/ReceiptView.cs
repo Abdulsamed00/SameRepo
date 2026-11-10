@@ -22,7 +22,14 @@ public static class ReceiptView
         foreach (ProductType type in System.Enum.GetValues(typeof(ProductType)))
             if (PlayerPurchases.Owns(type))
                 bought.Add(type);
-        if (bought.Count == 0)
+        // Kuaför ve estetik de fişe yazılır (08.11, kullanıcı isteği).
+        List<string> services = new List<string>();
+        if (PlayerLook.HairDyed)
+            services.Add("KUAFÖR");
+        if (PlayerLook.SurgeryDone)
+            services.Add("ESTETİK");
+        int total = bought.Count + services.Count;
+        if (total == 0)
             return null;
 
         Image paper = UiKit.CreateImage("Fis", parent, Color.white, UiKit.Sprite("Fis_Kagit_Bos"));
@@ -33,12 +40,14 @@ public static class ReceiptView
         Line(rect, "SATIŞ FİŞİ", ref y, 22.5f, 6f, UiKit.PaperText, TextAlignmentOptions.Center, 30f, bold: true);
         Line(rect, "Mağaza · Kasa 02", ref y, 17f, 0f, UiKit.PaperSecondary, TextAlignmentOptions.Center, 34f);
         Dashes(rect, ref y);
-        Pair(rect, Loc.DayShort(DayRoutine.DayNumber), $"NO {bought.Count:0000}", ref y, UiKit.PaperSecondary, 17f, 44f);
+        Pair(rect, Loc.DayShort(DayRoutine.DayNumber), $"NO {total:0000}", ref y, UiKit.PaperSecondary, 17f, 44f);
         foreach (ProductType type in bought)
             Pair(rect, type.DisplayName().ToUpper(Turkish), "1 AD", ref y, UiKit.PaperText, 19.5f, LineHeight);
+        foreach (string service in services)
+            Pair(rect, Loc.T(service), "1 AD", ref y, UiKit.PaperText, 19.5f, LineHeight);
         y = Mathf.Max(y + 40f, 300f);
         Dashes(rect, ref y);
-        Pair(rect, "TOPLAM ADET", bought.Count.ToString(), ref y, UiKit.PaperText, 19.5f, 56f, bold: true);
+        Pair(rect, "TOPLAM ADET", total.ToString(), ref y, UiKit.PaperText, 19.5f, 56f, bold: true);
         Line(rect, "Yine bekleriz.", ref y, 17f, 0f, UiKit.PaperSecondary, TextAlignmentOptions.Center, 30f);
 
         rect.sizeDelta = new Vector2(Width, Mathf.Max(y + Padding, 495f));

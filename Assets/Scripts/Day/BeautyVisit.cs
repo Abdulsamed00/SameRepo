@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Sokaktaki kuaför (2. gün) ve klinik (4. gün): günün kıyafeti alındıktan sonra kapının önünde F ile girilir, ekran
+/// Sokaktaki kuaför (2. gün) ve klinik (4. gün): o gün (kıyafet alınmadan önce ya da sonra) kapının önünde F ile girilir, ekran
 /// kararır, karanlıkta oyuncunun görünümü değişir (<see cref="PlayerLook"/>), ekran aydınlanınca oyuncu dükkânın önündedir.
 /// O iş bitmeden eve dönülemez (<see cref="homeZone"/> kilitlenir). Bölge <see cref="SceneZone"/> gibi konumdan çalışır.
 /// </summary>
@@ -34,9 +34,11 @@ public class BeautyVisit : Interactable
     private bool busy;
 
     private bool Done => service == Service.Hair ? PlayerLook.HairDyed : PlayerLook.SurgeryDone;
-    private bool Pending => GameDay.Index == dayIndex && !Done;
+    public bool Pending => GameDay.Index == dayIndex && !Done;
 
-    public override string Prompt => DayRoutine.BoughtToday ? base.Prompt : buyFirstPrompt;
+    // 10.11 (kullanıcı: "sarışın olmak için mağazadan dönmesine gerek yok, giderken de girebilsin"): kıyafet alınmadan da
+    // girilir; buyFirstPrompt artık kullanılmıyor.
+    public override string Prompt => base.Prompt;
 
     private void Awake() => area = GetComponent<Collider>();
 
@@ -44,18 +46,12 @@ public class BeautyVisit : Interactable
 
     public override void Interact(PlayerInteractor who)
     {
-        if (!busy && Pending && DayRoutine.BoughtToday)
+        if (!busy && Pending)
             StartCoroutine(Visit(who));
     }
 
     private void Update()
     {
-        if (Pending && homeZone != null)
-        {
-            homeZone.Locked = DayRoutine.BoughtToday;
-            homeZone.LockedPrompt = homeLockedPrompt;
-        }
-
         if (interactor == null)
             interactor = FindFirstObjectByType<PlayerInteractor>();
         if (interactor == null || !interactor.isActiveAndEnabled)

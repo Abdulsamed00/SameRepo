@@ -261,12 +261,33 @@ public class IntroMenu : MonoBehaviour
         Destroy(gameObject);
     }
 
+    // Ayarların bulanık arka planı artık menünün o anki canlı görüntüsü (08.11, kullanıcı isteği); sabit AnaMenu
+    // görüntüsü sadece yakalama olmazsa yedek. Menü arayüzü gizlenip kare alınır.
     private void OpenSettings()
     {
-        if (blurred == null && background != null)
-            blurred = UiBlur.Blur(background);
+        if (settingsOpening)
+            return;
+        StartCoroutine(OpenSettingsRoutine());
+    }
+
+    private bool settingsOpening;
+
+    private System.Collections.IEnumerator OpenSettingsRoutine()
+    {
+        settingsOpening = true;
         SetFrontVisible(false);
+        RenderTexture shot = null;
+        yield return UiBlur.CaptureScreen(rt => shot = rt);
+        if (shot != null)
+        {
+            if (blurred != null)
+                blurred.Release();
+            blurred = shot;
+        }
+        else if (blurred == null && background != null)
+            blurred = UiBlur.Blur(background);
         SettingsView.Open(canvas.transform, blurred, clickSound, () => SetFrontVisible(true));
+        settingsOpening = false;
     }
 
     private void OpenCredits()
@@ -277,7 +298,7 @@ public class IntroMenu : MonoBehaviour
         {
             Destroy(view.gameObject);
             SetFrontVisible(true);
-        });
+        }, null, null, "Geri");
     }
 
     public void OnQuitClicked()

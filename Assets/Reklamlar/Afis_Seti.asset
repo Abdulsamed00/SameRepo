@@ -34,6 +34,8 @@ MonoBehaviour:
     - {fileID: 2800000, guid: c0da7b57faf6ee747ae8fbe3904051e2, type: 3}
     - {fileID: 2800000, guid: 2d32ad1dee0268946a1975534b40e3c0, type: 3}
   salonImages:
-  - {fileID: 2800000, guid: 07ba6cc79e1f79a48b239ed7cfeff92e, type: 3}
+  - {fileID: 2800000, guid: 5e10268d6893f9145afe371edc51602e, type: 3}
+  - {fileID: 2800000, guid: c900920722cf6f844a5227227a76f3cb, type: 3}
   clinicImages:
-  - {fileID: 2800000, guid: 25f1d9cbdf2940441b5a505e3963d6e3, type: 3}
+  - {fileID: 2800000, guid: d70b32b8bf2a9ee44a4141f451a3037b, type: 3}
+  - {fileID: 2800000, guid: 4726c4537aa60424ab4e5c1a083e9fa4, type: 3}

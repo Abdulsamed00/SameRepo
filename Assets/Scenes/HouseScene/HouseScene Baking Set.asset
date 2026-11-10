@@ -65,11 +65,11 @@ MonoBehaviour:
         hasOnlyBiggerBricks: 0
     - position: {x: -1, y: 0, z: 0}
       index: 6
-      probeCount: 17216
+      probeCount: 17280
       minSubdiv: 0
       indexChunkCount: 91
       shChunkCount: 3
-      bricksCount: 269
+      bricksCount: 270
       indirectionEntryInfo:
       - positionInBricks: {x: -27, y: 0, z: 0}
         minSubdiv: 0
@@ -93,11 +93,11 @@ MonoBehaviour:
         hasOnlyBiggerBricks: 0
     - position: {x: 0, y: 0, z: 0}
       index: 7
-      probeCount: 16000
+      probeCount: 16064
       minSubdiv: 0
       indexChunkCount: 91
       shChunkCount: 2
-      bricksCount: 250
+      bricksCount: 251
       indirectionEntryInfo:
       - positionInBricks: {x: 0, y: 0, z: 0}
         minSubdiv: 0
@@ -123,13 +123,13 @@ MonoBehaviour:
         elementCount: 3
       - offset: 73728
         elementCount: 2
-    m_Asset: {fileID: 4900000, guid: ecd0b47075985124cb817b2cdc8b32bf, type: 3}
+    m_Asset: {fileID: 0}
   scenarios:
     m_Keys:
     - Gunduz
     - Gece
     m_Values:
-    - sceneHash: -1754852166
+    - sceneHash: -1492368909
       cellDataAsset:
         m_AssetGUID: d475b02fd1b9de1428f4d6287d5e19ac
         m_StreamableAssetPath: APVStreamingAssets\3be36bfbe2967f446890a4e3b8d3fbe2\d475b02fd1b9de1428f4d6287d5e19ac.bytes
@@ -145,7 +145,7 @@ MonoBehaviour:
             elementCount: 3
           - offset: 1179648
             elementCount: 2
-        m_Asset: {fileID: 4900000, guid: d475b02fd1b9de1428f4d6287d5e19ac, type: 3}
+        m_Asset: {fileID: 0}
       cellOptionalDataAsset:
         m_AssetGUID: ec41b0903fd166149bb00ed6b26bf70b
         m_StreamableAssetPath: APVStreamingAssets\3be36bfbe2967f446890a4e3b8d3fbe2\ec41b0903fd166149bb00ed6b26bf70b.bytes
@@ -161,7 +161,7 @@ MonoBehaviour:
             elementCount: 3
           - offset: 1179648
             elementCount: 2
-        m_Asset: {fileID: 4900000, guid: ec41b0903fd166149bb00ed6b26bf70b, type: 3}
+        m_Asset: {fileID: 0}
       cellProbeOcclusionDataAsset:
         m_AssetGUID: cbb09609203ef3f41a9c9e1dd28e6b3d
         m_StreamableAssetPath: APVStreamingAssets\3be36bfbe2967f446890a4e3b8d3fbe2\cbb09609203ef3f41a9c9e1dd28e6b3d.bytes
@@ -177,8 +177,8 @@ MonoBehaviour:
             elementCount: 3
           - offset: 0
             elementCount: 2
-        m_Asset: {fileID: 4900000, guid: cbb09609203ef3f41a9c9e1dd28e6b3d, type: 3}
-    - sceneHash: -1754852166
+        m_Asset: {fileID: 0}
+    - sceneHash: -1492368909
       cellDataAsset:
         m_AssetGUID: 811dee67003430c429a7bc7d5d0e4659
         m_StreamableAssetPath: APVStreamingAssets\3be36bfbe2967f446890a4e3b8d3fbe2\811dee67003430c429a7bc7d5d0e4659.bytes
@@ -194,7 +194,7 @@ MonoBehaviour:
             elementCount: 3
           - offset: 1179648
             elementCount: 2
-        m_Asset: {fileID: 4900000, guid: 811dee67003430c429a7bc7d5d0e4659, type: 3}
+        m_Asset: {fileID: 0}
       cellOptionalDataAsset:
         m_AssetGUID: 6e0eb537265744f42925d646a9c61b7c
         m_StreamableAssetPath: APVStreamingAssets\3be36bfbe2967f446890a4e3b8d3fbe2\6e0eb537265744f42925d646a9c61b7c.bytes
@@ -210,7 +210,7 @@ MonoBehaviour:
             elementCount: 3
           - offset: 1179648
             elementCount: 2
-        m_Asset: {fileID: 4900000, guid: 6e0eb537265744f42925d646a9c61b7c, type: 3}
+        m_Asset: {fileID: 0}
       cellProbeOcclusionDataAsset:
         m_AssetGUID: fd9acecc0e117934c8428fdde82343ea
         m_StreamableAssetPath: APVStreamingAssets\3be36bfbe2967f446890a4e3b8d3fbe2\fd9acecc0e117934c8428fdde82343ea.bytes
@@ -226,7 +226,7 @@ MonoBehaviour:
             elementCount: 3
           - offset: 0
             elementCount: 2
-        m_Asset: {fileID: 4900000, guid: fd9acecc0e117934c8428fdde82343ea, type: 3}
+        m_Asset: {fileID: 0}
   cellBricksDataAsset:
     m_AssetGUID: eafcd87d9a74c0b468ca7984370a8ed6
     m_StreamableAssetPath: APVStreamingAssets\3be36bfbe2967f446890a4e3b8d3fbe2\eafcd87d9a74c0b468ca7984370a8ed6.bytes
@@ -237,12 +237,12 @@ MonoBehaviour:
       - offset: 0
         elementCount: 307
       - offset: 4912
-        elementCount: 269
-      - offset: 9216
+        elementCount: 270
+      - offset: 9232
         elementCount: 274
-      - offset: 13600
-        elementCount: 250
-    m_Asset: {fileID: 4900000, guid: eafcd87d9a74c0b468ca7984370a8ed6, type: 3}
+      - offset: 13616
+        elementCount: 251
+    m_Asset: {fileID: 0}
   cellSupportDataAsset:
     m_AssetGUID: e6c4dd64d252de54ebe06a9ef184afd3
     m_StreamableAssetPath: APVStreamingAssets\3be36bfbe2967f446890a4e3b8d3fbe2\e6c4dd64d252de54ebe06a9ef184afd3.bytes
@@ -258,7 +258,7 @@ MonoBehaviour:
         elementCount: 3
       - offset: 2359296
         elementCount: 2
-    m_Asset: {fileID: 4900000, guid: e6c4dd64d252de54ebe06a9ef184afd3, type: 3}
+    m_Asset: {fileID: 0}
   chunkSizeInBricks: 128
   maxCellPosition: {x: 1, y: 1, z: 1}
   minCellPosition: {x: -1, y: 0, z: -1}
@@ -292,7 +292,7 @@ MonoBehaviour:
   supportLayerMaskChunkSize: 0
   supportOffsetsChunkSize: 98304
   supportDataChunkSize: 262144
-  lightingScenario: Gunduz
+  lightingScenario: Gece
   version: 2
   freezePlacement: 1
   probeOffset: {x: 0, y: 0, z: 0}

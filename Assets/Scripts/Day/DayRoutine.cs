@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 /// <summary>
@@ -53,12 +53,25 @@ public static class DayRoutine
     /// Bugünün ürünü giyildi. Evde o ürün için dolapta kıyafet yoksa (<see cref="WardrobeClothing"/>)
     /// giyme adımı atlanır, yoksa döngü o günde takılırdı.
     /// </summary>
-    public static bool WornToday =>
-        PlayerOutfit.IsWorn(GameDay.Product) || !WardrobeClothing.ExistsFor(GameDay.Product);
+    public static bool WornToday => wornFlag || !WardrobeClothing.ExistsFor(GameDay.Product);
+
+    // Günün ürünü giyildi (kalıcı bayrak): akşam ev kıyafetlerine geçilince ürün çıkar ama gün bitmiş sayılır.
+    private static bool wornFlag;
+
+    /// <summary>
+    /// Gece ürünler hâlâ üstündeyken (günün işleri bitti, poz verildi ya da o gün alışveriş yok) yatmadan önce ilk günkü
+    /// kıyafetlere geçilecek (dolaptan, tek seferde).
+    /// </summary>
+    public static bool HomeChangePending =>
+        NightFell && !Prologue && !FinalMorning && !PlayerOutfit.IsHomeClothes && (!BoughtToday || PosedToday);
+
+    /// <summary>Sabah: alınan kıyafetlerin hepsi tek seferde giyilmeden evden çıkılmaz.</summary>
+    public static bool DressPending => !NightFell && PlayerPurchases.Count > 0 && !PlayerOutfit.AllOwnedWorn;
 
     /// <summary>Uyunabilir: günün ürünü alındı, giyildi, poz verildi (son günde bir kez, finalden önce).</summary>
     public static bool CanSleep => NightFell && !FinalMorning
-                                   && (Prologue || (BoughtToday && WornToday && PosedToday));
+                                   && (Prologue || (BoughtToday && WornToday && PosedToday))
+                                   && PlayerOutfit.IsHomeClothes;
 
     /// <summary>Son günün gecesi uyunup sabah olduğu (gün sayısı ilerlemez, ürün gözlükte kalır).</summary>
     public static bool FinalMorning { get; private set; }
@@ -108,6 +121,15 @@ public static class DayRoutine
     // Esneme giyince değil, aynada poz verince gelir (NotifyPoseEnded).
     public static void NotifyWorn(ProductType product)
     {
+        if (product == GameDay.Product)
+            wornFlag = true;
+    }
+
+    /// <summary>Ev kıyafetlerine geçildi: uyku şartları tamamsa uyku gelir (esneme).</summary>
+    public static void NotifyChangedToHome()
+    {
+        if (!Prologue && CanSleep)
+            Sleepy?.Invoke();
     }
 
     public static void NotifyPoseEnded()
@@ -130,6 +152,7 @@ public static class DayRoutine
 
     public static void StartNextDay()
     {
+        ShoppingBag.Put();
         NightFell = false;
         WalletTaken = false;
         MorningAdSeen = false;
@@ -146,6 +169,7 @@ public static class DayRoutine
         else
         {
             PosedToday = false;
+            wornFlag = false;
             GameDay.Advance();
         }
         Morning?.Invoke();
@@ -155,6 +179,7 @@ public static class DayRoutine
     public static void ResetAll()
     {
         PosedToday = false;
+        wornFlag = false;
         adsSeen.Clear();
         Prologue = true;
         NightFell = true;
@@ -163,8 +188,10 @@ public static class DayRoutine
         FinalMorning = false;
         MorningMirrorSeen = false;
         PlayerLook.Reset();
+        BlondeGlance.ResetCount();
         PlayerPurchases.Reset();
         PlayerOutfit.Reset();
+        ShoppingBag.Put();
         GameDay.Reset();
     }
 }

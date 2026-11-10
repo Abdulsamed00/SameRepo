@@ -42,6 +42,13 @@ public class MirrorPose : Interactable
     [SerializeField] private Vector2 profileOffset = new Vector2(-0.42f, 0.10f);
     [SerializeField] private float zoomInDuration = 1.1f;
     [SerializeField] private float zoomHold = 2f;
+    [Tooltip("Estetikten sonraki ilk poz (08.11): yeni burun ve dudağın yandan gösterildiği süre (sn).")]
+    [SerializeField] private float revealHold = 3.5f;
+    [Tooltip("Estetik sonrası çekimde bakılan nokta burnun bu kadar altında (m): burun ve dudak birlikte kadrajda.")]
+    [SerializeField] private float revealLookDown = 0.035f;
+
+    // Estetikten sonra yeni hâli bir kez gösterildi mi (yeni oyunda PlayerLook sıfırlanınca yeniden).
+    private static bool surgeryRevealShown;
     [SerializeField] private float zoomOutDuration = 0.9f;
     [SerializeField] private float zoomFovStart = 34f;
     [SerializeField] private float zoomFovEnd = 26f;
@@ -89,7 +96,10 @@ public class MirrorPose : Interactable
         if (outline == null)
             return;
         // 4. gün sabahı, aynaya bakılana kadar çerçeve nabız gibi parlar (cüzdandaki gibi).
-        bool waiting = DayRoutine.MorningMirrorPending && posingPlayer == null && !PauseMenu.IsPaused;
+        // 10.11: günün sonunda da (kıyafet giyildi, poz verilmedi, yatak odası ışığı açık) aynı kenar yol gösterir.
+        bool posePending = DayRoutine.NightFell && !DayRoutine.Prologue && !DayRoutine.FinalMorning && DayRoutine.BoughtToday
+                           && DayRoutine.WornToday && !DayRoutine.PosedToday && RoomLit;
+        bool waiting = (DayRoutine.MorningMirrorPending || posePending) && posingPlayer == null && !PauseMenu.IsPaused;
         glow = Mathf.MoveTowards(glow, waiting ? 1f : 0f, 2f * Time.unscaledDeltaTime);
         float pulse = 0.55f + 0.45f * Mathf.Sin(Time.time * pulseSpeed);
         float v = outlineIntensity * (0.45f + 0.55f * pulse) * glow;
@@ -102,8 +112,29 @@ public class MirrorPose : Interactable
             return false;
         if (posingPlayer != null)
             return posingPlayer == interactor;
+        // Gece, ayna odasının ışığı kapalıyken poz verilmez (09.11, kullanıcı isteği; bildirim de çıkmaz).
+        if (DayRoutine.NightFell && !RoomLit)
+            return false;
         PlayerSitController sitter = interactor.GetComponent<PlayerSitController>();
         return sitter == null || !sitter.IsSeated;
+    }
+
+    [Tooltip("Ayna odasının ışık kimliği (RoomLights.RoomId). Gece bu oda aydınlık değilse poz verilmez.")]
+    [SerializeField] private string roomId = "Yatak";
+    private RoomLights roomLights;
+
+    private bool RoomLit
+    {
+        get
+        {
+            if (roomLights == null)
+            {
+                foreach (RoomLights room in FindObjectsByType<RoomLights>(FindObjectsSortMode.None))
+                    if (room.RoomId == roomId)
+                        roomLights = room;
+            }
+            return roomLights == null || roomLights.IsOn;
+        }
     }
 
     public override void Interact(PlayerInteractor interactor)
@@ -126,6 +157,7 @@ public class MirrorPose : Interactable
         // Kamera eğilince ışın aynaya bakmayabilir; çıkış için F her durumda aynaya gitsin.
         interactor.Zone = this;
         controller.Frozen = true;
+        body.PrepareForPose();
         if (cc != null)
             cc.enabled = false;
 
@@ -160,17 +192,48 @@ public class MirrorPose : Interactable
         if (playedDefeat)
         {
             // Önce yandan buruna yakın çekim, sonra aynaya dönüp üzülür.
-            yield return NoseCloseUp(controller, body);
+            yield return NoseCloseUp(controller, body, zoomHold, 0f);
             body.PlayDefeat();
         }
         else
+        {
+            // Estetikten sonraki ilk poz: önce yandan yeni burun ve dudak, sonra normal poz.
+            if (!PlayerLook.SurgeryDone)
+                surgeryRevealShown = false;
+            else if (!surgeryRevealShown)
+            {
+                surgeryRevealShown = true;
+                yield return NoseCloseUp(controller, body, revealHold, revealLookDown);
+            }
             body.PlayPose();
+        }
         GameAudio.PlayAt(poseSound, surface.position);
+
+        // Animasyon bitmeden F ile çıkılamasın (10.11, kullanıcı: "animasyon bitmeden F'ye basınca iptal oluyor"):
+        // geçiş bitene kadar bekle, sonra klip döngüsüzse sonuna kadar, döngülüyse en az minPoseTime.
+        float waited = 0f;
+        Animator anim = body.GetComponent<Animator>();
+        while (anim != null && waited < 1f && (anim.IsInTransition(0) || waited < 0.1f))
+        {
+            waited += Time.deltaTime;
+            yield return null;
+        }
+        float hold = minPoseTime;
+        if (anim != null)
+        {
+            AnimatorStateInfo state = anim.GetCurrentAnimatorStateInfo(0);
+            if (!state.loop)
+                hold = Mathf.Max(hold, state.length / Mathf.Max(0.01f, Mathf.Abs(state.speed * state.speedMultiplier)) * (1f - Mathf.Repeat(state.normalizedTime, 1f)));
+        }
+        yield return new WaitForSeconds(Mathf.Max(0f, hold - waited));
         busy = false;
     }
 
+    [Tooltip("Poz başladıktan sonra F ile bırakılabilmesi için en az geçmesi gereken süre (sn).")]
+    [SerializeField] private float minPoseTime = 2f;
+
     // Kamera göz noktasından karakterin yanına süzülür, burnu profilden yakın çeker, bekler, göze geri döner.
-    private IEnumerator NoseCloseUp(FirstPersonController controller, PlayerBody body)
+    private IEnumerator NoseCloseUp(FirstPersonController controller, PlayerBody body, float hold, float lookDown)
     {
         Camera cam = controller.GetComponentInChildren<Camera>();
         Animator animator = body.GetComponent<Animator>();
@@ -187,7 +250,7 @@ public class MirrorPose : Interactable
         body.SetThirdPerson(true);
 
         Transform player = controller.transform;
-        Vector3 Nose() => head.position + Vector3.up * noseOffset.x + player.forward * noseOffset.y;
+        Vector3 Nose() => head.position + Vector3.up * (noseOffset.x - lookDown) + player.forward * noseOffset.y;
         Vector3 ProfilePos() => Nose() + player.right * profileOffset.x + player.forward * profileOffset.y;
         Vector3 eyePos = camTransform.position;
         Quaternion eyeRot = camTransform.rotation;
@@ -204,9 +267,9 @@ public class MirrorPose : Interactable
             yield return null;
         }
         // Bekleme: yavaşça daha da yaklaşır (FOV daralır).
-        for (float t = 0f; t < zoomHold; t += Time.deltaTime)
+        for (float t = 0f; t < hold; t += Time.deltaTime)
         {
-            float k = Mathf.SmoothStep(0f, 1f, t / zoomHold);
+            float k = Mathf.SmoothStep(0f, 1f, t / hold);
             Vector3 pos = ProfilePos();
             camTransform.SetPositionAndRotation(pos, Quaternion.LookRotation(Nose() - pos, Vector3.up));
             cam.fieldOfView = Mathf.Lerp(zoomFovStart, zoomFovEnd, k);

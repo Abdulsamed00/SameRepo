@@ -75,7 +75,7 @@ PrefabInstance:
     - target: {fileID: -5484086988388651146, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: -1748919207373996690, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
+      objectReference: {fileID: 4300000, guid: 7ff40bc38fead4c4c9b4ccdd9573a29c, type: 2}
     - target: {fileID: -3902303745937728094, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -194,6 +194,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4297063459857402960}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2212288285000662773}
   m_SourcePrefab: {fileID: 100100000, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
 --- !u!1 &450515813658187195 stripped
 GameObject:
@@ -260,3 +263,25 @@ MonoBehaviour:
   - CurlyHairBlack
   - CurlyHairBrown
   - TopuzSac
+  surgeryShapes:
+  - Burun
+  - Dudak
+  surgeryRenderer: Body
+  surgeryWeight: 100
+  colorVariants: []
+--- !u!114 &2212288285000662773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450515813658187195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8530cee54a4ff224698f60bab1c4246b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcIk
+  groundFeet: 1
+  soleClearance: 0.005
+  holdBag: 1
+  bagHandWeight: 0.9

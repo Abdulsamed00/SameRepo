@@ -13,10 +13,22 @@ public class CategoryVolume : MonoBehaviour
     private AudioSource source;
     private float baseVolume;
 
-    private void Awake()
+    private void Awake() => Init();
+
+    // Başka script'in Awake'i (MusicPlaylist) bu bileşenin Awake'inden önce SetCategory çağırabilir: tembel kurulum.
+    private void Init()
     {
+        if (source != null)
+            return;
         source = GetComponent<AudioSource>();
         baseVolume = source.volume;
+    }
+
+    /// <summary>Koddan eklenince kategoriyi belirler (ShopScene ikili sahne olduğu için bileşen sahnede elle eklenemedi).</summary>
+    public void SetCategory(AudioCategory value)
+    {
+        category = value;
+        Apply();
     }
 
     private void OnEnable()
@@ -27,5 +39,9 @@ public class CategoryVolume : MonoBehaviour
 
     private void OnDisable() => GameSettings.Changed -= Apply;
 
-    private void Apply() => source.volume = baseVolume * GameSettings.Volume(category);
+    private void Apply()
+    {
+        Init();
+        source.volume = baseVolume * GameSettings.Volume(category);
+    }
 }

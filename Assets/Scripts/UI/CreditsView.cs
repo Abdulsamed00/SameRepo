@@ -31,8 +31,10 @@ public class CreditsView : MonoBehaviour
 
     /// <param name="dimAlpha">Arkadaki görüntünün karartması (#080A0E).</param>
     /// <param name="quote">Verilirse isimlerin altında özlü söz olarak gösterilir (oyun sonu).</param>
+    private string skipLabel = "Atla";
+
     public static CreditsView Create(Transform parent, float dimAlpha, AudioClip clickSound, Action onSkip,
-        string quote = null, string quoteAuthor = null)
+        string quote = null, string quoteAuthor = null, string skipLabel = "Atla")
     {
         RectTransform root = UiKit.CreateRect("Hazirlayanlar", parent);
         UiKit.Stretch(root);
@@ -42,6 +44,7 @@ public class CreditsView : MonoBehaviour
         view.clickSound = clickSound;
         view.quote = quote;
         view.quoteAuthor = quoteAuthor;
+        view.skipLabel = skipLabel;
         view.Build(dimAlpha);
         return view;
     }
@@ -86,7 +89,7 @@ public class CreditsView : MonoBehaviour
             }
         }
 
-        RectTransform skip = UiKit.CreateFooterHint(transform, "ESC", "Atla", new Vector2(1f, 0f), new Vector2(-72f, 69f));
+        RectTransform skip = UiKit.CreateFooterHint(transform, "ESC", skipLabel, new Vector2(1f, 0f), new Vector2(-72f, 69f));
         Image hit = skip.gameObject.AddComponent<Image>();
         hit.color = Color.clear;
         MenuRowEvents skipEvents = skip.gameObject.AddComponent<MenuRowEvents>();

@@ -23,6 +23,10 @@ public class LoadingScreen : MonoBehaviour
     {
         string target = string.IsNullOrEmpty(SceneLoader.TargetScene) ? fallbackScene : SceneLoader.TargetScene;
 
+        // Yükleme ekranında fare görünmesin; hedef sahne (IntroMenu, FirstPersonController) imleci kendi ister.
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
         Build(target);
         SetProgress(0f);
         yield return null;
@@ -63,17 +67,35 @@ public class LoadingScreen : MonoBehaviour
         Canvas canvas = UiKit.CreateCanvas("Yukleme_UI", 10);
         Transform root = canvas.transform;
 
-        Texture background = Resources.Load<Texture>("UI/Arkaplan/" + (SceneLoader.MenuPending ? "AnaMenu" : target));
+        // Oyun açılırken (ilk yükleme) özel açılış görseli; sonrakilerde menü/sahne görüntüsü.
+        bool opening = SceneLoader.OpeningLoad;
+        Texture background = opening ? Resources.Load<Texture>("UI/Arkaplan/Acilis") : null;
+        if (background == null)
+            background = Resources.Load<Texture>("UI/Arkaplan/" + (SceneLoader.MenuPending ? "AnaMenu" : target));
         RawImage bg = UiKit.CreateRect("Arkaplan", root).gameObject.AddComponent<RawImage>();
         bg.texture = background;
         bg.color = background != null ? Color.white : UiKit.Dim;
         bg.raycastTarget = false;
-        UiKit.Stretch(bg.rectTransform);
-        UiKit.CreateFullscreen("Karartma", root, UiKit.WithAlpha(UiKit.Dim, 0.5f));
+        // Ekran oranı ne olursa olsun görsel esnetilmez: ekranı örtecek şekilde (taşan kısım kırpılır) büyütülür.
+        RectTransform bgRect = bg.rectTransform;
+        bgRect.anchorMin = bgRect.anchorMax = bgRect.pivot = new Vector2(0.5f, 0.5f);
+        bgRect.anchoredPosition = Vector2.zero;
+        if (background != null)
+        {
+            AspectRatioFitter fit = bg.gameObject.AddComponent<AspectRatioFitter>();
+            fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            fit.aspectRatio = background.width / (float)background.height;
+        }
+        else
+            UiKit.Stretch(bgRect);
+        UiKit.CreateFullscreen("Karartma", root, UiKit.WithAlpha(UiKit.Dim, opening ? 0.2f : 0.5f));
 
-        TextMeshProUGUI logo = UiKit.CreateText("Logo", root, "SAME", UiKit.FontKind.Light, 39f, 55f, UiKit.White,
-            TextAlignmentOptions.BottomLeft);
-        UiKit.Place(logo.rectTransform, Vector2.zero, new Vector2(144f, 108f), new Vector2(600f, 50f));
+        TextMeshProUGUI logo = UiKit.CreateText("Logo", root, "SAME", UiKit.FontKind.Light, opening ? 56f : 39f, 55f, UiKit.White,
+            opening ? TextAlignmentOptions.TopRight : TextAlignmentOptions.BottomLeft);
+        if (opening)
+            UiKit.Place(logo.rectTransform, Vector2.one, new Vector2(-144f, -96f), new Vector2(600f, 70f));
+        else
+            UiKit.Place(logo.rectTransform, Vector2.zero, new Vector2(144f, 108f), new Vector2(600f, 50f));
 
         // Menüye giderken (açılış, menüye dönüş) gün yazmaz, sadece oyunun adı görünür.
         if (!SceneLoader.MenuPending)

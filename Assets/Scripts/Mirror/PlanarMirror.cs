@@ -20,6 +20,8 @@ public class PlanarMirror : MonoBehaviour
     [SerializeField] private Material material;
     [Tooltip("Ayna camı yansımayı biraz soluk ve soğuk gösterir.")]
     [SerializeField] private Color tint = new Color(0.9f, 0.92f, 0.93f);
+    [Tooltip("Sabah (gündüz) yansıma parlaklık çarpanı: gündüz iç mekan loş olduğu için ayna karanlık kalıyordu (08.11).")]
+    [SerializeField] private float dayGain = 1f;
 
     [Header("Yansıma")]
     [Tooltip("Doku yüksekliği = ekran yüksekliği x bu (pozda cam ekranın neredeyse tamamını kaplıyor).")]
@@ -150,7 +152,7 @@ public class PlanarMirror : MonoBehaviour
         shownSt = st;
         block.SetTexture(BaseMapId, rt);
         block.SetVector(BaseMapStId, st);
-        block.SetColor(BaseColorId, tint);
+        block.SetColor(BaseColorId, dayGain != 1f && !DayRoutine.NightFell ? tint * dayGain : tint);
         surfaceRenderer.SetPropertyBlock(block);
     }
 
@@ -229,8 +231,8 @@ public class PlanarMirror : MonoBehaviour
     // %60'ın altına inince küçülür.
     private void EnsureTexture(Vector2 pixels)
     {
-        float scale = Mathf.Min(resolutionScale, MaxResolutionScale);
-        int cap = Mathf.Min(maxTextureHeight, MaxTextureCap);
+        float scale = Mathf.Min(resolutionScale, MaxResolutionScale) * GameSettings.MirrorQuality;
+        int cap = Mathf.RoundToInt(Mathf.Min(maxTextureHeight, MaxTextureCap) * GameSettings.MirrorQuality);
         int needW = Mathf.Clamp(Mathf.CeilToInt(pixels.x * scale / 32f) * 32, 32, cap);
         int needH = Mathf.Clamp(Mathf.CeilToInt(pixels.y * scale / 32f) * 32, 32, cap);
         if (texture != null)
@@ -344,8 +346,14 @@ public class PlanarMirror : MonoBehaviour
     // noktasına ışın atılır, hepsi engele çarparsa görünmüyor sayılır. Ignore Raycast (NPC'ler) ve trigger'lar sayılmaz;
     // ışın oyuncunun kendi kapsülünün içinden başladığı için onu görmez. Camın son 15 cm'si bakılmaz: aynanın kendi
     // çerçevesinin/ayağının collider'ı camın önünü kapsayabilir (evdeki boy aynası).
+    // Aynanın kendi modelinin collider'ı (üst objenin altındaki her şey) engel sayılmaz (08.11): evdeki boy aynasının
+    // kutusu camın 13 cm önüne taşıyor, aynanın dibinde dokuz ışının hepsi ona çarpıyordu; yansıma kamerası kapanıp
+    // camda son kare donmuş kalıyordu ("aynanın dibine girince görüntü donuyor").
+    private readonly RaycastHit[] sightHits = new RaycastHit[8];
+
     private bool HasLineOfSight(Vector3 eye)
     {
+        Transform owner = transform.parent != null ? transform.parent : transform;
         for (int i = -1; i <= 1; i++)
         {
             for (int j = -1; j <= 1; j++)
@@ -353,7 +361,14 @@ public class PlanarMirror : MonoBehaviour
                 Vector3 point = transform.TransformPoint(new Vector3(0.4f * width * i, 0.4f * height * j, 0f));
                 Vector3 delta = point - eye;
                 float distance = delta.magnitude - 0.15f;
-                if (distance <= 0f || !Physics.Raycast(eye, delta.normalized, distance, ~(1 << 2), QueryTriggerInteraction.Ignore))
+                if (distance <= 0f)
+                    return true;
+                int count = Physics.RaycastNonAlloc(eye, delta.normalized, sightHits, distance, ~(1 << 2),
+                    QueryTriggerInteraction.Ignore);
+                bool blocked = false;
+                for (int k = 0; k < count && !blocked; k++)
+                    blocked = !sightHits[k].collider.transform.IsChildOf(owner);
+                if (!blocked)
                     return true;
             }
         }

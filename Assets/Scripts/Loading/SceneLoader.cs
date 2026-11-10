@@ -20,6 +20,21 @@ public static class SceneLoader
     /// <summary>Hedef ev sahnesi ana menü olarak açılacak (<see cref="IntroMenu"/> bunu tüketir).</summary>
     public static bool MenuPending { get; private set; }
 
+    private static bool firstLoadDone;
+
+    /// <summary>
+    /// Oyun açıldıktan sonraki ilk yükleme (açılış): yükleme ekranı <c>Resources/UI/Arkaplan/Acilis</c> görselini ve
+    /// sağ üstte "SAME" yazısını gösterir (09.11, kullanıcı isteği). Menüye sonradan dönüşlerde normal ekran.
+    /// </summary>
+    public static bool OpeningLoad { get; private set; }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        firstLoadDone = false;
+        OpeningLoad = false;
+    }
+
     /// <summary>Menü bekleniyorsa true döner ve bayrağı temizler.</summary>
     public static bool ConsumeMenuPending()
     {
@@ -46,6 +61,8 @@ public static class SceneLoader
         if (SceneManager.GetActiveScene().name == HouseSceneName && targetScene != MenuSceneName)
             DayRoutine.NotifyLeftHouse();
         MenuPending = targetScene == MenuSceneName;
+        OpeningLoad = !firstLoadDone && MenuPending;
+        firstLoadDone = true;
         TargetScene = MenuPending ? HouseSceneName : targetScene;
         SpawnId = spawnId;
 

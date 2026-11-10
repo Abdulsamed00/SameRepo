@@ -67,7 +67,7 @@ public static class Loc
         string.IsNullOrEmpty(text) ? text : IsEnglish ? text.ToUpperInvariant() : text.ToUpper(TurkishCulture);
 
     /// <summary>Gün başlığı: "3. GÜN" / "DAY 3".</summary>
-    public static string DayTitle(int day) => IsEnglish ? $"DAY {day}" : $"{day}. GÜN";
+    public static string DayTitle(int day) => IsEnglish ? $"DAY {day}" : $"GÜN {day}";
 
     /// <summary>Fişteki gün satırı: "GÜN 3" / "DAY 3".</summary>
     public static string DayShort(int day) => IsEnglish ? $"DAY {day}" : $"GÜN {day}";
@@ -162,6 +162,12 @@ public static class Loc
         { "Çözünürlük", "Resolution" },
         { "Parlaklık", "Brightness" },
         { "Dikey senkronizasyon", "VSync" },
+        { "Grafik kalitesi", "Graphics quality" },
+        { "Render ölçeği", "Render scale" },
+        { "Görsel efektler", "Visual effects" },
+        { "Düşük", "Low" },
+        { "Orta", "Medium" },
+        { "Yüksek", "High" },
         { "Kapalı", "Off" },
         { "Açık", "On" },
         { "Tuşlar", "Key bindings" },
@@ -185,6 +191,8 @@ public static class Loc
         { "SATIŞ FİŞİ", "RECEIPT" },
         { "Mağaza · Kasa 02", "Store · Register 02" },
         { "1 AD", "1 PC" },
+        { "KUAFÖR", "HAIR SALON" },
+        { "ESTETİK", "AESTHETICS" },
         { "TOPLAM ADET", "TOTAL ITEMS" },
         { "Yine bekleriz.", "Thank you, come again." },
     };

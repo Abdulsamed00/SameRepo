@@ -17,6 +17,16 @@ public class ShopExitGate : MonoBehaviour
     [Tooltip("Kapının açılması için alınması gereken ürünler. Boşsa o günün ürünü yeter.")]
     [SerializeField] private ProductType[] requiredProducts;
 
+    [Tooltip("Açık: kanatlar ürün alınınca da kayıp açılmaz, kapalı görünür (çıkış yine bölgeyle yapılır).")]
+    [SerializeField] private bool keepLeavesClosed = true;
+
+    private void SetLeafColliders(bool enabled)
+    {
+        foreach (Transform leaf in new[] { leftLeaf, rightLeaf })
+            foreach (Collider c in leaf.GetComponentsInChildren<Collider>(true))
+                c.enabled = enabled;
+    }
+
     private Vector3 leftOpen;
     private Vector3 rightOpen;
     private bool open;
@@ -74,7 +84,12 @@ public class ShopExitGate : MonoBehaviour
 
     private void Apply()
     {
-        float closed = (1f - Mathf.SmoothStep(0f, 1f, amount)) * slideDistance;
+        // 09.11 (kullanıcı: "mağazanın kapısı açılmasın"): kanatlar görsel olarak hep kapalı kalır, çıkış sadece
+        // "Sokağa çık" bölgesinin kilidine bağlı (F). Çıkış açıkken kanat collider'ları da kapanır, yoksa yol kapalı kalırdı.
+        float shown = keepLeavesClosed ? 0f : amount;
+        if (keepLeavesClosed)
+            SetLeafColliders(!open);
+        float closed = (1f - Mathf.SmoothStep(0f, 1f, shown)) * slideDistance;
         leftLeaf.localPosition = leftOpen + Vector3.right * closed;
         rightLeaf.localPosition = rightOpen + Vector3.left * closed;
         if (exitZone != null)

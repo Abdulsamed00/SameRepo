@@ -16,6 +16,8 @@ public static class GameSettings
     public const int DefaultVolume = 100;
     public const int DefaultSensitivity = 50;
     public const int DefaultBrightness = 50;
+    /// <summary>Kalite seviyesi: 0 Düşük, 1 Orta, 2 Yüksek (Project Settings > Quality sırası).</summary>
+    public const int DefaultQuality = 2;
 
     public static int MasterVolume { get; private set; } = DefaultVolume;
     public static int MusicVolume { get; private set; } = DefaultVolume;
@@ -30,6 +32,22 @@ public static class GameSettings
     public static int ResolutionIndex { get; private set; }
     public static int Brightness { get; private set; } = DefaultBrightness;
     public static bool VSync { get; private set; } = true;
+    public static int Quality { get; private set; } = DefaultQuality;
+
+    /// <summary>Render ölçeği adımı: 0..5 → %50..%100, kalite seviyesinin kendi ölçeğiyle çarpılır.</summary>
+    public const int RenderScaleSteps = 6;
+    public static int RenderScaleStep { get; private set; } = RenderScaleSteps - 1;
+    public static float RenderScaleMultiplier => 0.5f + 0.1f * RenderScaleStep;
+    public static int RenderScalePercent => 50 + 10 * RenderScaleStep;
+
+    /// <summary>Bloom, vinyet, grenli film, renk sapması, alan derinliği, hareket bulanıklığı.</summary>
+    public static bool VisualEffects { get; private set; } = true;
+
+    /// <summary>Kalite seviyesine göre kalabalık çarpanı (Düşük %50, Orta %75, Yüksek %100).</summary>
+    public static float NpcFactor => Quality <= 0 ? 0.5f : Quality == 1 ? 0.75f : 1f;
+
+    /// <summary>Ayna yansıması çözünürlük çarpanı.</summary>
+    public static float MirrorQuality => Quality <= 0 ? 0.5f : Quality == 1 ? 0.75f : 1f;
 
     /// <summary>Herhangi bir ayar değişince.</summary>
     public static event Action Changed;
@@ -82,6 +100,10 @@ public static class GameSettings
         Fullscreen = PlayerPrefs.GetInt("Ayar_TamEkran", Screen.fullScreen ? 1 : 0) == 1;
         Brightness = PlayerPrefs.GetInt("Ayar_Parlaklik", DefaultBrightness);
         VSync = PlayerPrefs.GetInt("Ayar_VSync", 1) == 1;
+        Quality = Mathf.Clamp(PlayerPrefs.GetInt("Ayar_Kalite", DefaultQuality), 0, Mathf.Max(0, QualitySettings.names.Length - 1));
+
+        RenderScaleStep = Mathf.Clamp(PlayerPrefs.GetInt("Ayar_RenderOlcegi", RenderScaleSteps - 1), 0, RenderScaleSteps - 1);
+        VisualEffects = PlayerPrefs.GetInt("Ayar_GorselEfekt", 1) == 1;
 
         int saved = ((List<Vector2Int>)Resolutions).IndexOf(new Vector2Int(PlayerPrefs.GetInt("Ayar_GenislikPx", Screen.currentResolution.width),
             PlayerPrefs.GetInt("Ayar_YukseklikPx", Screen.currentResolution.height)));
@@ -99,6 +121,9 @@ public static class GameSettings
     public static void SetInvertY(bool value) { InvertY = value; Save("Ayar_TersY", value ? 1 : 0); Changed?.Invoke(); }
     public static void SetFullscreen(bool value) { Fullscreen = value; Save("Ayar_TamEkran", value ? 1 : 0); ApplyDisplay(); }
     public static void SetBrightness(int value) { Brightness = Clamp(value); Save("Ayar_Parlaklik", Brightness); ApplyDisplay(); }
+    public static void SetQuality(int value) { Quality = Mathf.Clamp(value, 0, Mathf.Max(0, QualitySettings.names.Length - 1)); Save("Ayar_Kalite", Quality); ApplyDisplay(); }
+    public static void SetRenderScaleStep(int value) { RenderScaleStep = Mathf.Clamp(value, 0, RenderScaleSteps - 1); Save("Ayar_RenderOlcegi", RenderScaleStep); ApplyDisplay(); }
+    public static void SetVisualEffects(bool value) { VisualEffects = value; Save("Ayar_GorselEfekt", value ? 1 : 0); ApplyDisplay(); }
     public static void SetVSync(bool value) { VSync = value; Save("Ayar_VSync", value ? 1 : 0); ApplyDisplay(); }
 
     public static void SetResolutionIndex(int index)
@@ -131,6 +156,9 @@ public static class GameSettings
         SetResolutionIndex(0);
         SetBrightness(DefaultBrightness);
         SetVSync(true);
+        SetQuality(DefaultQuality);
+        SetRenderScaleStep(RenderScaleSteps - 1);
+        SetVisualEffects(true);
     }
 
     private static int Clamp(int value) => Mathf.Clamp(value, 0, 100);
@@ -149,6 +177,9 @@ public static class GameSettings
 
     private static void ApplyDisplay()
     {
+        // Kalite seviyesi (URP asset, gölge, LOD, doku); seviye değişince dikey senkron da sıfırlanır, sonra uygulanır.
+        if (QualitySettings.GetQualityLevel() != Quality)
+            QualitySettings.SetQualityLevel(Quality, true);
         QualitySettings.vSyncCount = VSync ? 1 : 0;
 
 #if !UNITY_EDITOR
@@ -158,7 +189,10 @@ public static class GameSettings
             Screen.SetResolution(size.x, size.y, mode);
 #endif
 
+        ApplyRenderScale();
+
         EnsureBrightnessVolume();
+        ApplyEffects();
         // 0 → -1 EV, 50 → 0, 100 → +1 EV.
         brightnessAdjustments.postExposure.Override((Brightness - 50) / 50f + SceneExposure);
         Changed?.Invoke();
@@ -190,6 +224,62 @@ public static class GameSettings
         brightnessVolume.priority = 100f;
         VolumeProfile profile = ScriptableObject.CreateInstance<VolumeProfile>();
         brightnessAdjustments = profile.Add<ColorAdjustments>();
+        // Görsel efektler kapalıyken sahne profillerinin üstüne bindirilir (aşağıda ApplyEffects).
+        effectsBloom = profile.Add<Bloom>();
+        effectsVignette = profile.Add<Vignette>();
+        effectsMotionBlur = profile.Add<MotionBlur>();
+        effectsGrain = profile.Add<FilmGrain>();
+        effectsChromatic = profile.Add<ChromaticAberration>();
+        effectsDof = profile.Add<DepthOfField>();
         brightnessVolume.sharedProfile = profile;
+    }
+
+    private static Bloom effectsBloom;
+    private static Vignette effectsVignette;
+    private static MotionBlur effectsMotionBlur;
+    private static FilmGrain effectsGrain;
+    private static ChromaticAberration effectsChromatic;
+    private static DepthOfField effectsDof;
+
+    private static void ApplyEffects()
+    {
+        // Kapalıyken bileşenler etkin ve değerleri sıfır, açıkken devre dışı (sahne profili geçerli).
+        bool off = !VisualEffects;
+        effectsBloom.active = off;
+        effectsBloom.intensity.Override(0f);
+        effectsVignette.active = off;
+        effectsVignette.intensity.Override(0f);
+        effectsMotionBlur.active = off;
+        effectsMotionBlur.intensity.Override(0f);
+        effectsGrain.active = off;
+        effectsGrain.intensity.Override(0f);
+        effectsChromatic.active = off;
+        effectsChromatic.intensity.Override(0f);
+        effectsDof.active = off;
+        effectsDof.mode.Override(DepthOfFieldMode.Off);
+    }
+
+    private static readonly Dictionary<UniversalRenderPipelineAsset, float> baseRenderScale = new();
+    private static bool restoreHooked;
+
+    private static void ApplyRenderScale()
+    {
+        UniversalRenderPipelineAsset asset = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+        if (asset == null)
+            return;
+        if (!baseRenderScale.ContainsKey(asset))
+            baseRenderScale[asset] = asset.renderScale;
+        if (!restoreHooked)
+        {
+            // Asset'in kendi değeri (editörde dosya) kalıcı bozulmasın.
+            restoreHooked = true;
+            Application.quitting += () =>
+            {
+                foreach (var pair in baseRenderScale)
+                    if (pair.Key != null)
+                        pair.Key.renderScale = pair.Value;
+            };
+        }
+        asset.renderScale = Mathf.Clamp(baseRenderScale[asset] * RenderScaleMultiplier, 0.25f, 2f);
     }
 }

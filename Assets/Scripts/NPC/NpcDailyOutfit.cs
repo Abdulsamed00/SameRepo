@@ -35,6 +35,10 @@ public class NpcDailyOutfit : MonoBehaviour
     [Tooltip("Sarışın saç parçası (boşsa saç güne göre değişmez: erkekler).")]
     [SerializeField] private string blondeHair;
     [SerializeField] private string[] otherHair;
+    [Tooltip("Estetikte değişen blendshape'ler (kadın: Burun, Dudak; boşsa yüz değişmez: erkekler). 0 doğal, 100 estetikli (küçük kalkık burun, dolgun dudak).")]
+    [SerializeField] private string[] surgeryShapes;
+    [SerializeField] private string surgeryRenderer = "Body";
+    [SerializeField, Range(0f, 100f)] private float surgeryWeight = 100f;
     [Tooltip("Ürün dışı parçaların renk çeşitleri (07.11: erkek modelinde ürün dışı tek kazak ve tek pantolon var, herkes aynı görünüyordu).")]
     [SerializeField] private ColorVariant[] colorVariants;
 
@@ -64,6 +68,23 @@ public class NpcDailyOutfit : MonoBehaviour
             Apply(new ProductLook { wear = blondeHair, alternatives = otherHair }, NpcFashion.IsBlonde(this));
 
         ApplyColors();
+        ApplySurgery(NpcFashion.HasSurgery(this));
+    }
+
+    private void ApplySurgery(bool done)
+    {
+        if (surgeryShapes == null || surgeryShapes.Length == 0)
+            return;
+        Transform t = transform.Find(surgeryRenderer);
+        SkinnedMeshRenderer face = t != null ? t.GetComponent<SkinnedMeshRenderer>() : null;
+        if (face == null || face.sharedMesh == null)
+            return;
+        foreach (string shape in surgeryShapes)
+        {
+            int index = face.sharedMesh.GetBlendShapeIndex(shape);
+            if (index >= 0)
+                face.SetBlendShapeWeight(index, done ? surgeryWeight : 0f);
+        }
     }
 
     // Renk NPC'nin kimliğinden seçilir: aynı NPC her gün aynı renkte, NPC'ler birbirinden farklı.

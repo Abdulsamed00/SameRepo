@@ -110,7 +110,7 @@ public class PlayerBody : MonoBehaviour
     [Tooltip("Ellerin ürüne uzanma süresi (sn); ürün bundan sonra kameranın önüne gelir.")]
     [SerializeField] private float carryReachTime = 0.45f;
     [Tooltip("Kamera gövdenin önünde olduğu için kollar yetişmezse gövdenin öne eğilebileceği en büyük açı (derece).")]
-    [SerializeField] private float carryMaxLean = 35f;
+    [SerializeField] private float carryMaxLean = 0f;
     [Tooltip("Dirsek ipucunun gücü (0-1): dirsekler yana ve aşağı bakar.")]
     [SerializeField, Range(0f, 1f)] private float carryElbowWeight = 0.35f;
 
@@ -691,13 +691,15 @@ public class PlayerBody : MonoBehaviour
     /// eşya nereye giderse oraya eşlik eder (IK, kapıdaki gibi). Sadece sağ verilirse tek el.
     /// </summary>
     /// <returns>Ellerin tutuş noktalarına ulaşma süresi (sn); eşya bundan sonra kameranın önüne gelmeli.</returns>
-    public float BeginCarry(Transform right, Transform left, System.Action syncItem = null, bool leftJoinsLate = false)
+    /// <param name="startDelay">Eller bu kadar sn sonra uzanmaya başlar (eşya önce kameranın önüne gelir).</param>
+    public float BeginCarry(Transform right, Transform left, System.Action syncItem = null, bool leftJoinsLate = false,
+        float startDelay = 0f)
     {
         carryLeftJoinsLate = leftJoinsLate && left != null;
         carrySync = syncItem;
         carryRight = right;
         carryLeft = left;
-        carryStart = Time.time;
+        carryStart = Time.time + startDelay;
         carryReach = carryReachTime;
         carryEndTime = -1f;
         putDownEndTime = -1f;
@@ -837,7 +839,10 @@ public class PlayerBody : MonoBehaviour
             return;
         Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
         // Dönüşün bir kısmını gövdenin üstü alır, boyun tek başına bükülmesin.
-        animator.SetLookAtWeight(weight, 0.2f, 1f, 0f, headLookClamp);
+        // Eşya taşırken (08.11 "dik dursun", 09.11 "hafif aşağı eğiliyor") gövde bakışa eşlik etmez, sadece kafa döner:
+        // eşyaya bakmak için aşağı bakınca bakış IK'sının gövde payı (0.2) belden öne eğiyordu.
+        float bodyWeight = carryRight != null || carryLeft != null ? 0f : 0.2f;
+        animator.SetLookAtWeight(weight, bodyWeight, 1f, 0f, headLookClamp);
         // Üçüncü şahısta (final) kamera karakterin gözü değil, karaktere bakıyor: kafa onu izlerse öne eğiliyordu.
         // O zaman gövdenin baktığı yöne, ufka bakar.
         Vector3 direction = thirdPerson ? animator.transform.forward : playerCamera.transform.forward;
@@ -871,19 +876,55 @@ public class PlayerBody : MonoBehaviour
         Vector3 goal = reachPoint.Value + (hand.position - RightHandHold.position);
         animator.SetIKPositionWeight(AvatarIKGoal.RightHand, weight);
         animator.SetIKPosition(AvatarIKGoal.RightHand, goal);
+
+        // El dönüşü (08.11, "eşyayı alıp bırakırken eli ters dönüyor"): klibin el dönüşü eşyaya göre ters kalıyordu.
+        // Avuç aşağı bakar (eşyaya yukarıdan uzanır), başparmak gövdenin ortasına; tutuş noktasındaki gibi (ApplyHandGrip).
+        Transform basis = controller != null ? controller.transform : animator.transform;
+        Quaternion grip = Quaternion.LookRotation(-basis.right, Vector3.down);
+        Quaternion toGoal = grip * Quaternion.Inverse(RightHandHold.rotation * Quaternion.AngleAxis(180f, Vector3.forward));
+        animator.SetIKRotationWeight(AvatarIKGoal.RightHand, weight);
+        animator.SetIKRotation(AvatarIKGoal.RightHand, toGoal * hand.rotation * Quaternion.AngleAxis(-handIkTwist, Vector3.right));
     }
 
     /// <summary>Ayna karşısında poz (döngülü). <see cref="StopPose"/> ile biter.</summary>
     public void PlayPose()
     {
+        StopOtherAnimations();
         overridden = true;
         IsPosing = true;
         animator.CrossFadeInFixedTime(PoseState, crossFade * 2f);
     }
 
+    /// <summary>
+    /// Aynaya kayarken ve burun yakın çekimi sırasında (poz/yenilgi klibi başlamadan önce) gövde yürüme animasyonu
+    /// oynamasın: hemen boşta durur (08.11, kullanıcı: "aynada pozlarken yürüme animasyonu oynayabiliyor").
+    /// <see cref="PlayPose"/>, <see cref="PlayDefeat"/> ya da <see cref="StopPose"/> devralır.
+    /// </summary>
+    public void PrepareForPose()
+    {
+        StopOtherAnimations();
+        overridden = true;
+        animator.CrossFadeInFixedTime(LocomotionState, 0.1f);
+    }
+
+    // Poz öncesi (08.11, kullanıcı isteği): yürüme/dönme/alma/bırakma/IK animasyonları durdurulur, poz temiz başlar.
+    private void StopOtherAnimations()
+    {
+        reachPoint = null;
+        putDownEndTime = -1f;
+        touchAnchor = null;
+        carryRight = carryLeft = null;
+        carryEndTime = -1f;
+        turning = false;
+        if (upperBodyLayer >= 0)
+            animator.Play(EmptyState, upperBodyLayer, 0f);
+        animator.SetFloat(SpeedId, 0f);
+    }
+
     /// <summary>4. gün sabahı aynada yenilgi (tek sefer oynar, son karede kalır). <see cref="StopPose"/> ile biter.</summary>
     public void PlayDefeat()
     {
+        StopOtherAnimations();
         overridden = true;
         IsPosing = true;
         animator.CrossFadeInFixedTime(DefeatState, crossFade * 2f);

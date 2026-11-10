@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// 2. gün, saç boyanana kadar: yakından geçen sarışın kadınlara oyuncunun kafası bir anda döner, kısa süre onu izler,
-/// sonra yavaşça geri gelir. Kontrol oyuncudadır: yürüme ve fare çalışır, dönüş kameranın bakışına eklenir;
+/// sonra yavaşça geri gelir. Bakış sürerken fare kilitli, karakter yavaşlayarak yürümeye devam eder; dönüş sadece yataydır;
 /// kadın gövdenin çok arkasında kalırsa bakış kendiliğinden biter.
 /// Kamera kökün (CameraRoot) altında olduğu için yerel dönüşü boştur, bakış oraya yazılır. Kafa IK'sı kamerayı izler.
 /// </summary>
@@ -11,22 +11,46 @@ public class BlondeGlance : MonoBehaviour
     [Tooltip("Hangi günde çalışır (0'dan: 1 = 2. gün).")]
     [SerializeField] private int dayIndex = 1;
     [SerializeField] private string hairPart = "BlondeHair";
-    [SerializeField] private Vector2 range = new Vector2(1.5f, 13f);
+    [SerializeField] private Vector2 range = new Vector2(1.5f, 9f);
     [Tooltip("Görüş yönüne göre en fazla kaç derecedeki kadın fark edilir.")]
-    [SerializeField] private float noticeAngle = 80f;
+    [SerializeField] private float noticeAngle = 50f;
     [Tooltip("Bakış gövdenin önünden bu kadar ayrılırsa bakış biter.")]
     [SerializeField] private float maxAngle = 115f;
     [Tooltip("İki bakış arası bekleme (sn).")]
-    [SerializeField] private Vector2 cooldown = new Vector2(5f, 11f);
+    [SerializeField] private Vector2 cooldown = new Vector2(22f, 38f);
     [SerializeField] private float turnTime = 0.9f;
     [Tooltip("Kadını izleme süresi (sn).")]
-    [SerializeField] private Vector2 holdTime = new Vector2(2.5f, 3.5f);
+    [SerializeField] private Vector2 holdTime = new Vector2(2f, 2.8f);
     [SerializeField] private float returnTime = 1.6f;
     [SerializeField] private float headHeight = 1.5f;
     [Tooltip("Bakışın yürüyen kadına yetişme hızı (büyük = sert).")]
     [SerializeField] private float followSharpness = 3f;
     [Tooltip("Kilitlendikten sonra takip sıkılığı: nişan (ekran ortası) kadının kafasında kalır.")]
     [SerializeField] private float holdFollowSharpness = 16f;
+    [Tooltip("Bakış sürerken yürüme hızı çarpanı (karakter durmaz, yavaşlar).")]
+    [SerializeField] private float walkSlowdown = 0.7f;
+    [Tooltip("Oyun boyunca en fazla kaç kez sarışına bakılır (08.11, kullanıcı: \"max 5 kere\"). Yeni oyunda sıfırlanır.")]
+    [SerializeField] private int maxGlances = 5;
+    [Tooltip("Bir sarışına kitlenildiği an çalan ses (WOW).")]
+    [SerializeField] private AudioClip wowSound;
+    [SerializeField, Range(0f, 1f)] private float wowVolume = 1f;
+
+    [Header("Saç parlaması (10.11, Shader Graph: Same/HairGlow)")]
+    [Tooltip("Boşsa Resources/Hair/Hair_Glow yüklenir.")]
+    [SerializeField] private Material glowMaterial;
+    [Tooltip("Kilitlenirken parlamanın tam açılma süresi (sn).")]
+    [SerializeField] private float glowRiseTime = 0.5f;
+    [Tooltip("Kilitlenme bitince parlamanın sönme süresi (sn).")]
+    [SerializeField] private float glowFadeTime = 0.35f;
+    [SerializeField, Range(0f, 4f)] private float glowStrength = 2.5f; // 10.11: "daha belirgin" (1 → 2.5)
+
+    private static readonly int GlowId = Shader.PropertyToID("_Glow");
+    private static readonly int HairMapId = Shader.PropertyToID("_HairMap");
+    private Transform glowOwner;
+    private Renderer glowRenderer;
+    private Material[] glowOriginal;
+    private Material glowInstance;
+    private float glowLevel;
 
     private FirstPersonController player;
     private Transform view;
@@ -40,6 +64,10 @@ public class BlondeGlance : MonoBehaviour
     private float wait = 3f;
     private float scanWait;
 
+    // Bu oyunda kaç kez bakıldı (sahneler arası korunur; DayRoutine.ResetAll sıfırlar).
+    private static int glanceCount;
+    public static void ResetCount() => glanceCount = 0;
+
     private bool Active =>
         GameDay.Index == dayIndex && !PlayerLook.HairDyed && !player.Frozen && player.InputEnabled && !PauseMenu.IsPaused;
 
@@ -50,26 +78,82 @@ public class BlondeGlance : MonoBehaviour
             view = player.CameraRoot.GetComponentInChildren<Camera>().transform;
     }
 
-    private void OnDisable()
+    // Kilitlenen kadının saçı: ikinci (additive) malzeme eklenir, kilit bitince kalkar.
+    private void UpdateGlow()
     {
-        if (player != null)
-            player.LookLocked = false;
-        SetMovementLock(false);
+        if (target != null && glowOwner != target)
+        {
+            EndGlow();
+            BeginGlow(target);
+        }
+
+        // Parlama ancak nişan kadının kafasına tam oturunca (dönüş tamamlanınca) başlar.
+        bool on = target != null && glowInstance != null && weight >= 0.98f;
+        glowLevel = on
+            ? Mathf.Min(1f, glowLevel + Time.deltaTime / Mathf.Max(0.01f, glowRiseTime))
+            : Mathf.Max(0f, glowLevel - Time.deltaTime / Mathf.Max(0.01f, glowFadeTime));
+
+        if (glowInstance != null)
+        {
+            if (glowRenderer == null || !glowRenderer.gameObject.activeInHierarchy)
+                EndGlow();
+            else
+                glowInstance.SetFloat(GlowId, Mathf.SmoothStep(0f, 1f, glowLevel) * glowStrength);
+        }
+
+        if (target == null && glowLevel <= 0f)
+            EndGlow();
     }
 
-    // Bakış sürerken karakter durur (07.11, kullanıcı isteği): kafa dönüp kadına bakarken yürüyemez, bakış bitip
-    // kamera geri gelince kontrol oyuncuya döner.
-    private bool movementLocked;
-
-    private void SetMovementLock(bool locked)
+    private void BeginGlow(Transform npc)
     {
-        if (player == null || locked == movementLocked)
+        if (glowMaterial == null)
+            glowMaterial = Resources.Load<Material>("Hair/Hair_Glow");
+        Transform hair = npc.Find(hairPart);
+        Renderer r = hair != null ? hair.GetComponent<Renderer>() : null;
+        if (r == null || glowMaterial == null)
             return;
-        movementLocked = locked;
-        if (locked)
-            player.LockMovement();
-        else
-            player.UnlockMovement();
+
+        glowOwner = npc;
+        glowRenderer = r;
+        glowOriginal = r.sharedMaterials;
+        glowInstance = new Material(glowMaterial);
+        glowInstance.SetFloat(GlowId, 0f);
+        Material src = glowOriginal.Length > 0 ? glowOriginal[0] : null;
+        if (src != null)
+        {
+            Texture tex = src.HasProperty("_BaseMap") ? src.GetTexture("_BaseMap")
+                : src.HasProperty("_MainTex") ? src.GetTexture("_MainTex") : null;
+            if (tex != null)
+                glowInstance.SetTexture(HairMapId, tex);
+        }
+        var mats = new Material[glowOriginal.Length + 1];
+        glowOriginal.CopyTo(mats, 0);
+        mats[mats.Length - 1] = glowInstance;
+        r.sharedMaterials = mats;
+    }
+
+    private void EndGlow()
+    {
+        if (glowRenderer != null && glowOriginal != null)
+            glowRenderer.sharedMaterials = glowOriginal;
+        if (glowInstance != null)
+            Destroy(glowInstance);
+        glowInstance = null;
+        glowRenderer = null;
+        glowOriginal = null;
+        glowOwner = null;
+        glowLevel = 0f;
+    }
+
+    private void OnDisable()
+    {
+        EndGlow();
+        if (player != null)
+        {
+            player.LookLocked = false;
+            player.SpeedFactor = 1f;
+        }
     }
 
     private void LateUpdate()
@@ -77,15 +161,18 @@ public class BlondeGlance : MonoBehaviour
         if (player == null || view == null || view.parent != player.CameraRoot)
             return;
 
+        UpdateGlow();
+
         // Kilitlenirken ve bakış sürerken fare bakışı kapalı (05.11, kullanıcı isteği).
         player.LookLocked = target != null || weight > 0f;
-        SetMovementLock(target != null || weight > 0f);
+        // Bakış sürerken karakter durmaz, yavaşlar (08.11, kullanıcı isteği; 07.11-08.11 arası tamamen duruyordu).
+        player.SpeedFactor = Mathf.Lerp(1f, walkSlowdown, Mathf.SmoothStep(0f, 1f, weight));
 
         if (target == null && weight <= 0f)
         {
             view.localRotation = Quaternion.identity;
             wait -= Time.deltaTime;
-            if (Active && wait <= 0f)
+            if (Active && wait <= 0f && glanceCount < maxGlances)
                 FindTarget();
             return;
         }
@@ -122,10 +209,15 @@ public class BlondeGlance : MonoBehaviour
         wait = Random.Range(cooldown.x, cooldown.y);
     }
 
+    // Nişan her zaman kadının kafasına gelir (08.11: havaya bakılırken de yukarı/aşağı dahil), ama kamera yana yatmaz:
+    // hedef dünya dikeyine göre (roll sıfır) kurulur. Eskiden CameraRoot eğikken eğik eksende dönüp çapraz görüntü oluyordu.
     private Quaternion LookAtTarget()
     {
         Vector3 to = HeadPoint() - view.position;
-        return Quaternion.Inverse(view.parent.rotation) * Quaternion.LookRotation(to, view.parent.up);
+        if (to.sqrMagnitude < 1e-4f)
+            return Quaternion.identity;
+        Quaternion world = Quaternion.LookRotation(to, Vector3.up);
+        return Quaternion.Inverse(view.parent.rotation) * world;
     }
 
     // Nişan kadının kafasının tam ortasına gelsin: kafa kemiği (yoksa sabit yükseklik).
@@ -189,5 +281,9 @@ public class BlondeGlance : MonoBehaviour
             lastLook = Quaternion.identity;
         target = best;
         holdLeft = Random.Range(holdTime.x, holdTime.y);
+        glanceCount++;
+        // Kitlenme sesi (08.11, kullanıcı isteği).
+        if (wowSound != null)
+            GameAudio.Play2D(wowSound, wowVolume);
     }
 }
