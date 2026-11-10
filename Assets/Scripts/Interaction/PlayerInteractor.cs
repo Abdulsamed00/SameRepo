@@ -64,6 +64,8 @@ public class PlayerInteractor : MonoBehaviour
 
     private void Awake()
     {
+        // Ignore Raycast katmanı etkileşim ışınını hiç kesmez (NPC kapsülleri, dolabın önündeki görünmez engel; 10.11).
+        interactMask &= ~(1 << 2);
         KeyBindings.Ensure(inputActions); // kayıtlı tuş atamaları
         InputActionMap playerMap = inputActions.FindActionMap("Player", true);
         interactAction = playerMap.FindAction("Interact", true);

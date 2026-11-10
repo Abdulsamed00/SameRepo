@@ -157344,8 +157344,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e11e7419db72ab24d88857b091ebc21f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneFade
-  sceneStrength: 0.6
-  maxFade: 0.85
+  sceneStrength: 0.85
+  maxFade: 1
+  curve: 1.8
   exempt: []
 --- !u!1001 &1895272351
 PrefabInstance:

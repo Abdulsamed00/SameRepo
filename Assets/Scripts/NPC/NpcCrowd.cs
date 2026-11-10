@@ -1380,8 +1380,49 @@ public class NpcCrowd : MonoBehaviour
             return false;
         if ((position - player.position).sqrMagnitude > hiddenDistance * hiddenDistance)
             return false;
+        if ((position - player.position).sqrMagnitude < 10f * 10f)
+            return true;
         Vector3 v = playerCamera.WorldToViewportPoint(position + Vector3.up);
         bool inView = v.z > 0f && v.x > -0.1f && v.x < 1.1f && v.y > -0.1f && v.y < 1.1f;
-        return inView || (position - player.position).sqrMagnitude < 10f * 10f;
+        if (!inView)
+            return false;
+        // Binanın/köşenin arkasında kalan nokta görülmüyor sayılır (10.11): eskiden sadece görüş alanına bakılıyordu,
+        // ara sokağın köşesini dönmüş NPC de "görülüyor" sayılıp çıkışta bekliyor, çıkışlarda yığın oluşuyordu.
+        Vector3 eye = playerCamera.transform.position;
+        return !Physics.Linecast(eye, position + Vector3.up * 1.6f, OcclusionMask, QueryTriggerInteraction.Ignore)
+               || !Physics.Linecast(eye, position + Vector3.up * 0.9f, OcclusionMask, QueryTriggerInteraction.Ignore);
+    }
+
+    // Oyuncu ve NPC'ler (Ignore Raycast) görüşü kesmez.
+    private const int OcclusionMask = ~(1 << 2);
+
+    /// <summary>Akışta yön değiştirir (çıkışı görülen ve başka çıkış bulamayan NPC geri döner, çıkışta beklemez).</summary>
+    public void TurnAround(NpcAgent npc)
+    {
+        if (!streetFlow || routes == null || routes.Count == 0)
+            return;
+        npc.Heading = -npc.Heading;
+        npc.Route = NearestRoute(npc.transform.position, npc.Heading);
+    }
+
+    /// <summary>Verilen noktadan uzak olmayan, oyuncunun görmediği başka bir çıkış (yoksa null).</summary>
+    public Transform PickUnseenExit(Vector3 from, Vector3 except)
+    {
+        if (exits == null)
+            return null;
+        Transform pick = null;
+        float bestScore = float.MaxValue;
+        foreach (Transform e in exits)
+        {
+            if (e == null || (e.position - except).sqrMagnitude < 4f || IsSeen(e.position))
+                continue;
+            float score = Vector3.Distance(e.position, from) * Random.Range(0.8f, 1.2f);
+            if (score < bestScore && score < 80f)
+            {
+                bestScore = score;
+                pick = e;
+            }
+        }
+        return pick;
     }
 }

@@ -25,7 +25,8 @@ public class OpenableLight : MonoBehaviour
 
     private void Update()
     {
-        bool open = target != null && target.IsOpen && (room == null || !DayRoutine.NightFell || room.IsOn);
+        // Sadece gece ve oda ışığı açıkken (10.11, kullanıcı: "sabah dolapta ışık olmasın").
+        bool open = target != null && target.IsOpen && DayRoutine.NightFell && (room == null || room.IsOn);
         level = Mathf.MoveTowards(level, open ? 1f : 0f, fadeSpeed * Time.deltaTime);
         lamp.enabled = level > 0f;
         lamp.intensity = intensity * level;

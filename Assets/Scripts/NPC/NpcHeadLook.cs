@@ -14,8 +14,8 @@ public class NpcHeadLook : MonoBehaviour
     [SerializeField] private float fullRange = 4f;
     [SerializeField] private float maxYaw = 75f;
     [SerializeField] private float maxPitch = 30f;
-    [Tooltip("Dönüşün kafaya düşen payı; kalanı boyna gider.")]
-    [Range(0f, 1f)] [SerializeField] private float headShare = 0.65f;
+    [Tooltip("Dönüşün kafaya düşen payı; kalanı boyna gider. Kasiyerlerin elle iskeletlenmiş mesh'inde yüzün köşeleri kafa ve boyun arasında karışık ağırlıklı (boyun payı 0.5'e kadar): kafa boyuna göre dönünce yüz yamuluyordu (10.11). 0 = tüm dönüş boyunda, kafa onunla katı döner.")]
+    [Range(0f, 1f)] [SerializeField] private float headShare = 0f;
     [SerializeField] private float follow = 6f;
 
     private Animator animator;

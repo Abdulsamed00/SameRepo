@@ -302,6 +302,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 084cbd60e8dc8e24899e395bad46d68b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5378099964140893213}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 084cbd60e8dc8e24899e395bad46d68b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8197751676826123576}
   m_SourcePrefab: {fileID: 100100000, guid: 084cbd60e8dc8e24899e395bad46d68b, type: 3}
 --- !u!4 &89302593813166780 stripped
 Transform:
@@ -568,6 +571,9 @@ MonoBehaviour:
     alternatives: []
   blondeHair: 
   otherHair: []
+  surgeryShapes: []
+  surgeryRenderer: Body
+  surgeryWeight: 100
   colorVariants:
   - part: Meshy_Navy Crewneck Sweater_Mesh_0.021
     materials:
@@ -584,6 +590,22 @@ MonoBehaviour:
     - {fileID: 2100000, guid: d45f795df5fdaa44ba0162719bf40f32, type: 2}
     - {fileID: 2100000, guid: 737bb97f8d9f73848bcd6d96b63e4059, type: 2}
     - {fileID: 2100000, guid: 843514a25be146c4f972e44ea2192f74, type: 2}
+--- !u!114 &8197751676826123576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5593821103134030152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8530cee54a4ff224698f60bab1c4246b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcIk
+  groundFeet: 1
+  soleClearance: 0.005
+  holdBag: 1
+  bagHandWeight: 0.9
 --- !u!4 &5648045066079046775 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8142028300753827730, guid: 084cbd60e8dc8e24899e395bad46d68b, type: 3}

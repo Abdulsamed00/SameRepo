@@ -45,6 +45,10 @@ public class PickupItem : Interactable
     [SerializeField] private Transform gripA;
     [SerializeField] private Transform gripB;
 
+    [Header("Engel payı (10.11)")]
+    [Tooltip("Eldeki eşya duvara/rafa girecekse en fazla bu kadar (m) gövdeye doğru çekilir; yine sığmazsa oyuncu geri itilir.")]
+    [SerializeField] private float maxClearancePull = 0.3f;
+
     [Header("Ses")]
     [Tooltip("Ele alınınca ve bırakılınca çalar (ör. mağazada kıyafet hışırtısı). Boşsa ses yok.")]
     [SerializeField] private AudioClip handleSound;
@@ -127,6 +131,42 @@ public class PickupItem : Interactable
         foreach (Collider c in colliders)
             bounds.Encapsulate(c.bounds);
         radius = Mathf.Clamp(bounds.extents.magnitude, 0.03f, 0.3f);
+
+        // Eşyanın kendi uzayındaki kutusu (engel payı için). BoxCollider'lardan; yoksa renderer'lardan.
+        hasLocalBox = false;
+        foreach (Collider c in colliders)
+        {
+            if (c is BoxCollider box)
+                EncapsulateLocal(box.transform, box.center, box.size);
+        }
+        if (!hasLocalBox)
+        {
+            foreach (MeshFilter mf in GetComponentsInChildren<MeshFilter>())
+            {
+                if (mf.sharedMesh != null)
+                    EncapsulateLocal(mf.transform, mf.sharedMesh.bounds.center, mf.sharedMesh.bounds.size);
+            }
+        }
+    }
+
+    private Bounds localBox;
+    private bool hasLocalBox;
+    private float clearancePull;
+
+    private void EncapsulateLocal(Transform t, Vector3 center, Vector3 size)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 corner = center + Vector3.Scale(size * 0.5f, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+            Vector3 local = transform.InverseTransformPoint(t.TransformPoint(corner));
+            if (!hasLocalBox)
+            {
+                localBox = new Bounds(local, Vector3.zero);
+                hasLocalBox = true;
+            }
+            else
+                localBox.Encapsulate(local);
+        }
     }
 
     public override bool CanInteract(PlayerInteractor interactor) => !IsHeld && !settling && !interactor.IsHolding;
@@ -243,6 +283,7 @@ public class PickupItem : Interactable
         Vector3 targetPosition = framePosition + frameRotation * (holdPositionOffset + Vector3.down * HoldLowering);
         Quaternion targetRotation = frameRotation * Quaternion.Euler(holdEulerOffset);
         ApplyWalkSway(frameRotation, ref targetPosition, ref targetRotation);
+        ApplyClearance(ref targetPosition, targetRotation);
 
         // Ele ulaştıktan sonra yumuşatma olmadan takip eder, yoksa hızlı el hareketinde geride kalıyor.
         if (attached || (transform.position - targetPosition).sqrMagnitude < 0.0004f)
@@ -286,6 +327,75 @@ public class PickupItem : Interactable
     }
 
     private FirstPersonController walker;
+    private int clearanceFrame = -1;
+
+    // Eldeki eşya duvara/rafa/dolaba girmesin (10.11, kullanıcı: "elinde eşya varken objelerin içine geçiyor"): eşyanın
+    // kutusu hedef konumda bir engele değiyorsa gövdeye doğru (yatayda) çekilir; eller IK ile birlikte gelir. En fazla
+    // maxClearancePull çekilip yine sığmıyorsa oyuncu o yönden geri itilir, yani eşyayla engele daha fazla yaklaşılamaz.
+    private void ApplyClearance(ref Vector3 position, Quaternion rotation)
+    {
+        if (holder == null || !hasLocalBox || holdPoint.parent == null || holdPoint.parent.GetComponent<Camera>() == null)
+            return;
+        Vector3 eye = holdPoint.parent.position; // kamera (göz)
+
+        Vector3 away = position - eye;
+        away.y = 0f;
+        if (away.sqrMagnitude < 1e-6f)
+            return;
+        away.Normalize();
+
+        bool newFrame = clearanceFrame != Time.frameCount;
+        if (newFrame)
+        {
+            clearanceFrame = Time.frameCount;
+            // Kutu gözün yatay hizasından (eşyanın yüksekliğinde) eşyanın hedefine süpürülür: ilk çarptığı engelin
+            // önünde durmalı. Çakışma testi yetmiyordu: ince ürün (katlı pantolon 9 cm) duvarın öbür yanına geçince
+            // hiçbir şeye değmiyor sayılıyordu. Başlangıçta zaten değen (yandaki raf) engeller sayılmaz.
+            Vector3 start = new Vector3(eye.x, position.y, eye.z);
+            float distance = Vector3.Dot(position - start, away);
+            float needed = 0f;
+            if (distance > 0.01f)
+            {
+                Vector3 half = localBox.extents * 0.95f;
+                Vector3 center = start + rotation * localBox.center;
+                int count = Physics.BoxCastNonAlloc(center, half, away, castBuffer, rotation, distance, ~0, QueryTriggerInteraction.Ignore);
+                Transform player = holder.transform.root;
+                float allowed = distance;
+                for (int i = 0; i < count; i++)
+                {
+                    RaycastHit hit = castBuffer[i];
+                    if (hit.collider == null || hit.distance <= 0f || hit.collider.transform.IsChildOf(player)
+                        || hit.collider.transform.IsChildOf(transform))
+                        continue;
+                    allowed = Mathf.Min(allowed, hit.distance - 0.02f);
+                }
+                needed = Mathf.Max(0f, distance - allowed);
+            }
+
+            if (needed > maxClearancePull)
+            {
+                needed = maxClearancePull;
+                PushHolderBack(away);
+            }
+            // Engele girerken hemen, açılınca yumuşakça geri gelir.
+            clearancePull = needed > clearancePull ? needed : Mathf.MoveTowards(clearancePull, needed, Time.deltaTime * 0.8f);
+        }
+
+        position -= away * clearancePull;
+    }
+
+    private static readonly RaycastHit[] castBuffer = new RaycastHit[16];
+
+    private void PushHolderBack(Vector3 away)
+    {
+        if (walker == null)
+            walker = holder.GetComponentInParent<FirstPersonController>();
+        if (walker == null || walker.Frozen)
+            return;
+        CharacterController cc = walker.GetComponent<CharacterController>();
+        if (cc != null && cc.enabled)
+            cc.Move(-away * (2.4f * Time.deltaTime));
+    }
 
     // Yürürken eşya kamerayla aynı sallandığı için ekranda sabit görünüyordu: kameranın sallanmasına ters yönde
     // (daha geç/ağır bir nesne gibi) ek konum ve eğilme verilir. Kamera eksenlerinde uygulanır.

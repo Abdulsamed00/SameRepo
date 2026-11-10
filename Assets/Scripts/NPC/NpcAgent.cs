@@ -164,16 +164,33 @@ public class NpcAgent : MonoBehaviour
 
                 case NpcCrowd.GoalKind.Leave:
                     Status = "Çıkış " + goal.point;
-                    yield return WalkTo(goal.point);
+                    // 1.5 m kala varmış sayılır: aynı çıkışa gelen ikinci NPC birincinin durduğu noktaya varamayıp bekliyordu.
+                    yield return WalkTo(goal.point, 1.5f);
                     if (interrupted)
                         break;
-                    // Oyuncunun gözü önünde kaybolmasın: biraz bekler, hâlâ görülüyorsa başka bir çıkışa yürür.
-                    for (float wait = 0f; wait < 5f && crowd.IsSeen(transform.position); wait += 0.5f)
-                        yield return new WaitForSeconds(0.5f);
-                    if (crowd.IsSeen(transform.position))
-                        break;
-                    crowd.Despawn(this);
-                    yield break;
+                    if (!crowd.IsSeen(transform.position))
+                    {
+                        crowd.Despawn(this);
+                        yield break;
+                    }
+                    // Oyuncunun gözü önünde kaybolmaz. Eskiden çıkışta 5 sn bekleyip yine yakın bir çıkış seçiyordu;
+                    // görülen çıkışlarda NPC'ler üst üste yığılıyordu (10.11, kullanıcı: "NPC'ler birikiyor"). Artık
+                    // beklemeden görülmeyen başka bir çıkışa yürür; o da yoksa birkaç hedef daha dolaşır, sonra yeniden dener.
+                    Transform other = crowd.PickUnseenExit(transform.position, goal.point);
+                    if (other != null)
+                    {
+                        Status = "Çıkış (2) " + other.position;
+                        yield return WalkTo(other.position, 1.5f);
+                        if (!interrupted && !crowd.IsSeen(transform.position))
+                        {
+                            crowd.Despawn(this);
+                            yield break;
+                        }
+                    }
+                    GoalsDone = Mathf.Max(0, GoalLimit - 3);
+                    crowd.TurnAround(this);
+                    yield return null;
+                    continue;
             }
 
             GoalsDone++;
