@@ -19,7 +19,7 @@ public class SceneFade : MonoBehaviour
     [SerializeField] private float sceneStrength = 1f;
     [Tooltip("Beş ürün de alındığında ulaşılan en yüksek solma.")]
     [Range(0f, 1f)]
-    [SerializeField] private float maxFade = 1f;
+    [SerializeField] private float maxFade = 0.88f;
     [Tooltip("Günden güne artışın eğrisi: solma = 1 - (1 - alınan oran)^üs. 1 = doğrusal; büyüdükçe ilk günler daha çok solar.")]
     [SerializeField] private float curve = 1.8f;
     [Tooltip("Solmayan objeler (reklam panoları, TV ekranı...). Altındaki tüm renderer'lar Reklam katmanına alınır.")]
