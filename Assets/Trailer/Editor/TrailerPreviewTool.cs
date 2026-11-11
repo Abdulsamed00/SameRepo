@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Fragman ön izlemesi: Play'e girmeden <see cref="Arm"/> çağrılır; Timeline zamanı (TrailerController.Clock) verilen
+/// Fragman ön izlemesi: Play'e girmeden <see cref="Arm"/> çağrılır; Timeline zamanı (fragman sahnesindeki PlayableDirector) verilen
 /// anlara gelince fragman kamerası 960x540 PNG'ye çizilir (overlay arayüz görünmez). Kayıt almadan çekimleri
 /// kontrol etmek için.
 /// </summary>
@@ -58,7 +58,8 @@ public static class TrailerPreviewTool
     {
         if (!Application.isPlaying || next >= times.Count || !TrailerController.Rolling)
             return;
-        if (TrailerController.Clock < times[next])
+        UnityEngine.Playables.PlayableDirector director = Object.FindFirstObjectByType<UnityEngine.Playables.PlayableDirector>();
+        if (director == null || director.time < times[next])
             return;
         GameObject go = GameObject.Find("Trailer_Kamera");
         Camera cam = go != null ? go.GetComponent<Camera>() : null;
