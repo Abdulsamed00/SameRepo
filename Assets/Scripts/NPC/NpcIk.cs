@@ -233,27 +233,31 @@ public class NpcIk : MonoBehaviour
     [Tooltip("Ayağın en fazla bu kadar (m) kaldırılması; zemin ayağın bundan daha üstündeyse (bankın oturağı, masa) zemin sayılmaz.")]
     [SerializeField] private float maxLift = 0.15f;
 
-    [Tooltip("Ayakta (kalça bileklerin bu kadar (m) üstündeyken) düz zemine gömülen taban, ayak değil gövde kaldırılarak " +
-             "düzeltilir; en fazla maxBodyLift.")]
+    [Tooltip("Kalça bileklerin bu kadar (m) üstündeyse ayakta sayılır (duran/yürüyen); altındaysa oturuyor.")]
     [SerializeField] private float standingHipHeight = 0.65f;
-    [SerializeField] private float maxBodyLift = 0.08f;
+    [Tooltip("Ayaktayken (duran ve yürüyen) gövdenin sabit kaldırılması (m): klipte ayakkabı tabanı kökün bu kadar altında.")]
+    [SerializeField] private float standingBodyLift = 0.02f;
+    [Tooltip("Gövde kaldırmanın oturma/kalkma geçişindeki yumuşatma süresi (sn).")]
+    [SerializeField] private float bodyLiftSmoothing = 0.4f;
+    [Tooltip("Ayaktayken ayağın altındaki zemin kökün zemininden en az bu kadar (m) yüksekse ayak kaldırılır.")]
+    [SerializeField] private float stepTolerance = 0.02f;
     private float bodyLift;
     private float bodyApplied;
 
     /// <summary>
     /// 11.11 (kullanıcı: "ayakları dizlerinden kırık, yürüyenler ve sabit duranlar"): yeni kliplerde (Duzeltilmis/*) basan
     /// ayağın tabanı kökün (zeminin) 2-3 cm altında. Bunu ayağı IK ile kaldırarak düzeltmek neredeyse düz bacakta dizi
-    /// ~30° büküyor (3 cm kaldırma = 30°, ölçüldü). Ayaktayken düz zemindeki gömülme gövde (bodyPosition) kaldırılarak
-    /// kapatılır, bacak klipteki gibi kalır; ayak IK'sı sadece kalan farkı (kaldırım kenarı gibi ayağın altındaki zemin
-    /// kökün zemininden yüksekse) kaldırır. Otururken gövde kaldırılmaz (oturaktan kalkardı), eski ayak kaldırma kalır.
+    /// ~30° büküyor (3 cm kaldırma = 30°, ölçüldü). Ayaktayken gövde (bodyPosition) sabit standingBodyLift kadar kaldırılır,
+    /// bacak klipteki gibi kalır; ayak IK'sı sadece ayağın altındaki zemin kökün zemininden yüksekse (kaldırım basamağı)
+    /// o fark kadar kaldırır. Otururken gövde kaldırılmaz (oturaktan kalkardı), tabana göre ayak kaldırma kalır.
     /// </summary>
     private void GroundFeet()
     {
         var target = new float[2];
-        var flatNeed = new float[2];
+        var groundY = new float[2];
         bool ready = true;
         for (int i = 0; i < 2; i++)
-            ready &= Measure(i, out target[i], out flatNeed[i]);
+            ready &= Measure(i, out target[i], out groundY[i]);
         if (!ready)
         {
             // Kalibrasyon bu karenin LateUpdate'inde, kaldırmasız pozda yapılır.
@@ -269,21 +273,40 @@ public class NpcIk : MonoBehaviour
         }
 
         bool standing = animator.bodyPosition.y - Mathf.Min(goalPos[0].y, goalPos[1].y) > standingHipHeight;
-        float bodyTarget = standing ? Mathf.Clamp(Mathf.Max(flatNeed[0], flatNeed[1]), 0f, maxBodyLift) : 0f;
-        bodyLift = Mathf.Lerp(bodyLift, bodyTarget, 1f - Mathf.Exp(-(bodyTarget > bodyLift ? 18f : 8f) * Time.deltaTime));
+        // Ayaktayken sabit (11.11, kullanıcı: "kaldırımda yürüyenlerin dizlerinde sıkıntı"): gövde kaldırma önce tabanın
+        // ölçülen gömülmesine göreydi; yürürken bu adım boyunca 0-6 cm gidip geliyor, gövde her adımda inip çıkıyor,
+        // yavaş ortalamada da bazı NPC'ler 5-6 cm havada yürüyordu. Klibin (Duzeltilmis/*) tabanı kökün sabit ~2-3 cm
+        // altında; o kadar sabit kaldırma yeterli. Otururken 0.
+        float bodyTarget = standing ? standingBodyLift : 0f;
+        float rate = standing ? 1f / bodyLiftSmoothing : 8f;
+        bodyLift = Mathf.Lerp(bodyLift, bodyTarget, 1f - Mathf.Exp(-rate * Time.deltaTime));
         if (bodyLift < 0.0005f)
             bodyLift = 0f;
         if (bodyLift > 0f)
             animator.bodyPosition += Vector3.up * bodyLift;
         bodyApplied = bodyLift;
 
+        if (standing)
+        {
+            // Ayaktayken ayak IK'sı tabanın gömülmesine bakmaz (gövde kapatıyor; basan ayağı 1-2 cm kaldırmak bile neredeyse
+            // düz bacakta dizi her adımda 15-20° kırıyordu), sadece ayağın altındaki zemin kökün bastığı zeminden yüksekse
+            // (kaldırım basamağı) o fark kadar kaldırır.
+            float rootY = transform.position.y;
+            for (int i = 0; i < 2; i++)
+            {
+                float step = groundY[i] > float.MinValue ? groundY[i] - rootY : 0f;
+                target[i] = step > stepTolerance ? Mathf.Min(step, maxLift) : 0f;
+            }
+        }
+
         for (int i = 0; i < 2; i++)
             ApplyFoot(i, Mathf.Max(0f, target[i] - bodyLift));
     }
 
     /// <summary>Ayağın animasyon pozundaki tabanı; ayağın altındaki zemine göre gereken kaldırma ve kökün zeminine göre gömülme.</summary>
-    private bool Measure(int i, out float targetLift, out float flatNeed)
+    private bool Measure(int i, out float targetLift, out float groundY)
     {
+        groundY = float.MinValue;
         AvatarIKGoal goal = i == 0 ? AvatarIKGoal.LeftFoot : AvatarIKGoal.RightFoot;
         float bottom = i == 0 ? animator.leftFeetBottomHeight : animator.rightFeetBottomHeight;
         Vector3 ankle = animator.GetIKPosition(goal);
@@ -292,7 +315,6 @@ public class NpcIk : MonoBehaviour
         goalRot[i] = ankleRot;
         goalFrame[i] = Time.frameCount;
         targetLift = 0f;
-        flatNeed = 0f;
         if (!calibrated[i])
             return false;
         float lowY = ankle.y - bottom;
@@ -306,7 +328,6 @@ public class NpcIk : MonoBehaviour
                 lowPoint = w;
             }
         }
-        flatNeed = transform.position.y + soleClearance - lowY;
         float ground = float.MinValue;
         foreach (Vector3 probe in new[] { ankle, lowPoint })
         {
@@ -317,6 +338,7 @@ public class NpcIk : MonoBehaviour
                 && !hit.collider.transform.IsChildOf(transform) && hit.point.y < lowY + maxLift)
                 ground = Mathf.Max(ground, hit.point.y);
         }
+        groundY = ground;
         if (ground > float.MinValue)
             targetLift = Mathf.Clamp(ground + soleClearance - lowY, 0f, maxLift);
         return true;
