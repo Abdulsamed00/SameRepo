@@ -26,10 +26,29 @@ public class ShoppingBagView : MonoBehaviour
         bagRoot.SetParent(cam.transform, false);
         bagRoot.localPosition = HandlePosition;
         bagRoot.localRotation = Quaternion.Euler(0f, -12f, 0f);
+
+        // Sağ el IK ile sapa uzanır; poşet elin avucunu izler (el nereye giderse oraya gider).
+        body = GetComponent<PlayerBody>();
+        if (body != null && body.RightHandHold != null)
+        {
+            camTransform = controller.transform;
+            grip = new GameObject("Poset_Tutus").transform;
+            grip.SetParent(camTransform, false);
+            grip.localPosition = HandTarget;
+            // Kol yanda sarkık: avuç uyluğa bakar (içe), başparmak önde, sap ön-arka uzanır.
+            grip.localRotation = Quaternion.LookRotation(Vector3.forward, Vector3.left);
+            bagRoot.SetParent(null, true);
+            body.BeginCarry(grip, null);
+        }
     }
 
     private void OnDisable()
     {
+        if (body != null && grip != null)
+            body.EndCarry(0f);
+        if (grip != null)
+            Destroy(grip.gameObject);
+        grip = null;
         if (bag != null)
             Destroy(bag);
         bag = null;
@@ -45,8 +64,23 @@ public class ShoppingBagView : MonoBehaviour
         // Sapından asılı sarkaç: yürürken öne arkaya ve yana sallanır, dururken hafifçe.
         float roll = Mathf.Sin(swayPhase) * (2f + 7f * amount);
         float pitch = Mathf.Sin(swayPhase * 0.5f + 1f) * (1.5f + 6f * amount);
+        if (grip != null && body != null && body.RightHandHold != null)
+        {
+            // Konum elden, yön kameranın sadece yatay dönüşünden (poşet dik sarkar).
+            // El yürürken hafif öne arkaya sallanır; poşet geniş yüzü uyluğa dönük (sap ön-arka) sarkar.
+            grip.localPosition = HandTarget + new Vector3(0f, 0f, Mathf.Sin(swayPhase) * 0.07f * amount);
+            bagRoot.position = body.RightHandHold.position;
+            bagRoot.rotation = Quaternion.Euler(0f, camTransform.eulerAngles.y + 90f, 0f) * Quaternion.Euler(roll * 0.5f, 0f, pitch);
+            return;
+        }
         bagRoot.localRotation = Quaternion.Euler(pitch, -12f, roll);
     }
+
+    private PlayerBody body;
+    private Transform grip;
+    private Transform camTransform;
+    // Elin duracağı nokta (oyuncu kökünün uzayında): kol yanda sarkık, kalça hizasında, hafif önde.
+    private static readonly Vector3 HandTarget = new Vector3(0.26f, 0.45f, 0.04f);
 
     private const string PrefabPath = "Shop/Alisveris_Poseti";
 

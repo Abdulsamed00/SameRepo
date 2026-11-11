@@ -15,7 +15,7 @@ using UnityEngine.Rendering.Universal;
 [DefaultExecutionOrder(-1000)]
 public class TrailerController : MonoBehaviour
 {
-    public enum PlayerMode { Hidden, SeatedOnCouch }
+    public enum PlayerMode { Hidden, SeatedOnCouch, Actor }
 
     [Header("Akış")]
     [SerializeField] private PlayableDirector director;
@@ -63,6 +63,16 @@ public class TrailerController : MonoBehaviour
     [SerializeField] private CanvasGroup logo;
     [SerializeField] private float logoTime = 1.6f;
     [SerializeField] private float logoFade = 1.2f;
+    [Tooltip("Açıksa logo solarak değil, daktilo gibi harf harf belirir (logoFade = harf aralığı, sn).")]
+    [SerializeField] private bool logoTypewriter;
+
+    [Header("Karartma")]
+    [SerializeField] private CanvasGroup blackScreen;
+    [Tooltip("Timeline zamanına göre siyah perdenin opaklığı (kesme flaşları, kapanış).")]
+    [SerializeField] private AnimationCurve blackout = AnimationCurve.Constant(0f, 1f, 0f);
+
+    [Header("Oyuncu oynatma (PlayerMode.Actor)")]
+    [SerializeField] private TrailerActor actor;
 
     /// <summary>Timeline başladığı kare true olur; kayıt aracı (editör) bunu bekler.</summary>
     public static bool Rolling { get; private set; }
@@ -79,6 +89,8 @@ public class TrailerController : MonoBehaviour
     private Vignette vig;
     private bool receiptPlayed;
     private bool started;
+    private float setupTime;
+    private TMPro.TMP_Text logoText;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
@@ -123,7 +135,12 @@ public class TrailerController : MonoBehaviour
             Duration = (float)director.duration;
         }
         if (logo != null)
+        {
             logo.alpha = 0f;
+            logoText = logo.GetComponentInChildren<TMPro.TMP_Text>(true);
+        }
+        if (blackScreen != null)
+            blackScreen.alpha = blackout.Evaluate(0f);
 
         if (volume != null && volume.profile != null)
         {
@@ -144,6 +161,9 @@ public class TrailerController : MonoBehaviour
         if (muteGameAudio)
             MuteGameAudio();
         ApplyShots(0f);
+        setupTime = Time.time;
+        if (playerMode == PlayerMode.Actor && actor != null)
+            actor.Setup();
         yield return new WaitForSeconds(preRoll);
 
         if (director != null)
@@ -209,6 +229,12 @@ public class TrailerController : MonoBehaviour
                 body.SetThirdPerson(true);
             Cursor.lockState = CursorLockMode.None;
         }
+        else if (playerMode == PlayerMode.Actor)
+        {
+            // Karakter görünür ve TrailerActor tarafından oynatılır (girdi kapalı).
+            player.InputEnabled = false;
+            Cursor.lockState = CursorLockMode.None;
+        }
         else
         {
             player.enabled = false;
@@ -245,12 +271,25 @@ public class TrailerController : MonoBehaviour
         }
 
         float time = started && director != null ? (float)director.time : 0f;
+        if (playerMode == PlayerMode.Actor && actor != null)
+            actor.Tick(started ? time : Time.time - setupTime - preRoll);
         ApplyShots(time);
         ApplyPost(time);
         ApplyAudio(trailerTimeOffset + time);
+        if (blackScreen != null)
+            blackScreen.alpha = blackout.Evaluate(time);
 
         if (logo != null)
-            logo.alpha = started ? Mathf.Clamp01((time - logoTime) / Mathf.Max(0.01f, logoFade)) : 0f;
+        {
+            if (logoTypewriter)
+            {
+                logo.alpha = started && time >= logoTime ? 1f : 0f;
+                if (logoText != null)
+                    logoText.maxVisibleCharacters = started ? Mathf.Max(0, Mathf.FloorToInt((time - logoTime) / Mathf.Max(0.01f, logoFade)) + 1) : 0;
+            }
+            else
+                logo.alpha = started ? Mathf.Clamp01((time - logoTime) / Mathf.Max(0.01f, logoFade)) : 0f;
+        }
     }
 
     private void ApplyShots(float time)
