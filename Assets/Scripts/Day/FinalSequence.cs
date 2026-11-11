@@ -66,8 +66,8 @@ public class FinalSequence : MonoBehaviour
     [Tooltip("Görüntünün solup jeneriğin belirdiği süre (sn).")]
     [SerializeField] private float fadeToBlackDuration = 2.5f;
     [SerializeField] private float creditsDuration = 12f;
-    [SerializeField] private string quote = "Sahip olduğun şeyler, sonunda seni sahiplenir.";
-    [SerializeField] private string quoteAuthor = "Fight Club";
+    [SerializeField] private string quote = "One More, One Less You.";
+    [SerializeField] private string quoteAuthor = "";
     [SerializeField] private string menuScene = "MainMenu";
     [SerializeField] private AudioClip clickSound;
     [Tooltip("Jenerik başlarken çalan oyun sonu müziği.")]

@@ -5255,7 +5255,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneFade
   sceneStrength: 0.9
-  maxFade: 1
+  maxFade: 0.88
   curve: 1.8
   exempt: []
 --- !u!1 &173827609

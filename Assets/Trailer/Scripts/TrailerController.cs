@@ -15,7 +15,7 @@ using UnityEngine.Rendering.Universal;
 [DefaultExecutionOrder(-1000)]
 public class TrailerController : MonoBehaviour
 {
-    public enum PlayerMode { Hidden, SeatedOnCouch, Acting }
+    public enum PlayerMode { Hidden, SeatedOnCouch, Actor }
 
     [Header("Akış")]
     [SerializeField] private PlayableDirector director;
@@ -63,21 +63,20 @@ public class TrailerController : MonoBehaviour
     [SerializeField] private CanvasGroup logo;
     [SerializeField] private float logoTime = 1.6f;
     [SerializeField] private float logoFade = 1.2f;
-    [Tooltip("Açıksa logo solarak değil daktilo gibi harf harf yazılır (logoFade = harf aralığı), sonunda imleç yanıp söner.")]
+    [Tooltip("Açıksa logo solarak değil, daktilo gibi harf harf belirir (logoFade = harf aralığı, sn).")]
     [SerializeField] private bool logoTypewriter;
 
-    [Header("Karartma (Timeline zamanına göre siyah perde, 0-1)")]
-    [Tooltip("Hızlı kesmelerde siyah flaş ve kapanıştaki kararma. Boş/0 ise perde yok.")]
+    [Header("Karartma")]
+    [SerializeField] private CanvasGroup blackScreen;
+    [Tooltip("Timeline zamanına göre siyah perdenin opaklığı (kesme flaşları, kapanış).")]
     [SerializeField] private AnimationCurve blackout = AnimationCurve.Constant(0f, 1f, 0f);
 
-    [Header("Oyunculuk (PlayerMode.Acting)")]
+    [Header("Oyuncu oynatma (PlayerMode.Actor)")]
     [SerializeField] private TrailerActor actor;
 
     /// <summary>Timeline başladığı kare true olur; kayıt aracı (editör) bunu bekler.</summary>
     public static bool Rolling { get; private set; }
     public static float Duration { get; private set; }
-    /// <summary>Timeline zamanı; Timeline başlamadan (preRoll) negatif: -preRoll'dan 0'a sayar.</summary>
-    public static float Clock { get; private set; }
 
     private TrailerShot[] shots;
     private FirstPersonController player;
@@ -90,17 +89,14 @@ public class TrailerController : MonoBehaviour
     private Vignette vig;
     private bool receiptPlayed;
     private bool started;
-    private float startTime;
-    private UnityEngine.UI.Image curtain;
+    private float setupTime;
     private TMPro.TMP_Text logoText;
-    private string logoString;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
         Rolling = false;
         Duration = 0f;
-        Clock = 0f;
     }
 
     private void Awake()
@@ -142,11 +138,9 @@ public class TrailerController : MonoBehaviour
         {
             logo.alpha = 0f;
             logoText = logo.GetComponentInChildren<TMPro.TMP_Text>(true);
-            if (logoText != null)
-                logoString = logoText.text;
         }
-        if (blackout != null && blackout.length > 0 && MaxOf(blackout) > 0.001f)
-            curtain = BuildCurtain();
+        if (blackScreen != null)
+            blackScreen.alpha = blackout.Evaluate(0f);
 
         if (volume != null && volume.profile != null)
         {
@@ -163,11 +157,13 @@ public class TrailerController : MonoBehaviour
     private IEnumerator Start()
     {
         Application.runInBackground = true;
-        startTime = Time.time;
         SetupPlayer();
         if (muteGameAudio)
             MuteGameAudio();
         ApplyShots(0f);
+        setupTime = Time.time;
+        if (playerMode == PlayerMode.Actor && actor != null)
+            actor.Setup();
         yield return new WaitForSeconds(preRoll);
 
         if (director != null)
@@ -213,21 +209,7 @@ public class TrailerController : MonoBehaviour
         if (trailerCamera != null)
             trailerCamera.tag = "MainCamera";
 
-        if (playerMode == PlayerMode.Acting)
-        {
-            // Karakter görünür, üçüncü şahıs; girdisi kapalı, komutları TrailerActor verir.
-            player.InputEnabled = false;
-            PlayerBody actingBody = player.GetComponentInChildren<PlayerBody>(true);
-            if (actingBody != null)
-                actingBody.SetThirdPerson(true);
-            PlayerSitController actingSitter = player.GetComponent<PlayerSitController>();
-            if (actingSitter != null)
-                actingSitter.ControlsLocked = true;
-            Cursor.lockState = CursorLockMode.None;
-            if (actor != null)
-                actor.Begin(player);
-        }
-        else if (playerMode == PlayerMode.SeatedOnCouch)
+        if (playerMode == PlayerMode.SeatedOnCouch)
         {
             PlayerSitController sitter = player.GetComponent<PlayerSitController>();
             PlayerBody body = player.GetComponentInChildren<PlayerBody>(true);
@@ -245,6 +227,12 @@ public class TrailerController : MonoBehaviour
             }
             if (body != null)
                 body.SetThirdPerson(true);
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else if (playerMode == PlayerMode.Actor)
+        {
+            // Karakter görünür ve TrailerActor tarafından oynatılır (girdi kapalı).
+            player.InputEnabled = false;
             Cursor.lockState = CursorLockMode.None;
         }
         else
@@ -283,68 +271,25 @@ public class TrailerController : MonoBehaviour
         }
 
         float time = started && director != null ? (float)director.time : 0f;
+        if (playerMode == PlayerMode.Actor && actor != null)
+            actor.Tick(started ? time : Time.time - setupTime - preRoll);
         ApplyShots(time);
-        if (curtain != null)
-            curtain.color = new Color(0f, 0f, 0f, started ? Mathf.Clamp01(blackout.Evaluate(time)) : 0f);
         ApplyPost(time);
         ApplyAudio(trailerTimeOffset + time);
+        if (blackScreen != null)
+            blackScreen.alpha = blackout.Evaluate(time);
 
         if (logo != null)
         {
-            if (!logoTypewriter || logoText == null)
-                logo.alpha = started ? Mathf.Clamp01((time - logoTime) / Mathf.Max(0.01f, logoFade)) : 0f;
+            if (logoTypewriter)
+            {
+                logo.alpha = started && time >= logoTime ? 1f : 0f;
+                if (logoText != null)
+                    logoText.maxVisibleCharacters = started ? Mathf.Max(0, Mathf.FloorToInt((time - logoTime) / Mathf.Max(0.01f, logoFade)) + 1) : 0;
+            }
             else
-                Typewrite(started ? time - logoTime : -1f);
+                logo.alpha = started ? Mathf.Clamp01((time - logoTime) / Mathf.Max(0.01f, logoFade)) : 0f;
         }
-    }
-
-    private void Update()
-    {
-        Clock = started && director != null ? (float)director.time : Time.time - startTime - preRoll;
-        if (actor != null && playerMode == PlayerMode.Acting)
-            actor.Tick(Clock);
-    }
-
-    // Daktilo: harfler logoFade aralıkla düşer, yazının sonunda imleç (_) yanıp söner.
-    private void Typewrite(float t)
-    {
-        if (t < 0f)
-        {
-            logo.alpha = 0f;
-            return;
-        }
-        logo.alpha = 1f;
-        float interval = Mathf.Max(0.02f, logoFade);
-        int count = Mathf.Clamp(Mathf.FloorToInt(t / interval) + 1, 0, logoString.Length);
-        bool cursorOn = count < logoString.Length || Mathf.FloorToInt(t / 0.45f) % 2 == 0;
-        // İmleç yer kaplasın ama görünmesin: yazı ortalanmış kalır, kaymaz.
-        logoText.text = logoString.Substring(0, count) + (cursorOn ? "_" : "<alpha=#00>_");
-    }
-
-    private static float MaxOf(AnimationCurve curve)
-    {
-        float max = 0f;
-        foreach (Keyframe k in curve.keys)
-            max = Mathf.Max(max, k.value);
-        return max;
-    }
-
-    private static UnityEngine.UI.Image BuildCurtain()
-    {
-        GameObject canvasObject = new GameObject("Trailer_Perde");
-        Canvas canvas = canvasObject.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 90;
-        GameObject imageObject = new GameObject("Siyah");
-        imageObject.transform.SetParent(canvasObject.transform, false);
-        UnityEngine.UI.Image image = imageObject.AddComponent<UnityEngine.UI.Image>();
-        image.color = new Color(0f, 0f, 0f, 0f);
-        image.raycastTarget = false;
-        RectTransform rect = image.rectTransform;
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = rect.offsetMax = Vector2.zero;
-        return image;
     }
 
     private void ApplyShots(float time)

@@ -31,10 +31,10 @@ public static partial class TrailerBuilder
         public float fovA = 40f, fovB = 40f, rollA, rollB;
         public float aperture = 4f, focalLength = 60f, focus;
         public TrailerShot.Ease ease = TrailerShot.Ease.Smooth;
-        public bool headLook;         // bakış karakterin kafasına (+ headOffset) kilitli
-        public Vector3 headOffset;
         public string noise;          // Cinemachine gürültü profili adı (boş = sabit kamera)
         public float noiseAmplitude = 1f, noiseFrequency = 1f;
+        public bool follow;           // konum/bakış oyuncunun köküne göre (kökün yatay dönüşüyle)
+        public bool blonde;           // bakış en yakın sarışın NPC'nin kafasına kilitlenir
     }
 
     private class Spec
@@ -51,12 +51,43 @@ public static partial class TrailerBuilder
         public List<Shot> shots = new List<Shot>();
         public System.Action<VolumeProfile> post;
         public AnimationCurve chromatic, motionBlur, distortion, vignette;
-        public bool logo;
+        public bool logo, logoTypewriter;
         public float logoTime, logoFade = 1.2f;
-        public bool typewriter;
         public AnimationCurve blackout;
-        public List<TrailerActor.Cue> cues = new List<TrailerActor.Cue>();
+        public List<TrailerAction> actions = new List<TrailerAction>();
         public System.Action<GameObject> extras;   // sahneye özel ek objeler (kök altında)
+
+        public void Act(float time, TrailerAction.Kind kind, Vector3 point = default, float yaw = 0f,
+            float duration = 1f, string target = null, int index = 0, float speed = 1.4f)
+        {
+            actions.Add(new TrailerAction
+            {
+                time = time, kind = kind, point = point, yaw = yaw, duration = duration, target = target,
+                index = index, speed = speed
+            });
+        }
+    }
+
+    // Kısa siyah flaş eğrisi: [t, t + length] arası tam siyah, kenarlar sert.
+    private static AnimationCurve Flashes(float end, params float[] startLength)
+    {
+        AnimationCurve curve = new AnimationCurve();
+        curve.AddKey(new Keyframe(0f, 0f));
+        for (int i = 0; i + 1 < startLength.Length; i += 2)
+        {
+            float a = startLength[i], b = a + startLength[i + 1];
+            curve.AddKey(new Keyframe(a - 0.001f, 0f));
+            curve.AddKey(new Keyframe(a, 1f));
+            curve.AddKey(new Keyframe(b, 1f));
+            curve.AddKey(new Keyframe(b + 0.001f, 0f));
+        }
+        curve.AddKey(new Keyframe(end, 0f));
+        for (int i = 0; i < curve.length; i++)
+        {
+            UnityEditor.AnimationUtility.SetKeyLeftTangentMode(curve, i, UnityEditor.AnimationUtility.TangentMode.Constant);
+            UnityEditor.AnimationUtility.SetKeyRightTangentMode(curve, i, UnityEditor.AnimationUtility.TangentMode.Constant);
+        }
+        return curve;
     }
 
     private static Vector3 V(float x, float y, float z) => new Vector3(x, y, z);
@@ -568,8 +599,8 @@ public static partial class TrailerBuilder
             ts.focalLength = shot.focalLength;
             ts.focusDistance = shot.focus;
             ts.ease = shot.ease;
-            ts.lookAtPlayerHead = shot.headLook;
-            ts.headOffset = shot.headOffset;
+            ts.followPlayer = shot.follow;
+            ts.lookAtBlonde = shot.blonde;
             ts.Apply(time);
 
             if (!string.IsNullOrEmpty(shot.noise))
@@ -602,6 +633,14 @@ public static partial class TrailerBuilder
         AudioSource receipt = NewAudio(root, "Ses_Yazar_Kasa_Fisi", false);
 
         CanvasGroup logo = spec.logo ? BuildLogo(root) : null;
+        CanvasGroup black = spec.blackout != null ? BuildBlack(root) : null;
+        TrailerActor actor = null;
+        if (spec.playerMode == TrailerController.PlayerMode.Actor)
+        {
+            actor = root.AddComponent<TrailerActor>();
+            actor.SetActions(spec.actions);
+            EditorUtility.SetDirty(actor);
+        }
 
         TrailerController controller = root.AddComponent<TrailerController>();
         SerializedObject so = new SerializedObject(controller);
@@ -629,14 +668,11 @@ public static partial class TrailerBuilder
         so.FindProperty("logo").objectReferenceValue = logo;
         so.FindProperty("logoTime").floatValue = spec.logoTime;
         so.FindProperty("logoFade").floatValue = spec.logoFade;
-        so.FindProperty("logoTypewriter").boolValue = spec.typewriter;
-        so.FindProperty("blackout").animationCurveValue = spec.blackout ?? AnimationCurve.Constant(0f, time, 0f);
-        if (spec.cues.Count > 0)
-        {
-            TrailerActor actor = root.AddComponent<TrailerActor>();
-            actor.cues = new List<TrailerActor.Cue>(spec.cues);
-            so.FindProperty("actor").objectReferenceValue = actor;
-        }
+        so.FindProperty("logoTypewriter").boolValue = spec.logoTypewriter;
+        so.FindProperty("blackScreen").objectReferenceValue = black;
+        if (spec.blackout != null)
+            so.FindProperty("blackout").animationCurveValue = spec.blackout;
+        so.FindProperty("actor").objectReferenceValue = actor;
         so.ApplyModifiedPropertiesWithoutUndo();
 
         spec.extras?.Invoke(root);
@@ -665,6 +701,30 @@ public static partial class TrailerBuilder
         source.loop = loop;
         source.spatialBlend = 0f;
         return source;
+    }
+
+    private static CanvasGroup BuildBlack(GameObject root)
+    {
+        GameObject canvasObject = new GameObject("Karartma_Canvas");
+        canvasObject.transform.SetParent(root.transform, false);
+        Canvas canvas = canvasObject.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 90;
+        CanvasGroup group = canvasObject.AddComponent<CanvasGroup>();
+        group.alpha = 0f;
+        group.interactable = false;
+        group.blocksRaycasts = false;
+        GameObject imageObject = new GameObject("Siyah", typeof(RectTransform));
+        imageObject.transform.SetParent(canvasObject.transform, false);
+        Image image = imageObject.AddComponent<Image>();
+        image.color = Color.black;
+        image.raycastTarget = false;
+        RectTransform rect = image.rectTransform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+        return group;
     }
 
     private static CanvasGroup BuildLogo(GameObject root)

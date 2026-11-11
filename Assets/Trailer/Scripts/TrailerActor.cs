@@ -4,315 +4,277 @@ using System.Reflection;
 using UnityEngine;
 
 /// <summary>
-/// Fragmanda karakterin oyunculuğu: Timeline zamanına bağlı komutlar (ışınla, yürü, dön, kalk, dolabı aç, ürünü al,
-/// öde, aynada yenil, burnuna dokun, saçı boya, final kalabalığını topla...). Oyunun kendi sistemleri kullanılır
-/// (FirstPersonController.ScriptedVelocity, PlayerSitController, PlayerBody, Openable, Checkout, NpcCrowd): karakter
-/// oyunda nasıl hareket ediyorsa fragmanda da öyle. Negatif zamanlı komutlar Timeline başlamadan (preRoll) çalışır.
-/// <see cref="TrailerController"/> oyuncuyu <c>Acting</c> modunda (görünür, üçüncü şahıs, girdisiz) kurar.
+/// Fragmanda oyuncunun karakterini oynatır: <see cref="TrailerController"/> (PlayerMode.Actor) her kare Timeline
+/// zamanını verir, sırası gelen eylem bir kez başlar. Eylemler oyunun kendi mekaniklerini çağırır (oturma/kalkma,
+/// ScriptedVelocity ile yürüme, dolap kapağı + el IK'sı, ayna pozu, ürün alma, kasa, final kalabalığı).
+/// Negatif zamanlı eylemler Timeline başlamadan, ön hazırlık (preRoll) sırasında çalışır.
+/// Kesmeler arasında karakter <see cref="TrailerAction.Kind.Place"/> ile bir sonraki çekimin yerine ışınlanır.
 /// </summary>
-[DefaultExecutionOrder(200)]
 public class TrailerActor : MonoBehaviour
 {
-    public enum Act
-    {
-        Place,          // point'e ışınla, value = yön (derece)
-        Walk,           // point'e yürü, value = hız (0 = 1.4 m/sn)
-        Face,           // value = yön (derece), 0.6 sn'de döner
-        Sit,            // target = Seat adı, animasyonsuz oturur
-        StandUp,
-        Toggle,         // target = Openable adı, eliyle açar/kapar
-        Hold,           // target = PickupItem adı, eline alır
-        Buy,            // target = Checkout adı, elindekini satın alır (poşet gelir)
-        PrepareForPose, // boşta durur (yürüme animasyonu kesilir)
-        Defeat,         // yenilgi pozu (tek sefer, son karede kalır)
-        Pose,           // ayna pozu
-        StopPose,
-        Touch,          // sağ el kafaya göre point'e (sağ, yukarı, ileri) uzanır, value = kalma süresi
-        Dye,            // saçı boyar (anında)
-        Surgery,        // estetik (anında)
-        Finale,         // kalabalık point'in çevresine toplanır (oyunun final kalabalığı)
-        CrowdSize,      // final kalabalığının boyu: point.x = benzer (ringCount), point.y = ek (finaleExtra)
-        Conform,        // kalabalık point yönüne döner
-        SkyCamera,      // oyuncunun (kapalı) kamerası göğe bakar: final kalabalığı onu "görüş" saymaz
-        BagInHand,      // kasadan sonra gelen poşet (oyunda kameraya bağlı) sağ elde taşınır
-        HideObject,     // target = sahnedeki obje adı (yol), kapatılır
-        ShowObject,
-    }
-
-    [System.Serializable]
-    public class Cue
-    {
-        public float time;
-        public Act act;
-        public string target;
-        public Vector3 point;
-        public float value;
-    }
-
-    public List<Cue> cues = new List<Cue>();
+    [SerializeField] private List<TrailerAction> actions = new List<TrailerAction>();
 
     private FirstPersonController player;
-    private PlayerInteractor interactor;
+    private CharacterController cc;
     private PlayerSitController sitter;
+    private PlayerInteractor interactor;
     private PlayerBody body;
-    private Coroutine walking;
-    private int next;
-    private bool bagInHand;
-    private Transform bag;
+    private Animator animator;
+    private Coroutine motion;
+    private bool ready;
 
-    public void Begin(FirstPersonController fpc)
+    /// <summary>Kurucu (editör) eylem listesini yazar.</summary>
+    public void SetActions(List<TrailerAction> list) => actions = list;
+
+    public void Setup()
     {
-        player = fpc;
-        interactor = fpc.GetComponent<PlayerInteractor>();
-        sitter = fpc.GetComponent<PlayerSitController>();
-        body = fpc.GetComponentInChildren<PlayerBody>(true);
-        cues.Sort((a, b) => a.time.CompareTo(b.time));
-        next = 0;
+        player = FindFirstObjectByType<FirstPersonController>();
+        if (player == null)
+            return;
+        cc = player.GetComponent<CharacterController>();
+        sitter = player.GetComponent<PlayerSitController>();
+        interactor = player.GetComponent<PlayerInteractor>();
+        body = player.GetComponentInChildren<PlayerBody>(true);
+        animator = body != null ? body.GetComponent<Animator>() : null;
+        if (animator == null && body != null)
+            animator = body.GetComponentInChildren<Animator>();
+
+        player.InputEnabled = false;
+        player.ScriptedVelocity = Vector3.zero;
+        if (sitter != null)
+            sitter.ControlsLocked = true;
+        if (body != null)
+            body.SetThirdPerson(true);
+        foreach (TrailerAction action in actions)
+            action.done = false;
+        ready = true;
     }
 
-    /// <summary>Kontrolcü her kare çağırır; zamanı gelen komutlar sırayla çalışır.</summary>
-    public void Tick(float clock)
+    /// <param name="time">Timeline zamanı (ön hazırlık sırasında negatif).</param>
+    public void Tick(float time)
+    {
+        if (!ready)
+            return;
+        foreach (TrailerAction action in actions)
+        {
+            if (action.done || time < action.time)
+                continue;
+            action.done = true;
+            Run(action);
+        }
+    }
+
+    private void Run(TrailerAction a)
+    {
+        switch (a.kind)
+        {
+            case TrailerAction.Kind.Place: Place(a.point, a.yaw); break;
+            case TrailerAction.Kind.SitOnSeat: SitOnSeat(a.target, a.point); break;
+            case TrailerAction.Kind.StandUp: if (sitter != null) sitter.StandUp(); break;
+            case TrailerAction.Kind.WalkTo: StartMotion(Walk(a.point, a.speed)); break;
+            case TrailerAction.Kind.Face: StartMotion(Face(a.yaw, a.duration)); break;
+            case TrailerAction.Kind.OpenPart: OpenPart(a.target, a.index); break;
+            case TrailerAction.Kind.TouchNose: TouchNose(a.duration); break;
+            case TrailerAction.Kind.Defeat: if (body != null) { body.PrepareForPose(); body.PlayDefeat(); } break;
+            case TrailerAction.Kind.Pose: if (body != null) { body.PrepareForPose(); body.PlayPose(); } break;
+            case TrailerAction.Kind.Locomotion: if (body != null) body.PlayLocomotion(); break;
+            case TrailerAction.Kind.PickUp: PickUp(a.point); break;
+            case TrailerAction.Kind.Checkout: DoCheckout(); break;
+            case TrailerAction.Kind.CrowdGather: CrowdGather(); break;
+            case TrailerAction.Kind.CrowdConform: Crowd(c => c.Conform(Quaternion.Euler(0f, a.yaw, 0f) * Vector3.forward)); break;
+            case TrailerAction.Kind.CrowdFreeze: Freeze(); break;
+        }
+    }
+
+    private void StartMotion(IEnumerator routine)
+    {
+        if (motion != null)
+            StopCoroutine(motion);
+        motion = StartCoroutine(routine);
+    }
+
+    // Karakteri (kesmede) bir sonraki çekimin yerine koyar.
+    private void Place(Vector3 point, float yaw)
     {
         if (player == null)
             return;
-        while (next < cues.Count && cues[next].time <= clock)
+        if (motion != null)
         {
-            Cue cue = cues[next++];
-            try
-            {
-                Run(cue);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning("Trailer komutu çalışmadı: " + cue.act + " " + cue.target + "\n" + e);
-            }
+            StopCoroutine(motion);
+            motion = null;
         }
-    }
-
-    private void Run(Cue cue)
-    {
-        switch (cue.act)
-        {
-            case Act.Place: Place(cue.point, cue.value); break;
-            case Act.Walk:
-                StopWalk();
-                walking = StartCoroutine(WalkTo(cue.point, cue.value > 0f ? cue.value : 1.4f));
-                break;
-            case Act.Face: StartCoroutine(FaceTo(cue.value)); break;
-            case Act.Sit:
-                foreach (Seat seat in FindObjectsByType<Seat>(FindObjectsSortMode.None))
-                {
-                    if (seat.name == cue.target)
-                        sitter.SitImmediately(seat, cue.point);
-                }
-                break;
-            case Act.StandUp: sitter.StandUp(); break;
-            case Act.Toggle: Toggle(Find<Openable>(cue.target)); break;
-            case Act.Hold:
-                PickupItem item = Find<PickupItem>(cue.target);
-                if (item != null)
-                    interactor.Hold(item);
-                break;
-            case Act.Buy:
-                Checkout checkout = Find<Checkout>(cue.target);
-                if (checkout != null)
-                    checkout.Interact(interactor);
-                break;
-            case Act.PrepareForPose: StopWalk(); body.PrepareForPose(); break;
-            case Act.Defeat: body.PlayDefeat(); break;
-            case Act.Pose: body.PlayPose(); break;
-            case Act.StopPose: body.StopPose(); break;
-            case Act.Touch:
-            {
-                Animator animator = body.GetComponent<Animator>();
-                Transform head = animator != null ? animator.GetBoneTransform(HumanBodyBones.Head) : null;
-                if (head != null)
-                {
-                    // point: kafaya göre (sağ, yukarı, ileri) metre, karakterin gövde yönünde.
-                    Transform root = player.transform;
-                    Vector3 target = head.position + root.right * cue.point.x + Vector3.up * cue.point.y + root.forward * cue.point.z;
-                    body.BeginTouch(head, target, cue.value);
-                }
-                break;
-            }
-            case Act.Dye: PlayerLook.DyeHair(); break;
-            case Act.Surgery: PlayerLook.HaveSurgery(); break;
-            case Act.Finale:
-            {
-                NpcCrowd crowd = FindFirstObjectByType<NpcCrowd>();
-                if (crowd != null)
-                {
-                    crowd.BeginFinale(cue.point, cue.point);
-                    crowd.PlayerArrived(cue.point);
-                }
-                break;
-            }
-            case Act.CrowdSize:
-            {
-                NpcCrowd crowd = FindFirstObjectByType<NpcCrowd>();
-                BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-                if (crowd != null)
-                {
-                    typeof(NpcCrowd).GetField("ringCount", flags)?.SetValue(crowd, Mathf.RoundToInt(cue.point.x));
-                    typeof(NpcCrowd).GetField("finaleExtra", flags)?.SetValue(crowd, Mathf.RoundToInt(cue.point.y));
-                }
-                break;
-            }
-            case Act.Conform:
-            {
-                NpcCrowd crowd = FindFirstObjectByType<NpcCrowd>();
-                if (crowd != null)
-                    crowd.Conform(cue.point);
-                break;
-            }
-            case Act.SkyCamera:
-                player.CameraRoot.localRotation = Quaternion.Euler(-89f, 0f, 0f);
-                break;
-            case Act.BagInHand: bagInHand = true; break;
-            case Act.HideObject:
-            case Act.ShowObject:
-                GameObject go = FindPath(cue.target);
-                if (go != null)
-                    go.SetActive(cue.act == Act.ShowObject);
-                break;
-        }
-    }
-
-    // Poşet sapından sağ avuçta, dik sarkar (oyundaki görünüm kameraya bağlı, üçüncü şahısta havada kalıyordu).
-    private void LateUpdate()
-    {
-        if (!bagInHand || body == null || body.RightHandHold == null)
-            return;
-        if (bag == null)
-        {
-            GameObject found = GameObject.Find("Alisveris_Poseti");
-            if (found == null)
-                return;
-            bag = found.transform;
-        }
-        bag.SetPositionAndRotation(body.RightHandHold.position,
-            Quaternion.Euler(0f, player.transform.eulerAngles.y + 90f, 0f));
-    }
-
-    private void Place(Vector3 point, float yaw)
-    {
-        StopWalk();
-        CharacterController cc = player.GetComponent<CharacterController>();
+        player.ScriptedVelocity = Vector3.zero;
         bool ccOn = cc != null && cc.enabled;
-        if (ccOn)
+        if (cc != null)
             cc.enabled = false;
         player.transform.SetPositionAndRotation(point, Quaternion.Euler(0f, yaw, 0f));
         player.CameraRoot.localRotation = Quaternion.identity;
+        if (cc != null)
+            cc.enabled = ccOn || !player.Frozen;
         player.SyncLookToTransforms();
-        if (ccOn)
-            cc.enabled = true;
         Physics.SyncTransforms();
+        if (interactor != null && interactor.HeldItem != null)
+            interactor.HeldItem.UpdateHeldPose();
     }
 
-    private void StopWalk()
+    private void SitOnSeat(string seatName, Vector3 near)
     {
-        if (walking != null)
-            StopCoroutine(walking);
-        walking = null;
-        if (player != null)
-            player.ScriptedVelocity = Vector3.zero;
+        if (sitter == null)
+            return;
+        foreach (Seat seat in FindObjectsByType<Seat>(FindObjectsSortMode.None))
+        {
+            if (seat.name == seatName)
+            {
+                sitter.SitImmediately(seat, near);
+                return;
+            }
+        }
     }
 
-    private IEnumerator WalkTo(Vector3 target, float speed)
+    private IEnumerator Walk(Vector3 target, float speed)
     {
         Transform root = player.transform;
-        for (float time = 0f; time < 30f; time += Time.deltaTime)
+        for (float t = 0f; t < 30f; t += Time.deltaTime)
         {
+            if (player.Frozen)
+            {
+                yield return null;
+                continue;
+            }
             Vector3 to = target - root.position;
             to.y = 0f;
             float distance = to.magnitude;
-            if (distance < 0.08f)
+            if (distance < 0.06f)
                 break;
-            Vector3 direction = to / distance;
-            player.ScriptedVelocity = direction * speed * Mathf.Clamp01(distance / 0.5f + 0.2f);
-            root.rotation = Quaternion.RotateTowards(root.rotation, Quaternion.LookRotation(direction), 200f * Time.deltaTime);
-            player.SyncLookToTransforms();
+            Vector3 dir = to / distance;
+            // Son yarım metrede yavaşlar, hedefi geçmez.
+            player.ScriptedVelocity = dir * speed * Mathf.Clamp01(distance / 0.5f + 0.2f);
+            root.rotation = Quaternion.RotateTowards(root.rotation, Quaternion.LookRotation(dir), 180f * Time.deltaTime);
             yield return null;
         }
         player.ScriptedVelocity = Vector3.zero;
-        walking = null;
+        player.SyncLookToTransforms();
+        motion = null;
     }
 
-    private IEnumerator FaceTo(float yaw)
+    private IEnumerator Face(float yaw, float duration)
     {
         Transform root = player.transform;
-        Quaternion from = root.rotation;
-        Quaternion to = Quaternion.Euler(0f, yaw, 0f);
-        for (float t = 0f; t < 1f; t += Time.deltaTime / 0.6f)
+        Quaternion from = root.rotation, to = Quaternion.Euler(0f, yaw, 0f);
+        for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.01f, duration))
         {
             root.rotation = Quaternion.Slerp(from, to, Mathf.SmoothStep(0f, 1f, t));
-            player.SyncLookToTransforms();
             yield return null;
         }
         root.rotation = to;
         player.SyncLookToTransforms();
+        motion = null;
     }
 
-    // Openable.Toggle'ı kapağın gerçek bir noktasıyla çağırır: oyunda F'ye basılmış gibi sağ el kapağa uzanır.
-    private void Toggle(Openable openable)
+    // Openable'ın bir parçasını (dolap kapağı) oyundaki gibi açar: el kapağa uzanır, kapak sonra döner.
+    private void OpenPart(string name, int index)
     {
-        if (openable == null)
+        Openable openable = null;
+        foreach (Openable candidate in FindObjectsByType<Openable>(FindObjectsSortMode.None))
+            if (candidate.name == name)
+                openable = candidate;
+        if (openable == null || interactor == null)
             return;
-        Vector3 eye = player.CameraRoot.position;
-        Collider best = null;
-        Vector3 bestPoint = Vector3.zero;
+
+        BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+        Openable.Part[] parts = (Openable.Part[])typeof(Openable).GetField("parts", flags).GetValue(openable);
+        Transform part = parts != null && index < parts.Length ? parts[index].target : null;
+        Collider hit = part != null ? part.GetComponentInChildren<Collider>(true) : null;
+        Vector3 eye = player.transform.position + Vector3.up * 1.5f;
+        Vector3 point = hit != null ? hit.ClosestPoint(eye) : openable.transform.position;
+        Vector3 normal = (eye - point).normalized;
+        MethodInfo toggle = typeof(Openable).GetMethod("Toggle", flags);
+        toggle?.Invoke(openable, new object[] { interactor, openable.Duration, hit, point, normal, eye });
+    }
+
+    // Sağ el buruna gider ve orada kalır (kapı açarken kullanılan el IK'sı, kafa kemiğine bağlı).
+    private void TouchNose(float hold)
+    {
+        if (body == null || animator == null)
+            return;
+        Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
+        if (head == null)
+            return;
+        Vector3 forward = animator.transform.forward;
+        forward.y = 0f;
+        forward.Normalize();
+        // Kafa kemiği kafatasının dibinde; burun ucu ~0.11 önde, kemikle aynı yükseklikte (0.05 yukarısı saça gidiyordu).
+        Vector3 nose = head.position + forward * 0.12f;
+        body.BeginTouch(head, nose, hold);
+    }
+
+    private void PickUp(Vector3 near)
+    {
+        if (interactor == null)
+            return;
+        ShopProduct best = null;
         float bestDistance = float.MaxValue;
-        foreach (Collider c in openable.GetComponentsInChildren<Collider>(true))
+        foreach (ShopProduct product in FindObjectsByType<ShopProduct>(FindObjectsSortMode.None))
         {
-            if (c.isTrigger || !c.enabled || c.name.StartsWith("Govde"))
-                continue;
-            Vector3 p = c.ClosestPoint(eye);
-            float d = (p - eye).sqrMagnitude;
+            float d = (product.transform.position - near).sqrMagnitude;
             if (d < bestDistance)
             {
                 bestDistance = d;
-                best = c;
-                bestPoint = p;
+                best = product;
             }
         }
-        MethodInfo toggle = typeof(Openable).GetMethod("Toggle", BindingFlags.Instance | BindingFlags.NonPublic);
-        FieldInfo durationField = typeof(Openable).GetField("duration", BindingFlags.Instance | BindingFlags.NonPublic);
-        float duration = durationField != null ? (float)durationField.GetValue(openable) : 0.6f;
-        Vector3 normal = (eye - bestPoint).normalized;
-        toggle?.Invoke(openable, new object[] { interactor, duration, best, bestPoint, normal, eye });
+        if (best != null)
+            interactor.Hold(best);
     }
 
-    private static T Find<T>(string name) where T : Component
+    private void DoCheckout()
     {
-        foreach (T c in FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-        {
-            if (c.name == name)
-                return c;
-        }
-        Debug.LogWarning("Trailer: bulunamadı: " + typeof(T).Name + " " + name);
-        return null;
+        Checkout checkout = FindFirstObjectByType<Checkout>();
+        if (checkout != null && interactor != null)
+            checkout.Interact(interactor);
     }
 
-    // "Kok/Alt/Obje" yolu ya da düz ad; kapalı objeler de bulunur.
-    private static GameObject FindPath(string path)
+    private void CrowdGather()
     {
-        foreach (GameObject root in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+        Vector3 p = player.transform.position;
+        Crowd(c =>
         {
-            if (path == root.name)
-                return root;
-            if (path.StartsWith(root.name + "/"))
-            {
-                Transform t = root.transform.Find(path.Substring(root.name.Length + 1));
-                if (t != null)
-                    return t.gameObject;
-            }
-        }
-        foreach (Transform t in FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-        {
-            if (t.name == path)
-                return t.gameObject;
-        }
-        Debug.LogWarning("Trailer: obje bulunamadı: " + path);
-        return null;
+            c.BeginFinale(p, p);
+            c.PlayerArrived(p);
+        });
     }
+
+    private void Freeze()
+    {
+        Crowd(c => c.FreezeFinale());
+        if (animator != null)
+            animator.speed = 0f;
+    }
+
+    private static void Crowd(System.Action<NpcCrowd> act)
+    {
+        NpcCrowd crowd = FindFirstObjectByType<NpcCrowd>();
+        if (crowd != null)
+            act(crowd);
+    }
+}
+
+[System.Serializable]
+public class TrailerAction
+{
+    public enum Kind
+    {
+        Place, SitOnSeat, StandUp, WalkTo, Face, OpenPart, TouchNose, Defeat, Pose, Locomotion, PickUp, Checkout,
+        CrowdGather, CrowdConform, CrowdFreeze
+    }
+
+    public float time;
+    public Kind kind;
+    public Vector3 point;
+    public float yaw;
+    public float speed = 1.4f;
+    public float duration = 1f;
+    public string target;
+    public int index;
+    [System.NonSerialized] public bool done;
 }
