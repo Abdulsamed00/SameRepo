@@ -25,6 +25,9 @@ public class TrailerShot : MonoBehaviour
     [Tooltip("Kameranın baktığı nokta (çekimin başında ve sonunda).")]
     public Vector3 lookA;
     public Vector3 lookB;
+    [Tooltip("Açıksa bakış noktası sabit değil, karakterin kafa kemiği + headOffset (dünya): karakter kıpırdasa da kadraj ve netlik yüzde kalır.")]
+    public bool lookAtPlayerHead;
+    public Vector3 headOffset;
     public float rollA;
     public float rollB;
     public Ease ease = Ease.Smooth;
@@ -41,6 +44,7 @@ public class TrailerShot : MonoBehaviour
     public float focalLength = 60f;
 
     private CinemachineCamera cam;
+    private Transform playerHead;
 
     public float End => start + duration;
 
@@ -52,7 +56,23 @@ public class TrailerShot : MonoBehaviour
         if (focusDistance > 0f)
             return focusDistance;
         float k = Progress(time);
-        return Vector3.Distance(Position(k), Vector3.Lerp(lookA, lookB, k));
+        return Vector3.Distance(Position(k), LookPoint(k));
+    }
+
+    private Vector3 LookPoint(float k)
+    {
+        if (lookAtPlayerHead)
+        {
+            if (playerHead == null)
+            {
+                PlayerBody body = FindFirstObjectByType<PlayerBody>();
+                Animator animator = body != null ? body.GetComponent<Animator>() : null;
+                playerHead = animator != null ? animator.GetBoneTransform(HumanBodyBones.Head) : null;
+            }
+            if (playerHead != null)
+                return playerHead.position + headOffset;
+        }
+        return Vector3.Lerp(lookA, lookB, k);
     }
 
     public void Apply(float time)
@@ -62,7 +82,7 @@ public class TrailerShot : MonoBehaviour
 
         float k = Progress(time);
         Vector3 position = Position(k);
-        Vector3 look = Vector3.Lerp(lookA, lookB, k);
+        Vector3 look = LookPoint(k);
         Vector3 forward = look - position;
         if (forward.sqrMagnitude > 1e-6f)
         {

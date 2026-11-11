@@ -18,7 +18,7 @@ using UnityEngine.UI;
 /// TrailerShot), Timeline (Cinemachine Track), post-process Volume'u ve TrailerController vardır.
 /// Çekim değiştirmek için aşağıdaki tabloyu düzenleyip menüden (Same > Trailer) yeniden kur.
 /// </summary>
-public static class TrailerBuilder
+public static partial class TrailerBuilder
 {
     private const string Root = "Assets/Trailer";
 
@@ -31,6 +31,8 @@ public static class TrailerBuilder
         public float fovA = 40f, fovB = 40f, rollA, rollB;
         public float aperture = 4f, focalLength = 60f, focus;
         public TrailerShot.Ease ease = TrailerShot.Ease.Smooth;
+        public bool headLook;         // bakış karakterin kafasına (+ headOffset) kilitli
+        public Vector3 headOffset;
         public string noise;          // Cinemachine gürültü profili adı (boş = sabit kamera)
         public float noiseAmplitude = 1f, noiseFrequency = 1f;
     }
@@ -51,6 +53,9 @@ public static class TrailerBuilder
         public AnimationCurve chromatic, motionBlur, distortion, vignette;
         public bool logo;
         public float logoTime, logoFade = 1.2f;
+        public bool typewriter;
+        public AnimationCurve blackout;
+        public List<TrailerActor.Cue> cues = new List<TrailerActor.Cue>();
         public System.Action<GameObject> extras;   // sahneye özel ek objeler (kök altında)
     }
 
@@ -563,6 +568,8 @@ public static class TrailerBuilder
             ts.focalLength = shot.focalLength;
             ts.focusDistance = shot.focus;
             ts.ease = shot.ease;
+            ts.lookAtPlayerHead = shot.headLook;
+            ts.headOffset = shot.headOffset;
             ts.Apply(time);
 
             if (!string.IsNullOrEmpty(shot.noise))
@@ -622,6 +629,14 @@ public static class TrailerBuilder
         so.FindProperty("logo").objectReferenceValue = logo;
         so.FindProperty("logoTime").floatValue = spec.logoTime;
         so.FindProperty("logoFade").floatValue = spec.logoFade;
+        so.FindProperty("logoTypewriter").boolValue = spec.typewriter;
+        so.FindProperty("blackout").animationCurveValue = spec.blackout ?? AnimationCurve.Constant(0f, time, 0f);
+        if (spec.cues.Count > 0)
+        {
+            TrailerActor actor = root.AddComponent<TrailerActor>();
+            actor.cues = new List<TrailerActor.Cue>(spec.cues);
+            so.FindProperty("actor").objectReferenceValue = actor;
+        }
         so.ApplyModifiedPropertiesWithoutUndo();
 
         spec.extras?.Invoke(root);

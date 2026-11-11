@@ -10,12 +10,13 @@ input="$(cat)"
 if command -v jq >/dev/null 2>&1; then
   file_path="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')"
 elif command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1; then
-  py="$(command -v python3 || command -v python)"
+  # Önce python: bu makinede python3, Windows Store'un sahte kısayoluna düşüp "Python bulunamadı" yazıyor.
+  py="$(command -v python || command -v python3)"
   file_path="$(printf '%s' "$input" | "$py" -c 'import sys, json
 try:
     print(json.load(sys.stdin).get("tool_input", {}).get("file_path", "") or "")
 except Exception:
-    print("")')"
+    print("")' 2>/dev/null)"
 fi
 # JSON okunamadıysa (ya da araç yoksa) düz metinden: koruma sessizce devre dışı kalmasın.
 if [ -z "$file_path" ]; then
