@@ -97302,7 +97302,7 @@ MonoBehaviour:
   letterbox: 0.11
   fadeToBlackDuration: 2.5
   creditsDuration: 12
-  quote: "Sen e\u015Fsizsin. T\u0131pk\u0131 di\u011Fer herkes gibi."
+  quote: One More, One Less You.
   quoteAuthor: 
   menuScene: MainMenu
   clickSound: {fileID: 0}
