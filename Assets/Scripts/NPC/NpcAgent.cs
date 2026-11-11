@@ -594,7 +594,12 @@ public class NpcAgent : MonoBehaviour
         // NavMesh yüzeyi zeminden birkaç cm yukarıda kalıyor (voksel hassasiyeti): konum ajandan, yükseklik gerçek zeminden.
         if (agent != null && agent.enabled && !frozen)
         {
-            transform.position = Grounded(agent.nextPosition);
+            // Kaldırım kenarında (0.08 m basamak) kök tek karede sıçramasın: yükseklik hızla ama yumuşak izlenir (11.11).
+            Vector3 g = Grounded(agent.nextPosition);
+            float y = transform.position.y;
+            if (Mathf.Abs(g.y - y) < 0.3f)
+                g.y = Mathf.MoveTowards(y, g.y, 0.8f * Time.deltaTime);
+            transform.position = g;
             GuardAgainstColliders();
         }
     }
@@ -626,9 +631,14 @@ public class NpcAgent : MonoBehaviour
         transform.position = lastSafe;
     }
 
+    // 11.11 (kullanıcı: "kaldırımda yürüyen NPC'lerin dizlerinde sıkıntı"): ince ışın kaldırım levhalarının arasındaki 2 cm'lik
+    // boşluktan geçip levhanın altındaki zemine (-0.10) iniyordu; NPC her 3 m'de bir kare 22 cm gömülüyor, ayak IK'sı dizleri
+    // kırıyordu. Küçük küre boşluklardan düşmez.
+    private const float GroundProbeRadius = 0.06f;
+
     private static Vector3 Grounded(Vector3 p)
     {
-        if (Physics.Raycast(p + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 1f, GroundMask, QueryTriggerInteraction.Ignore))
+        if (Physics.SphereCast(p + Vector3.up * 0.5f, GroundProbeRadius, Vector3.down, out RaycastHit hit, 1f, GroundMask, QueryTriggerInteraction.Ignore))
             p.y = hit.point.y;
         return p;
     }

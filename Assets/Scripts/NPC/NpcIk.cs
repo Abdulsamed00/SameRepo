@@ -91,10 +91,7 @@ public class NpcIk : MonoBehaviour
             return;
 
         if (groundFeet)
-        {
-            Ground(AvatarIKGoal.LeftFoot, animator.leftFeetBottomHeight);
-            Ground(AvatarIKGoal.RightFoot, animator.rightFeetBottomHeight);
-        }
+            GroundFeet();
 
         bool bagOn = bagReady && bag != null && bag.gameObject.activeInHierarchy && bag.enabled;
         bagWeight = Mathf.MoveTowards(bagWeight, bagOn ? bagHandWeight : 0f, Time.deltaTime * 3f);
@@ -134,11 +131,12 @@ public class NpcIk : MonoBehaviour
     private SkinnedMeshRenderer[] shoeSet;
     private float soleTimer;
 
-    private void RefreshSole()
+    /// <returns>Taban noktaları yeniden kurulduysa (ayakkabı değişti) true.</returns>
+    private bool RefreshSole()
     {
         soleTimer -= Time.deltaTime;
         if (soleTimer > 0f)
-            return;
+            return false;
         soleTimer = 1f;
         var shoes = new System.Collections.Generic.List<SkinnedMeshRenderer>();
         foreach (SkinnedMeshRenderer smr in GetComponentsInChildren<SkinnedMeshRenderer>(false))
@@ -148,7 +146,7 @@ public class NpcIk : MonoBehaviour
                 shoes.Add(smr);
         }
         if (shoeSet != null && shoeSet.Length == shoes.Count && shoes.TrueForAll(x => System.Array.IndexOf(shoeSet, x) >= 0))
-            return;
+            return false;
         shoeSet = shoes.ToArray();
         sole[0].Clear();
         sole[1].Clear();
@@ -158,7 +156,7 @@ public class NpcIk : MonoBehaviour
             animator.GetBoneTransform(HumanBodyBones.RightFoot), animator.GetBoneTransform(HumanBodyBones.RightToes)
         };
         if (bones[0] == null || bones[2] == null)
-            return;
+            return true;
         var baked = new Mesh();
         foreach (SkinnedMeshRenderer smr in shoeSet)
         {
@@ -187,52 +185,147 @@ public class NpcIk : MonoBehaviour
             }
         }
         Destroy(baked);
+        return true;
     }
 
-    private void Ground(AvatarIKGoal goal, float bottom)
+    // Ayakkabı tabanı (ve parmak eklemi - toeClearance) IK hedefinin (bilek hedefi + yönü) uzayında. Hedef her karede
+    // animasyonun kendi pozundan gelir (GetIKPosition/Rotation, kaldırmasız), tabanın yeri de ondan hesaplanır: kaldırma
+    // ölçüme hiç karışmaz. 11.11'e kadar taban kemiklerden okunup önceki kaldırma çıkarılıyordu; kemikler o anda
+    // kaldırmayı tam yansıtmadığı için (IK ayağı hedefin ~2/3'ü kadar kaldırıyordu, ölçüldü) taban her karede biraz daha
+    // aşağıda görünüyor, kaldırma kendi kendini büyütüp 0.15 m sınırına dayanıyordu: ayaklar havada, dizler 30-70° kırık
+    // (kullanıcı: "ayakları dizlerinden kırık, yürüyenler ve sabit duranlar").
+    // Kalibrasyon: o ayağa IK uygulanmamış bir karenin LateUpdate'inde (son poz = animasyon pozu) kemiklerdeki taban
+    // noktaları aynı karenin hedefine göre kaydedilir; kaldırma yokken her karede tazelenir (parmak bükülmesi izlenir).
+    private readonly System.Collections.Generic.List<Vector3>[] goalSole =
+        { new System.Collections.Generic.List<Vector3>(), new System.Collections.Generic.List<Vector3>() };
+    private readonly bool[] calibrated = new bool[2];
+    private readonly Vector3[] goalPos = new Vector3[2];
+    private readonly Quaternion[] goalRot = { Quaternion.identity, Quaternion.identity };
+    private readonly int[] goalFrame = { -1, -1 };
+
+    private void LateUpdate()
     {
-        bool left = goal == AvatarIKGoal.LeftFoot;
-        int i = left ? 0 : 1;
-        if (i == 0)
-            RefreshSole();
-        Vector3 ankle = animator.GetIKPosition(goal);
-        Transform foot = animator.GetBoneTransform(left ? HumanBodyBones.LeftFoot : HumanBodyBones.RightFoot);
+        if (!groundFeet || animator == null || !animator.isHuman)
+            return;
+        if (RefreshSole())
+            calibrated[0] = calibrated[1] = false;
+        for (int i = 0; i < 2; i++)
+        {
+            if (goalFrame[i] == Time.frameCount && applied[i] == 0f && bodyApplied == 0f)
+                Calibrate(i);
+        }
+    }
+
+    private void Calibrate(int i)
+    {
+        bool left = i == 0;
         Transform toes = animator.GetBoneTransform(left ? HumanBodyBones.LeftToes : HumanBodyBones.RightToes);
-        // Kemikler bir önceki karenin (IK uygulanmış) pozunda. Kaldırma yönü sabit bir öteleme olduğu için (ayağın yönü de
-        // sabitlenir) önceki kaldırma çıkarılınca animasyonun kendi pozu bulunur. IK hedefi bilek kemiğinin ~5 cm üstünde
-        // olduğundan noktalar hedefe göre kaydırılmaz (11.11: kaydırılınca gömülme hiç görülmüyordu).
-        Vector3 back = Vector3.up * applied[i];
+        Quaternion inv = Quaternion.Inverse(goalRot[i]);
+        var list = goalSole[i];
+        list.Clear();
+        if (toes != null)
+            list.Add(inv * (toes.position - Vector3.up * toeClearance - goalPos[i]));
+        foreach (SolePoint sp in sole[i])
+            list.Add(inv * (sp.bone.TransformPoint(sp.local) - goalPos[i]));
+        calibrated[i] = true;
+    }
+
+    [Tooltip("Ayağın en fazla bu kadar (m) kaldırılması; zemin ayağın bundan daha üstündeyse (bankın oturağı, masa) zemin sayılmaz.")]
+    [SerializeField] private float maxLift = 0.15f;
+
+    [Tooltip("Ayakta (kalça bileklerin bu kadar (m) üstündeyken) düz zemine gömülen taban, ayak değil gövde kaldırılarak " +
+             "düzeltilir; en fazla maxBodyLift.")]
+    [SerializeField] private float standingHipHeight = 0.65f;
+    [SerializeField] private float maxBodyLift = 0.08f;
+    private float bodyLift;
+    private float bodyApplied;
+
+    /// <summary>
+    /// 11.11 (kullanıcı: "ayakları dizlerinden kırık, yürüyenler ve sabit duranlar"): yeni kliplerde (Duzeltilmis/*) basan
+    /// ayağın tabanı kökün (zeminin) 2-3 cm altında. Bunu ayağı IK ile kaldırarak düzeltmek neredeyse düz bacakta dizi
+    /// ~30° büküyor (3 cm kaldırma = 30°, ölçüldü). Ayaktayken düz zemindeki gömülme gövde (bodyPosition) kaldırılarak
+    /// kapatılır, bacak klipteki gibi kalır; ayak IK'sı sadece kalan farkı (kaldırım kenarı gibi ayağın altındaki zemin
+    /// kökün zemininden yüksekse) kaldırır. Otururken gövde kaldırılmaz (oturaktan kalkardı), eski ayak kaldırma kalır.
+    /// </summary>
+    private void GroundFeet()
+    {
+        var target = new float[2];
+        var flatNeed = new float[2];
+        bool ready = true;
+        for (int i = 0; i < 2; i++)
+            ready &= Measure(i, out target[i], out flatNeed[i]);
+        if (!ready)
+        {
+            // Kalibrasyon bu karenin LateUpdate'inde, kaldırmasız pozda yapılır.
+            bodyLift = bodyApplied = 0f;
+            for (int i = 0; i < 2; i++)
+            {
+                smoothLift[i] = applied[i] = 0f;
+                AvatarIKGoal g = i == 0 ? AvatarIKGoal.LeftFoot : AvatarIKGoal.RightFoot;
+                animator.SetIKPositionWeight(g, 0f);
+                animator.SetIKRotationWeight(g, 0f);
+            }
+            return;
+        }
+
+        bool standing = animator.bodyPosition.y - Mathf.Min(goalPos[0].y, goalPos[1].y) > standingHipHeight;
+        float bodyTarget = standing ? Mathf.Clamp(Mathf.Max(flatNeed[0], flatNeed[1]), 0f, maxBodyLift) : 0f;
+        bodyLift = Mathf.Lerp(bodyLift, bodyTarget, 1f - Mathf.Exp(-(bodyTarget > bodyLift ? 18f : 8f) * Time.deltaTime));
+        if (bodyLift < 0.0005f)
+            bodyLift = 0f;
+        if (bodyLift > 0f)
+            animator.bodyPosition += Vector3.up * bodyLift;
+        bodyApplied = bodyLift;
+
+        for (int i = 0; i < 2; i++)
+            ApplyFoot(i, Mathf.Max(0f, target[i] - bodyLift));
+    }
+
+    /// <summary>Ayağın animasyon pozundaki tabanı; ayağın altındaki zemine göre gereken kaldırma ve kökün zeminine göre gömülme.</summary>
+    private bool Measure(int i, out float targetLift, out float flatNeed)
+    {
+        AvatarIKGoal goal = i == 0 ? AvatarIKGoal.LeftFoot : AvatarIKGoal.RightFoot;
+        float bottom = i == 0 ? animator.leftFeetBottomHeight : animator.rightFeetBottomHeight;
+        Vector3 ankle = animator.GetIKPosition(goal);
+        Quaternion ankleRot = animator.GetIKRotation(goal);
+        goalPos[i] = ankle;
+        goalRot[i] = ankleRot;
+        goalFrame[i] = Time.frameCount;
+        targetLift = 0f;
+        flatNeed = 0f;
+        if (!calibrated[i])
+            return false;
         float lowY = ankle.y - bottom;
         Vector3 lowPoint = ankle;
-        Vector3 toePoint = ankle;
-        if (foot != null && toes != null)
+        foreach (Vector3 p in goalSole[i])
         {
-            toePoint = toes.position - back;
-            if (toePoint.y - toeClearance < lowY)
-            {
-                lowY = toePoint.y - toeClearance;
-                lowPoint = toePoint;
-            }
-        }
-        foreach (SolePoint sp in sole[i])
-        {
-            Vector3 w = sp.bone.TransformPoint(sp.local) - back;
+            Vector3 w = ankle + ankleRot * p;
             if (w.y < lowY)
             {
                 lowY = w.y;
                 lowPoint = w;
             }
         }
-        float targetLift = 0f;
+        flatNeed = transform.position.y + soleClearance - lowY;
         float ground = float.MinValue;
-        foreach (Vector3 probe in new[] { ankle, toePoint, lowPoint })
+        foreach (Vector3 probe in new[] { ankle, lowPoint })
         {
-            if (Physics.Raycast(probe + Vector3.up * 0.25f, Vector3.down, out RaycastHit hit, 0.6f, GroundMask, QueryTriggerInteraction.Ignore)
-                && !hit.collider.transform.IsChildOf(transform))
+            // Bankta oturanda ayak oturağın önünde/altında: aşağı ışın oturağa çarpıp ayağı 0.15 m kaldırıyordu (11.11).
+            // Ayağın maxLift'ten daha üstündeki yüzey zemin değil.
+            // Küre: levha aralarındaki ince boşluktan aşağı düşmesin (11.11, kaldırımda her 3 m'de diz kırılıyordu).
+            if (Physics.SphereCast(probe + Vector3.up * 0.25f, 0.03f, Vector3.down, out RaycastHit hit, 0.6f, GroundMask, QueryTriggerInteraction.Ignore)
+                && !hit.collider.transform.IsChildOf(transform) && hit.point.y < lowY + maxLift)
                 ground = Mathf.Max(ground, hit.point.y);
         }
         if (ground > float.MinValue)
-            targetLift = Mathf.Clamp(ground + soleClearance - lowY, 0f, 0.15f);
+            targetLift = Mathf.Clamp(ground + soleClearance - lowY, 0f, maxLift);
+        return true;
+    }
+
+    private void ApplyFoot(int i, float targetLift)
+    {
+        AvatarIKGoal goal = i == 0 ? AvatarIKGoal.LeftFoot : AvatarIKGoal.RightFoot;
+        Vector3 ankle = goalPos[i];
         // Yumuşatma (10.11, "kadın NPC'lerin dizleri kaldırımda titriyor"): kaldırma ayak başına yumuşatılır.
         float k = 1f - Mathf.Exp(-(targetLift > smoothLift[i] ? 18f : 8f) * Time.deltaTime);
         smoothLift[i] = Mathf.Lerp(smoothLift[i], targetLift, k);
@@ -246,13 +339,17 @@ public class NpcIk : MonoBehaviour
         }
         // Ayağın yönü de sabitlenir: sadece bilek kaldırılınca diz açısı değişip ayak aşağı dönüyor, ayakkabının burnu
         // daha da gömülüyordu (ölçüldü: bilek 4.7 cm kalkarken en alçak nokta 1.2 cm indi).
-        Quaternion rot = animator.GetIKRotation(goal);
+        // Hedef gövdeyle birlikte kalkmış ayağın üstüne eklenir.
         animator.SetIKPositionWeight(goal, 1f);
-        animator.SetIKPosition(goal, ankle + Vector3.up * smoothLift[i]);
+        animator.SetIKPosition(goal, ankle + Vector3.up * (bodyLift + smoothLift[i]));
         animator.SetIKRotationWeight(goal, 1f);
-        animator.SetIKRotation(goal, rot);
+        animator.SetIKRotation(goal, goalRot[i]);
         applied[i] = smoothLift[i];
     }
+
+    // Hata ayıklama/ölçüm için (Play'de dışarıdan okunur).
+    public float BodyLift => bodyLift;
+    public float FootLift(int i) => smoothLift[i];
 
     private readonly float[] smoothLift = new float[2];
     private readonly float[] applied = new float[2];

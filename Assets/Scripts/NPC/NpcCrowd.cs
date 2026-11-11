@@ -101,8 +101,9 @@ public class NpcCrowd : MonoBehaviour
             idleState = "Man_Idle",
             walkState = "Man_Walk",
             sitState = "Bench_Sit",
-            // 11.11: Erkek_Walk_Duz'da basan ayağın geri kayma hızı 1.45-1.52 m/s (klip geometrisinden ölçüldü).
-            walkClipSpeed = 1.48f,
+            // 11.11: Erkek_Walk_Duz'da basan ayağın (parmak) geri kayma hızı sol 1.59 / sağ 1.49 m/s, ortalama 1.53
+            // (klip 240 örnekte, ayak zemindeyken ölçüldü).
+            walkClipSpeed = 1.53f,
             speedRange = new Vector2(1.1f, 1.45f),
             outfit = new[]
             {
@@ -118,8 +119,9 @@ public class NpcCrowd : MonoBehaviour
             idleState = "Women_Idle",
             walkState = "Women_Walking",
             sitState = "Bench_Sit",
-            // 11.11: Walk_Duz (Kız_npc Walk) doğal hızı 0.72-0.80 m/s; 1.0'da animasyon yavaş kalıp ayaklar kayıyordu.
-            walkClipSpeed = 0.76f,
+            // 11.11: Walk_Duz (Kız_npc Walk) basan ayağın geri kayma hızı ~1.18 m/s (sol 1.20 / sağ 1.17). 0.76'da
+            // animasyon 1.5 kat hızlı oynuyor, basan ayak yürüme hızının %62'si kadar kayıyordu.
+            walkClipSpeed = 1.18f,
             speedRange = new Vector2(0.85f, 1.1f),
             outfit = new[]
             {
