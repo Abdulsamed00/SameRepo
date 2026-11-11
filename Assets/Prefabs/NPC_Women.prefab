@@ -197,6 +197,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2212288285000662773}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6490905640989179625}
   m_SourcePrefab: {fileID: 100100000, guid: b2bcaa86f5c705e4d9bf33959c84abb7, type: 3}
 --- !u!1 &450515813658187195 stripped
 GameObject:
@@ -285,3 +288,24 @@ MonoBehaviour:
   soleClearance: 0.005
   holdBag: 1
   bagHandWeight: 0.9
+  bagHandLocal: {x: 0.0223, y: 0.3123, z: 0.2723}
+  bagOutLocal: {x: 0.085, y: 0.931, z: -0.355}
+  toeClearance: 0.025
+--- !u!114 &6490905640989179625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450515813658187195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d02a5c41a401779418db940589213eec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SeatedCoat
+  coatName: Coat
+  shapeName: Oturma
+  sitStates:
+  - Sit
+  - LyingDown
+  blendSpeed: 4

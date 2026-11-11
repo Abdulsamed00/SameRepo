@@ -20188,7 +20188,8 @@ MonoBehaviour:
     walkState: Man_Walk
     sitState: Bench_Sit
     talkState: Standing_Talk
-    walkClipSpeed: 1.55
+    walkClipSpeed: 1.48
+    speedRange: {x: 1.1, y: 1.45}
     outfit:
     - name: "Sa\xE7"
       options:
@@ -20225,7 +20226,8 @@ MonoBehaviour:
     walkState: Women_Walking
     sitState: Bench_Sit
     talkState: Standing_Talk
-    walkClipSpeed: 1
+    walkClipSpeed: 0.76
+    speedRange: {x: 0.85, y: 1.1}
     outfit:
     - name: "Sa\xE7"
       options:

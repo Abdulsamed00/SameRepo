@@ -1,13 +1,14 @@
 using UnityEngine;
 
 /// <summary>
-/// Poşetin görünümü: kamerada sağ altta, sapından tutulur gibi asılı durur, yürürken sallanır. Kraft kâğıt poşet koddan
-/// kurulur (modeli yok). <see cref="ShoppingBag"/> ekler ve açar/kapatır; bileşen kapanınca poşet kalkar.
+/// Poşetin görünümü: kamerada sağ altta, sapından tutulur gibi asılı durur, yürürken sallanır. Model Sıla'nın
+/// "BUYNER" poşeti (11.11, `Mağaza İçi/Mağaza Poşeti/Poşet 1`), prefab `Resources/Shop/Alisveris_Poseti` (kökü sapın
+/// tutulduğu nokta, model aşağı sarkar). Prefab yoksa eski koddan kurulan kraft poşet kullanılır. <see cref="ShoppingBag"/> ekler ve açar/kapatır; bileşen kapanınca poşet kalkar.
 /// </summary>
 public class ShoppingBagView : MonoBehaviour
 {
     // Kameraya göre sapın tutulduğu nokta: sağ altta, biraz önde.
-    private static readonly Vector3 HandlePosition = new Vector3(0.34f, -0.30f, 0.55f);
+    private static readonly Vector3 HandlePosition = new Vector3(0.30f, -0.15f, 0.62f);
 
     private GameObject bag;
     private Transform bagRoot;
@@ -20,7 +21,7 @@ public class ShoppingBagView : MonoBehaviour
         Camera cam = controller != null ? controller.GetComponentInChildren<Camera>() : null;
         if (cam == null)
             return;
-        bag = Build(FindLitShader());
+        bag = BuildModel() ?? Build(FindLitShader());
         bagRoot = bag.transform;
         bagRoot.SetParent(cam.transform, false);
         bagRoot.localPosition = HandlePosition;
@@ -45,6 +46,25 @@ public class ShoppingBagView : MonoBehaviour
         float roll = Mathf.Sin(swayPhase) * (2f + 7f * amount);
         float pitch = Mathf.Sin(swayPhase * 0.5f + 1f) * (1.5f + 6f * amount);
         bagRoot.localRotation = Quaternion.Euler(pitch, -12f, roll);
+    }
+
+    private const string PrefabPath = "Shop/Alisveris_Poseti";
+
+    private static GameObject BuildModel()
+    {
+        GameObject prefab = Resources.Load<GameObject>(PrefabPath);
+        if (prefab == null)
+            return null;
+        GameObject bag = Instantiate(prefab);
+        bag.name = "Alisveris_Poseti";
+        // Solmaz (oyuncunun eşyası gibi): solma efektinden sonra çizilen katman.
+        int layer = LayerMask.NameToLayer(SceneFade.ExemptLayerName);
+        if (layer >= 0)
+        {
+            foreach (Transform t in bag.GetComponentsInChildren<Transform>(true))
+                t.gameObject.layer = layer;
+        }
+        return bag;
     }
 
     private Shader FindLitShader()

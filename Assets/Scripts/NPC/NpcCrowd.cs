@@ -33,6 +33,9 @@ public class NpcProfile
     public string talkState = "Standing_Talk";
     [Tooltip("Yürüme klibinin animasyon hızı 1'deyken ayakların kaymadığı yürüme hızı (m/sn).")]
     public float walkClipSpeed = 1.2f;
+    [Tooltip("Bu profilin yürüme hızı aralığı (m/sn); boşsa (0) kalabalığın speedRange'i. Klibin doğal temposuna yakın tutulur, " +
+             "yoksa animasyon ya çok hızlı oynar (koşturur gibi) ya da ayaklar yerde kayar (11.11).")]
+    public Vector2 speedRange;
     public NpcOutfitSlot[] outfit;
 
     public void ApplyRandomOutfit(Transform root)
@@ -98,7 +101,9 @@ public class NpcCrowd : MonoBehaviour
             idleState = "Man_Idle",
             walkState = "Man_Walk",
             sitState = "Bench_Sit",
-            walkClipSpeed = 1.55f,
+            // 11.11: Erkek_Walk_Duz'da basan ayağın geri kayma hızı 1.45-1.52 m/s (klip geometrisinden ölçüldü).
+            walkClipSpeed = 1.48f,
+            speedRange = new Vector2(1.1f, 1.45f),
             outfit = new[]
             {
                 new NpcOutfitSlot("Saç", 0f, "shortCutHair", "CurlyHairBlack", "CurlyHairBrown", "Hat", "OrangeHat"),
@@ -113,7 +118,9 @@ public class NpcCrowd : MonoBehaviour
             idleState = "Women_Idle",
             walkState = "Women_Walking",
             sitState = "Bench_Sit",
-            walkClipSpeed = 1.0f,
+            // 11.11: Walk_Duz (Kız_npc Walk) doğal hızı 0.72-0.80 m/s; 1.0'da animasyon yavaş kalıp ayaklar kayıyordu.
+            walkClipSpeed = 0.76f,
+            speedRange = new Vector2(0.85f, 1.1f),
             outfit = new[]
             {
                 new NpcOutfitSlot("Saç", 0f, "BlondeHair", "CurlyHairBlack", "CurlyHairBrown", "TopuzSac"),
@@ -375,8 +382,14 @@ public class NpcCrowd : MonoBehaviour
                 startSpot = free[Random.Range(0, free.Count)];
         }
 
-        Vector3 pos = startSpot != null ? startSpot.transform.position : Jitter(wanderPoints[Random.Range(0, wanderPoints.Count)]);
-        if (!NavMesh.SamplePosition(pos, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+        NavMeshHit hit = default;
+        bool found = false;
+        for (int attempt = 0; attempt < 8 && !found; attempt++)
+        {
+            Vector3 pos = startSpot != null ? startSpot.transform.position : Jitter(wanderPoints[Random.Range(0, wanderPoints.Count)]);
+            found = NavMesh.SamplePosition(pos, out hit, 2f, NavMesh.AllAreas) && (startSpot != null || !Occupied(hit.position, 1.3f));
+        }
+        if (!found)
             return;
         Spawn(hit.position, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), startSpot);
     }
@@ -398,7 +411,8 @@ public class NpcCrowd : MonoBehaviour
         profile.ApplyRandomOutfit(go.transform);
 
         var npc = go.AddComponent<NpcAgent>();
-        npc.Init(this, profile, Random.Range(speedRange.x, speedRange.y));
+        Vector2 range = profile.speedRange.y > 0f ? profile.speedRange : speedRange;
+        npc.Init(this, profile, Random.Range(range.x, range.y));
         npc.GoalLimit = Random.Range(goalsBeforeLeave.x, goalsBeforeLeave.y + 1);
         if (streetFlow)
             AssignRoute(npc, position);
@@ -423,13 +437,13 @@ public class NpcCrowd : MonoBehaviour
         npc.Route = NearestRoute(position, heading);
     }
 
-    // Orta şeritler (|x| < 4.5) sağdan akar: +x şeridi +z'ye, -x şeridi -z'ye. Kaldırımlar iki yöne de açık.
+    // Tüm şeritler sağdan akar: +x şeritleri +z'ye, -x şeritleri -z'ye (kaldırımlar 11.11'den beri dahil).
     private bool RouteAllows(int route, int heading)
     {
-        float x = routeX[route];
-        if (Mathf.Abs(x) >= finaleLaneX.y)
-            return true;
-        return x * heading >= 0f;
+        // Kaldırımlar da tek yönlü, sağdan akış (11.11, kullanıcı: "NPC'ler birbirini itiyor"): kaldırımdaki bank, lamba,
+        // saksı ve kafe teraslarının arasındaki dar geçitlerde karşı yönden gelen iki NPC sığmıyor, ajanlar iç içe girip
+        // ayrılırken birbirini itiyordu. Artık +x tarafı (orta şerit + kaldırım) +z'ye, -x tarafı -z'ye akar.
+        return routeX[route] * heading >= 0f;
     }
 
     private int NearestRoute(Vector3 position, int heading)
@@ -1389,14 +1403,31 @@ public class NpcCrowd : MonoBehaviour
         while (true)
         {
             Transform exit = exits[Random.Range(0, exits.Length)];
+            // Çıkışta başka NPC duruyorsa orada doğma (11.11, "NPC'ler iç içe girip anlık yok olup geliyor"): yeni gelen
+            // bekleyenin tam üstünde doğuyor, ajanlar ayrılırken ~1 m ışınlanıyordu.
             if (exit != null && !IsSeen(exit.position)
-                && NavMesh.SamplePosition(exit.position, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+                && NavMesh.SamplePosition(exit.position, out NavMeshHit hit, 2f, NavMesh.AllAreas) && !Occupied(hit.position, 1.3f))
             {
                 Spawn(hit.position, exit.rotation, null);
                 yield break;
             }
             yield return new WaitForSeconds(1f);
         }
+    }
+
+    /// <summary>Bu noktanın yakınında (yatayda) başka bir NPC var mı.</summary>
+    private bool Occupied(Vector3 p, float radius)
+    {
+        foreach (NpcAgent a in agents)
+        {
+            if (a == null)
+                continue;
+            Vector3 d = a.transform.position - p;
+            d.y = 0f;
+            if (d.sqrMagnitude < radius * radius)
+                return true;
+        }
+        return false;
     }
 
     public bool IsSeen(Vector3 position)
