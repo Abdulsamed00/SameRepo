@@ -42,19 +42,15 @@ public static partial class TrailerBuilder
         // 1b: ayağa kalkar, tüm vücut.
         s.Act(4.2f, A.StandUp);
         s.shots.Add(S("1b_Kalkis", 3f, V(-0.9f, 2.2f, 3.2f), V(-1.0f, 2.25f, 3.0f), V(-3.8f, 2.25f, 1.1f), V(-3.75f, 2.45f, 1.3f), 46f, 46f, 4f));
-        // 1c: dolabın önünde, iki kapağı açar.
-        // İki kapak tek Openable: bir kez açmak ikisini birden açar (ikinci çağrı kapatır).
-        s.Act(7f, A.Place, V(4.55f, 1.36f, 0.35f), 180f);
-        s.Act(7.4f, A.OpenPart, target: "Dolap", index: 0);
-        s.shots.Add(S("1c_Dolap", 3.5f, V(6.0f, 2.9f, 1.45f), V(5.8f, 2.85f, 1.15f), V(4.6f, 2.3f, -0.9f), V(4.6f, 2.25f, -0.9f), 46f, 44f, 4f));
-        // 1d: aynanın önünde, omuz üstünden yansıma.
-        s.Act(10.5f, A.Place, V(1.50f, 1.36f, -0.62f), 270f);
-        s.shots.Add(S("1d_Ayna", 2f, V(2.45f, 3.05f, -0.22f), V(2.32f, 3.02f, -0.28f), V(0.456f, 2.55f, -0.62f), V(0.456f, 2.6f, -0.62f), 40f, 38f, 5.6f));
-        // 1e: yansımada yüz yakın; el burna gider, sonra omuzlar çöker.
-        s.Act(12.8f, A.TouchNose, duration: 1.3f);
-        s.Act(14.1f, A.Defeat);
-        // Ayna 6.9° geriye yaslı: yansımadaki yüz göz hizasından ~0.2 m aşağıda görünür.
-        s.shots.Add(S("1e_Yuz", 3f, V(2.15f, 3.0f, -0.38f), V(2.05f, 2.98f, -0.39f), V(-0.59f, 2.68f, -0.62f), V(-0.59f, 2.62f, -0.62f), 14f, 15f, 2.8f));
+        // 1c: dolap. Kollar/el IK'sı bozuk göründüğü için karakter kapağa uzanmaz (OpenQuiet): önce dolabın içinden
+        // dışarı (kapaklar açılır, karakter boşta durur), sonra omuz üstünden boş dolabın içi (kollar kadraj dışı).
+        s.Act(7f, A.Place, V(4.7f, 1.36f, 0.5f), 180f);
+        s.Act(7.3f, A.OpenQuiet, target: "Dolap", index: 0);
+        s.shots.Add(S("1c_Dolap_Ic", 1.9f, V(4.7f, 2.8f, -1.55f), V(4.7f, 2.82f, -1.45f), V(4.7f, 2.82f, 0.5f), V(4.7f, 2.84f, 0.5f), 50f, 46f, 5.6f));
+        s.shots.Add(S("1c_Dolap_Omuz", 1.9f, V(5.2f, 3.02f, 1.3f), V(5.12f, 3.0f, 1.15f), V(4.55f, 2.5f, -1.3f), V(4.55f, 2.45f, -1.3f), 40f, 38f, 4f));
+        // 1d: aynanın önünde, omuz üstünden yansıma. (Buruna dokunma çekimi kurguda yapay zekâ klibiyle geliyor.)
+        s.Act(10.8f, A.Place, V(1.50f, 1.36f, -0.62f), 270f);
+        s.shots.Add(S("1d_Ayna", 2.4f, V(2.45f, 3.05f, -0.22f), V(2.32f, 3.02f, -0.28f), V(0.456f, 2.55f, -0.62f), V(0.456f, 2.6f, -0.62f), 40f, 38f, 5.6f));
         s.post = profile =>
         {
             ColorAdjustments color = profile.Add<ColorAdjustments>(true);
@@ -82,12 +78,14 @@ public static partial class TrailerBuilder
         // 2a: caddede arkadan takip. 2b: simitçinin önünden geçerken yandan.
         s.Act(-1f, A.Place, V(-3.8f, 0.05f, 62.5f), 0f);
         s.Act(-0.6f, A.WalkTo, V(-3.8f, 0f, 80f));
-        s.shots.Add(S("2a_Takip", 3.5f, V(0.55f, 1.85f, -2.4f), V(0.55f, 1.85f, -2.4f), V(0f, 1.45f, 5f), V(0f, 1.45f, 5f), 48f, 48f, 5.6f, true, "Handheld_normal_mild"));
+        // Omuz üstü dar kadraj: arkadan geniş planda yürürken kollar iki yana açık duruyordu, kadraj dışında kalır.
+        s.shots.Add(S("2a_Takip", 3.5f, V(0.4f, 1.75f, -1.6f), V(0.4f, 1.75f, -1.6f), V(0f, 1.55f, 6f), V(0f, 1.55f, 6f), 44f, 44f, 5.6f, true, "Handheld_normal_mild"));
         s.shots.Add(S("2b_Simitci", 2.5f, V(2.3f, 1.45f, 0.6f), V(2.3f, 1.45f, 0.2f), V(-1.5f, 1.25f, 0.9f), V(-1.5f, 1.25f, 0.5f), 40f, 40f, 4f, true, "Handheld_normal_mild"));
         // 2c: mağazanın cephesi, karakter kapıya yürür.
         s.Act(6f, A.Place, V(0.4f, 0.05f, 112.5f), 0f);
         s.Act(6.05f, A.WalkTo, V(0.4f, 0f, 118.8f));
-        s.shots.Add(S("2c_Magaza_Cephe", 2.5f, V(2.4f, 0.7f, 109.2f), V(2.2f, 0.75f, 110f), V(0.3f, 3.8f, 120f), V(0.3f, 4.0f, 120f), 50f, 48f, 8f));
+        // Omuz üstünden alçak açı: baş/omuz altta, cephe üstte (kollar kadraj dışı).
+        s.shots.Add(S("2c_Magaza_Cephe", 2.5f, V(0.5f, 1.45f, -1.3f), V(0.5f, 1.45f, -1.3f), V(-0.1f, 4.2f, 8f), V(-0.1f, 4.6f, 8f), 50f, 48f, 8f, true, "Handheld_normal_mild"));
         s.post = StreetPost;
         Build(s);
     }
@@ -101,14 +99,14 @@ public static partial class TrailerBuilder
             name = "F2_Magaza", gameScene = Shop, timeOffset = 24f, preRoll = 3f, population = 2,
             playerMode = TrailerController.PlayerMode.Actor
         };
-        // 2d: askıdan paltoyu iki eliyle alır.
+        // 2d: paltoların önünde durur, bakar (ürünü alma IK'sında kollar dümdüz uzanıyordu: alma yok).
         s.Act(-1f, A.Place, V(-7.35f, 0.02f, 13f), 270f);
-        s.Act(0.5f, A.PickUp, V(-8.4f, 1.2f, 13f));
-        s.shots.Add(S("2d_Palto", 3.2f, V(-6.3f, 1.55f, 15.0f), V(-6.45f, 1.55f, 14.8f), V(-7.8f, 1.25f, 13.0f), V(-7.8f, 1.3f, 13.0f), 42f, 40f, 2.8f));
-        // 2e: kasada öder; kasiyerin arkasından.
-        s.Act(3.2f, A.Place, V(8.4f, 0.02f, 5.85f), 180f);
-        s.Act(4.4f, A.Checkout);
-        s.shots.Add(S("2e_Kasa", 2.8f, V(8.85f, 1.75f, 3.35f), V(8.8f, 1.72f, 3.5f), V(8.35f, 1.35f, 5.9f), V(8.35f, 1.4f, 5.9f), 40f, 38f, 2.8f));
+        s.shots.Add(S("2d_Palto", 2.2f, V(-6.3f, 1.55f, 15.0f), V(-6.5f, 1.55f, 14.75f), V(-7.8f, 1.25f, 13.0f), V(-7.8f, 1.3f, 13.0f), 42f, 39f, 2.8f));
+        // 2d2: paltolar yakın, yana kayan ray (karakter kadrajdan çekilir).
+        s.Act(2.2f, A.Place, V(0f, 0.02f, 9f), 0f);
+        s.shots.Add(S("2d_Palto_Yakin", 1.3f, V(-9.5f, 1.25f, 11.5f), V(-8.7f, 1.25f, 11.5f), V(-9.2f, 1.1f, 13.0f), V(-8.5f, 1.1f, 13.0f), 30f, 28f, 2.0f));
+        // 2e: ödeme: kart cihazı ve kasiyer (karakter görünmez).
+        s.shots.Add(S("2e_Kasa", 1.5f, V(8.38f, 1.5f, 5.9f), V(8.38f, 1.4f, 5.6f), V(8.38f, 1.07f, 4.9f), V(8.38f, 1.07f, 4.9f), 26f, 20f, 4f));
         s.post = profile =>
         {
             ColorAdjustments color = profile.Add<ColorAdjustments>(true);
@@ -165,8 +163,8 @@ public static partial class TrailerBuilder
         // Aynada sonuç: yeni burun/dudak, sonra sarı saç. Yansımaya çok dar açı.
         s.Act(-2f, A.Place, V(1.50f, 1.36f, -0.62f), 270f);
         // Ayna geriye yaslı: yansımadaki yüz göz hizasından ~0.25 m aşağıda (F1'deki yakın çekimle ölçüldü).
-        s.shots.Add(S("3f_Burun", 0.9f, V(2.1f, 2.95f, -0.40f), V(2.05f, 2.95f, -0.40f), V(-0.59f, 2.58f, -0.62f), V(-0.59f, 2.58f, -0.62f), 9f, 8f, 2.8f));
-        s.shots.Add(S("3g_Sac", 0.9f, V(2.1f, 3.0f, -0.42f), V(2.0f, 3.0f, -0.42f), V(-0.59f, 2.74f, -0.62f), V(-0.59f, 2.72f, -0.62f), 13f, 10f, 2.8f));
+        // Yakın çekimde estetikli dudak bozuk görünüyordu: omuz üstünden, yansımadaki yüz küçük, sarı saç önde.
+        s.shots.Add(S("3f_Ayna", 1.8f, V(2.5f, 3.05f, -0.2f), V(2.3f, 3.02f, -0.28f), V(0.456f, 2.55f, -0.62f), V(0.456f, 2.6f, -0.62f), 42f, 36f, 5.6f));
         s.post = FrenzyPost;
         s.chromatic = AnimationCurve.Linear(0f, 0.35f, 1.8f, 0.5f);
         s.vignette = AnimationCurve.Constant(0f, 1.8f, 0.35f);
@@ -201,6 +199,77 @@ public static partial class TrailerBuilder
             color.saturation.Override(-10f);
         };
         s.vignette = AnimationCurve.Constant(0f, 10.5f, 0.25f);
+        Build(s);
+    }
+
+    // ------------------------------------------------------------------ Ek: eşyaların birikmesi (oturma odası)
+
+    /// <summary>Kurguya eklenecek kısa klip: sabit kadrajda her alışverişle bir kıyafet yığını belirir, sonra yığınlara yakın ray.</summary>
+    [MenuItem("Same/Trailer/Hikaye/Ek Birikme")]
+    public static void BuildClutter()
+    {
+        Spec s = new Spec
+        {
+            name = "Ek_Birikme", gameScene = House, timeOffset = 0f, preRoll = 4f,
+            playerMode = TrailerController.PlayerMode.Actor
+        };
+        // Karakter kadrajda yok (yatak odasında bekler); ev gündüz ışığında.
+        s.Act(-3.5f, A.Place, V(3.0f, 1.36f, 2.0f), 0f);
+        s.Act(-3.0f, A.Morning);
+        // Oturma odası kapısı açık başlar ve kanadı kadrajın üçte birini kapatıyordu: kapatılır.
+        s.Act(-2.5f, A.OpenQuiet, target: "Kapi_Oturma_Odasi", index: 0);
+        s.Act(1.0f, A.Buy, index: (int)ProductType.Palto);
+        s.Act(2.1f, A.Buy, index: (int)ProductType.Pantolon);
+        s.Act(3.2f, A.Buy, index: (int)ProductType.Ayakkabi);
+        s.Act(4.3f, A.Buy, index: (int)ProductType.Canta);
+        Shot wide = S("B1_Genis", 6f, V(-0.45f, 3.75f, -1.5f), V(-0.6f, 3.7f, -1.35f), V(-4.2f, 1.5f, 1.8f), V(-4.2f, 1.5f, 1.8f), 62f, 58f, 11f);
+        wide.ease = TrailerShot.Ease.Linear;
+        s.shots.Add(wide);
+        s.shots.Add(S("B2_Yiginlar", 4f, V(-4.3f, 2.0f, -1.0f), V(-4.3f, 2.0f, 0.2f), V(-6.1f, 1.85f, -0.7f), V(-6.2f, 1.85f, 0.4f), 40f, 40f, 4f));
+        // Kuzeydeki yığından doğu duvarındaki ayakkabı kulesine çevrinme.
+        s.shots.Add(S("B3_Cevrinme", 4f, V(-3.3f, 2.1f, 1.7f), V(-3.0f, 2.1f, 1.3f), V(-1.4f, 1.9f, 3.1f), V(-0.8f, 2.1f, 0.5f), 42f, 40f, 5.6f));
+        s.post = profile =>
+        {
+            ColorAdjustments color = profile.Add<ColorAdjustments>(true);
+            color.contrast.Override(10f);
+            color.saturation.Override(-12f);
+            FilmGrain grain = profile.Add<FilmGrain>(true);
+            grain.intensity.Override(0.3f);
+        };
+        s.vignette = AnimationCurve.Constant(0f, 14f, 0.28f);
+        Build(s);
+    }
+
+    // ------------------------------------------------------------------ Ek: final kalabalığı önden (yüzler)
+
+    /// <summary>Kurguya eklenecek klip: benzerlerin kalabalığı önden; tele yaklaşma, yüzlerin önünden yana ray, önden yükseliş.</summary>
+    [MenuItem("Same/Trailer/Hikaye/Ek Final On")]
+    public static void BuildFinaleFront()
+    {
+        Spec s = new Spec
+        {
+            name = "Ek_Final_On", gameScene = Street, timeOffset = 0f, preRoll = 26f, dayIndex = 4,
+            owned = AllProducts, blonde = true, surgery = true,
+            playerMode = TrailerController.PlayerMode.Actor
+        };
+        // F5 ile aynı toplanma; herkes mağazaya (+z) döner, kamera önlerinde (z > 60) durup yüzlere bakar.
+        // Uzun ön hazırlık: geç gelenler kadrajın önünden yürüyerek geçiyordu, herkes yerleşsin.
+        s.Act(-25.9f, A.Place, V(0f, 0.05f, 60f), 0f);
+        s.Act(-25.5f, A.CrowdGather);
+        s.Act(-4f, A.CrowdConform, yaw: 0f);
+        s.shots.Add(S("O1_Tele", 4f, V(0.2f, 1.6f, 70f), V(0.2f, 1.6f, 68.6f), V(0f, 1.52f, 60f), V(0f, 1.52f, 60f), 20f, 18f, 4f));
+        Shot track = S("O2_Yuzler", 5f, V(-3.2f, 1.58f, 68.2f), V(3.2f, 1.58f, 68.2f), V(-2.6f, 1.54f, 62f), V(2.6f, 1.54f, 62f), 17f, 17f, 2.8f);
+        track.ease = TrailerShot.Ease.Linear;
+        s.shots.Add(track);
+        s.shots.Add(S("O3_Yukselis", 5f, V(0f, 1.5f, 69f), V(0f, 5.2f, 72.5f), V(0f, 1.4f, 61f), V(0f, 1.2f, 60f), 34f, 34f, 8f));
+        s.post = profile =>
+        {
+            ColorAdjustments color = profile.Add<ColorAdjustments>(true);
+            color.contrast.Override(10f);
+            color.postExposure.Override(0.35f);   // güneş arkada, yüzler gölgede
+            color.saturation.Override(-10f);
+        };
+        s.vignette = AnimationCurve.Constant(0f, 14f, 0.25f);
         Build(s);
     }
 

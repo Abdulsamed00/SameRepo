@@ -23,6 +23,11 @@ public class ShoppingBagView : MonoBehaviour
             return;
         bag = BuildModel() ?? Build(FindLitShader());
         bagRoot = bag.transform;
+        // Rigli model: iplerin başta açık, el tutunca toplanır (`Poset_Kapanis`).
+        rig = bag.GetComponent<ShoppingBagRig>();
+        gatherT = 0f;
+        if (rig != null)
+            rig.Apply(0f);
         bagRoot.SetParent(cam.transform, false);
         bagRoot.localPosition = HandlePosition;
         bagRoot.localRotation = Quaternion.Euler(0f, -12f, 0f);
@@ -58,6 +63,11 @@ public class ShoppingBagView : MonoBehaviour
     {
         if (bagRoot == null)
             return;
+        if (rig != null && gatherT < 1f)
+        {
+            gatherT = Mathf.Min(1f, gatherT + Time.deltaTime / gatherDuration);
+            rig.Apply(Mathf.SmoothStep(0f, 1f, gatherT));
+        }
         float speed = controller != null ? controller.HorizontalSpeed : 0f;
         swayPhase += Time.deltaTime * (2.2f + speed * 1.3f);
         float amount = Mathf.Clamp01(speed / 2f);
@@ -76,6 +86,9 @@ public class ShoppingBagView : MonoBehaviour
         bagRoot.localRotation = Quaternion.Euler(pitch, -12f, roll);
     }
 
+    private ShoppingBagRig rig;
+    private float gatherT;
+    private const float gatherDuration = 0.6f;
     private PlayerBody body;
     private Transform grip;
     private Transform camTransform;
