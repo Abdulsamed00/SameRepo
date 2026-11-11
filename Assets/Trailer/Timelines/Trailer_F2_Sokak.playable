@@ -1,6 +1,22 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8241211368510459423
+--- !u!114 &-7144167930660748451
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90fb794a295e73545af71bcdb7375791, type: 3}
+  m_Name: CinemachineShot
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineShot
+  DisplayName: 2a_Takip
+  VirtualCamera:
+    exposedName: c9ef25de06252d8478fe97dd946c05d9
+    defaultValue: {fileID: 0}
+--- !u!114 &-4245399891829310459
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -14,9 +30,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineShot
   DisplayName: 2b_Simitci
   VirtualCamera:
-    exposedName: f2f8a3cdf68530345b439e1fe61cfd39
+    exposedName: f10d832d97675b446851711c368be63e
     defaultValue: {fileID: 0}
---- !u!114 &-6218949250848945018
+--- !u!114 &-686938356091509362
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -40,10 +56,10 @@ MonoBehaviour:
   - m_Version: 1
     m_Start: 0
     m_ClipIn: 0
-    m_Asset: {fileID: 3897725631046006146}
+    m_Asset: {fileID: -7144167930660748451}
     m_Duration: 3.5
     m_TimeScale: 1
-    m_ParentTrack: {fileID: -6218949250848945018}
+    m_ParentTrack: {fileID: -686938356091509362}
     m_EaseInDuration: 0
     m_EaseOutDuration: 0
     m_BlendInDuration: -1
@@ -109,10 +125,10 @@ MonoBehaviour:
   - m_Version: 1
     m_Start: 3.5
     m_ClipIn: 0
-    m_Asset: {fileID: -8241211368510459423}
+    m_Asset: {fileID: -4245399891829310459}
     m_Duration: 2.5
     m_TimeScale: 1
-    m_ParentTrack: {fileID: -6218949250848945018}
+    m_ParentTrack: {fileID: -686938356091509362}
     m_EaseInDuration: 0
     m_EaseOutDuration: 0
     m_BlendInDuration: -1
@@ -178,10 +194,10 @@ MonoBehaviour:
   - m_Version: 1
     m_Start: 6
     m_ClipIn: 0
-    m_Asset: {fileID: 3109544287742229334}
+    m_Asset: {fileID: 4355127908233066972}
     m_Duration: 2.5
     m_TimeScale: 1
-    m_ParentTrack: {fileID: -6218949250848945018}
+    m_ParentTrack: {fileID: -686938356091509362}
     m_EaseInDuration: 0
     m_EaseOutDuration: 0
     m_BlendInDuration: -1
@@ -261,14 +277,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Timeline::UnityEngine.Timeline.TimelineAsset
   m_Version: 0
   m_Tracks:
-  - {fileID: -6218949250848945018}
+  - {fileID: -686938356091509362}
   m_FixedDuration: 0
   m_EditorSettings:
     m_Framerate: 30
     m_ScenePreview: 1
   m_DurationMode: 0
   m_MarkerTrack: {fileID: 0}
---- !u!114 &3109544287742229334
+--- !u!114 &4355127908233066972
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -282,21 +298,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineShot
   DisplayName: 2c_Magaza_Cephe
   VirtualCamera:
-    exposedName: 37f5b79f387b62f4d91e0182d5e920db
-    defaultValue: {fileID: 0}
---- !u!114 &3897725631046006146
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90fb794a295e73545af71bcdb7375791, type: 3}
-  m_Name: CinemachineShot
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineShot
-  DisplayName: 2a_Takip
-  VirtualCamera:
-    exposedName: 21c31ba21e247ba40b7a918ebe13c34b
+    exposedName: 4ad83954385d87048b6f2d09f7bd78c8
     defaultValue: {fileID: 0}

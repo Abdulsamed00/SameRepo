@@ -73,7 +73,8 @@ public class TrailerActor : MonoBehaviour
             case TrailerAction.Kind.StandUp: if (sitter != null) sitter.StandUp(); break;
             case TrailerAction.Kind.WalkTo: StartMotion(Walk(a.point, a.speed)); break;
             case TrailerAction.Kind.Face: StartMotion(Face(a.yaw, a.duration)); break;
-            case TrailerAction.Kind.OpenPart: OpenPart(a.target, a.index); break;
+            case TrailerAction.Kind.OpenPart: OpenPart(a.target, a.index, true); break;
+            case TrailerAction.Kind.OpenQuiet: OpenPart(a.target, a.index, false); break;
             case TrailerAction.Kind.TouchNose: TouchNose(a.duration); break;
             case TrailerAction.Kind.Defeat: if (body != null) { body.PrepareForPose(); body.PlayDefeat(); } break;
             case TrailerAction.Kind.Pose: if (body != null) { body.PrepareForPose(); body.PlayPose(); } break;
@@ -83,6 +84,8 @@ public class TrailerActor : MonoBehaviour
             case TrailerAction.Kind.CrowdGather: CrowdGather(); break;
             case TrailerAction.Kind.CrowdConform: Crowd(c => c.Conform(Quaternion.Euler(0f, a.yaw, 0f) * Vector3.forward)); break;
             case TrailerAction.Kind.CrowdFreeze: Freeze(); break;
+            case TrailerAction.Kind.Buy: PlayerPurchases.Buy((ProductType)a.index); break;
+            case TrailerAction.Kind.Morning: DayRoutine.StartNextDay(); break;
         }
     }
 
@@ -172,7 +175,7 @@ public class TrailerActor : MonoBehaviour
     }
 
     // Openable'ın bir parçasını (dolap kapağı) oyundaki gibi açar: el kapağa uzanır, kapak sonra döner.
-    private void OpenPart(string name, int index)
+    private void OpenPart(string name, int index, bool reach)
     {
         Openable openable = null;
         foreach (Openable candidate in FindObjectsByType<Openable>(FindObjectsSortMode.None))
@@ -184,7 +187,8 @@ public class TrailerActor : MonoBehaviour
         BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
         Openable.Part[] parts = (Openable.Part[])typeof(Openable).GetField("parts", flags).GetValue(openable);
         Transform part = parts != null && index < parts.Length ? parts[index].target : null;
-        Collider hit = part != null ? part.GetComponentInChildren<Collider>(true) : null;
+        // reach kapalı: el uzanmaz (vuruş yoksa Openable el IK'sını atlar), karakter olduğu gibi durur.
+        Collider hit = reach && part != null ? part.GetComponentInChildren<Collider>(true) : null;
         Vector3 eye = player.transform.position + Vector3.up * 1.5f;
         Vector3 point = hit != null ? hit.ClosestPoint(eye) : openable.transform.position;
         Vector3 normal = (eye - point).normalized;
@@ -265,7 +269,10 @@ public class TrailerAction
     public enum Kind
     {
         Place, SitOnSeat, StandUp, WalkTo, Face, OpenPart, TouchNose, Defeat, Pose, Locomotion, PickUp, Checkout,
-        CrowdGather, CrowdConform, CrowdFreeze
+        CrowdGather, CrowdConform, CrowdFreeze,
+        OpenQuiet,  // sona eklendi: sahnelerde kayıtlı eski sıra numaraları bozulmasın
+        Buy,        // index = ProductType: ürünü satın alınmış sayar (evde yığın belirir)
+        Morning     // ilk gecenin sabahı: ev gündüz ışığına geçer
     }
 
     public float time;
