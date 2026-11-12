@@ -21796,7 +21796,6 @@ Transform:
   - {fileID: 706046544}
   - {fileID: 1346036250}
   - {fileID: 1626440279}
-  - {fileID: 828610891}
   - {fileID: 1962615175}
   - {fileID: 804248607}
   - {fileID: 1895095479}
@@ -41875,37 +41874,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d38362691b8bc994d9fa5e31629a58c5, type: 3}
   m_PrefabInstance: {fileID: 489981205}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &490373931
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 490373932}
-  m_Layer: 0
-  m_Name: Hizli_Gidis_Magaza
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &490373932
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 490373931}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 119.4}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 828610891}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &490496660
 GameObject:
   m_ObjectHideFlags: 0
@@ -71556,55 +71524,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2118217315}
   m_SourcePrefab: {fileID: 100100000, guid: d3aa4418cb4e26a4185e54ea48b8c969, type: 3}
---- !u!1 &828610890
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 828610891}
-  - component: {fileID: 828610892}
-  m_Layer: 0
-  m_Name: Hizli_Gidis
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &828610891
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 828610890}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 490373932}
-  m_Father: {fileID: 252255066}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &828610892
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 828610890}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7b2b7f0e80a731409458b58926fefcd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FastTravel
-  key: 34
-  shopPoint: {fileID: 490373932}
-  homePoint: {fileID: 1188800043}
-  fadeDuration: 0.35
 --- !u!1001 &829971219
 PrefabInstance:
   m_ObjectHideFlags: 0

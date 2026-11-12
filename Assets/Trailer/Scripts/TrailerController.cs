@@ -180,8 +180,6 @@ public class TrailerController : MonoBehaviour
         player = FindFirstObjectByType<FirstPersonController>();
         foreach (BlondeGlance glance in FindObjectsByType<BlondeGlance>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             glance.enabled = false;
-        foreach (FastTravel travel in FindObjectsByType<FastTravel>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            travel.enabled = false;
         if (player == null)
             return;
 
