@@ -1923,7 +1923,7 @@ MonoBehaviour:
   maxClearancePull: 0.3
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
-  holdLowering: 0
+  holdLowering: 0.14
   dropRange: 1.9
 --- !u!54 &84559879
 Rigidbody:
@@ -3042,7 +3042,7 @@ MonoBehaviour:
   maxClearancePull: 0.3
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
-  holdLowering: 0
+  holdLowering: 0.14
   dropRange: 1.9
 --- !u!54 &116337822
 Rigidbody:
@@ -11369,7 +11369,7 @@ MonoBehaviour:
   maxClearancePull: 0.3
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
-  holdLowering: 0
+  holdLowering: 0.14
   dropRange: 1.9
 --- !u!54 &374838183
 Rigidbody:
@@ -14910,7 +14910,7 @@ MonoBehaviour:
   maxClearancePull: 0.3
   handleSound: {fileID: 8300000, guid: 9164ea6ab27fdfe48950a98f5303c695, type: 3}
   product: 0
-  holdLowering: 0
+  holdLowering: 0.14
   dropRange: 1.9
 --- !u!54 &549134210
 Rigidbody:

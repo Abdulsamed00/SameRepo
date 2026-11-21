@@ -15,12 +15,12 @@ KOK = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", 
 
 # (dosya, başlangıç sn, bitiş sn, açıklama)
 KESIMLER = [
-    ("F1_Ev.mp4",        0.5, 12.5, "F1 eksiklik: kanepe, kalkış, dolap, ayna omuz üstü"),
+    ("F1_Ev.mp4",        0.5, 13.1, "F1 eksiklik: kanepe, kalkış, dolabın içinden, omuz üstü boş dolap, ayna omuz üstü"),
     ("AI/Seedance_F1_Ayna.mp4", 0.0, 5.0, "F1 eksiklik: aynada burna dokunma (Seedance 2 Mini, 864x496)"),
     ("F2_Sokak.mp4",     0.0,  7.9, "F2 tüketim: cadde, simitçi, BUYNER"),
-    ("F2_Magaza.mp4",    0.2,  6.0, "F2 tüketim: palto, kasa"),
+    ("F2_Magaza.mp4",    0.1,  5.0, "F2 tüketim: paltolara bakış, paltolar yakın, kart cihazı"),
     ("F3_Sokak.mp4",     0.0,  6.1, "F3 dönüşüm: sarışın, klinik, kuaför"),
-    ("F3_Ayna.mp4",      0.0,  1.8, "F3 dönüşüm: aynada yeni burun ve saç"),
+    ("F3_Ayna.mp4",      0.0,  1.8, "F3 dönüşüm: aynada omuz üstünden sarı saç"),
     ("Faz3a_Magaza.mp4", 0.0,  5.0, "F4 kaos: ürünler, kasa"),
     ("Faz3b_Sokak.mp4",  0.0,  7.5, "F4 kaos: panolar, tek tip kalabalık"),
     ("F5_Kalabalik.mp4", 0.0, 10.5, "F5 asimilasyon: tepeden kalabalık, SAME"),
